@@ -1,12 +1,70 @@
 // utils/request.js
 const config = require('./config.js');
+const mock = require('./mock.js');
 
-function request({ url, method = 'GET', data = {}, header = {}, showLoading = true }) {
+// 简易 URL → mock 数据 路由（按 URL 前缀匹配）
+const mockRoutes = [
+  { match: /\/reports\/today$/, data: () => mock.todaySummary },
+  { match: /\/knowledge(\?.*)?$/, data: (url) => {
+    const u = new URL(url.startsWith('http') ? url : 'http://x' + url);
+    const cat = u.searchParams.get('category') || 'guide';
+    const list = (mock.knowledgeMap[cat] || mock.knowledgeMap.guide).items;
+    return { items: list };
+  }},
+  { match: /\/knowledge\/(.+)$/, data: (url) => {
+    const m = url.match(/\/knowledge\/([^?&#/]+)/);
+    const id = m ? m[1] : '';
+    return mock.knowledgeArticles[id] || {
+      id,
+      title: '示例文章',
+      source: '演示数据',
+      updatedAt: '2026-07-30',
+      contentHtml: '<p style="line-height:1.7">这是演示内容，请接入真实知识库。</p>'
+    };
+  }},
+  { match: /\/gis\/mushroom-risk\?/, data: () => mock.mushroomMarkers },
+  { match: /\/gis\/mushroom-risk\/(.+)$/, data: (url) => {
+    const m = url.match(/\/gis\/mushroom-risk\/([^?&#/]+)/);
+    const id = m ? m[1] : '';
+    const hit = (mock.mushroomMarkers.items || []).find((x) => x.id === id);
+    return hit ? {
+      id: hit.id, name: hit.name, species: hit.species,
+      level: hit.level, period: hit.period,
+      description: `${hit.name} 周边历史上发生过误采误食事件，请勿采摘野生菌。`
+    } : { id, name: '未知点位', level: '—', description: '暂无数据' };
+  }},
+  { match: /\/users\/me\/quota$/, data: () => mock.dailyQuota },
+  { match: /\/users\/me$/, data: () => mock.profile },
+  { match: /\/meals\/analyze$/, data: () => mock.mealAnalyzeResult, method: 'POST' },
+  { match: /\/meals\/.*\/report$/, data: () => mock.mealReport },
+  { match: /\/auth\/wechat$/, data: () => ({
+    token: 'demo-token-2026-07-31',
+    profile: mock.profile
+  }), method: 'POST' }
+];
+
+function findMock(url, method) {
+  for (const r of mockRoutes) {
+    if (r.match.test(url) && (!r.method || r.method === method)) {
+      return r.data(url);
+    }
+  }
+  return null;
+}
+
+function request({ url, method = 'GET', data = {}, header = {}, showLoading = true, silent = false }) {
   const app = getApp();
   const token = app.globalData.token || wx.getStorageSync('token') || '';
 
   if (showLoading) {
     wx.showLoading({ title: '加载中', mask: true });
+  }
+
+  // mock 模式：完全本地走数据，不发请求
+  if (config.useMock && !url.startsWith('http')) {
+    const payload = findMock(url, method);
+    if (showLoading) wx.hideLoading();
+    return mock.delay(payload, 220);
   }
 
   return new Promise((resolve, reject) => {
@@ -26,19 +84,29 @@ function request({ url, method = 'GET', data = {}, header = {}, showLoading = tr
         } else if (res.statusCode === 401) {
           app.globalData.token = '';
           wx.removeStorageSync('token');
-          wx.showToast({ title: '请重新登录', icon: 'none' });
+          if (!silent) wx.showToast({ title: '请重新登录', icon: 'none' });
           reject(res.data);
         } else {
-          wx.showToast({
-            title: (res.data && res.data.message) || `请求失败 ${res.statusCode}`,
-            icon: 'none'
-          });
+          if (!silent) {
+            wx.showToast({
+              title: (res.data && res.data.message) || `请求失败 ${res.statusCode}`,
+              icon: 'none'
+            });
+          }
           reject(res.data || res);
         }
       },
       fail(err) {
         if (showLoading) wx.hideLoading();
-        wx.showToast({ title: '网络异常', icon: 'none' });
+        // 真实网络失败 + mock 开启 → 静默 fallback
+        if (config.useMock && !url.startsWith('http')) {
+          const payload = findMock(url, method);
+          if (payload !== null) {
+            resolve(mock.delay(payload, 120));
+            return;
+          }
+        }
+        if (!silent) wx.showToast({ title: '网络异常', icon: 'none' });
         reject(err);
       }
     });

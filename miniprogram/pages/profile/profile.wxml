@@ -12,7 +12,7 @@
     <view class="form-row">
       <text>性别</text>
       <picker mode="selector" range="{{['男','女']}}" data-field="sex"
-              value="{{profile.sex === 'female' ? 1 : 0}}" bindchange="e=>onPick({detail:{value: e.detail.value===0?'male':'female'}, currentTarget:{dataset:{field:'sex'}}})">
+              value="{{sexIndex}}" bindchange="onPickSex">
         <view>{{profile.sex === 'female' ? '女' : '男'}}</view>
       </picker>
     </view>
@@ -27,9 +27,9 @@
     <view class="form-row">
       <text>活动水平</text>
       <picker mode="selector" range="{{activityOptions}}" range-key="label"
-              data-field="activityLevel" value="{{profile.activityLevelIndex || 1}}"
-              bindchange="e=>onPick({detail:{value: activityOptions[e.detail.value].value}, currentTarget:{dataset:{field:'activityLevel'}}})">
-        <view>{{profile.activityLevel}}</view>
+              data-field="activityLevel" value="{{activityIndex}}"
+              bindchange="onPickActivity">
+        <view>{{profile.activityLevelLabel}}</view>
       </picker>
     </view>
     <view class="form-row column">

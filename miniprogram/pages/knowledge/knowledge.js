@@ -29,17 +29,16 @@ Page({
 
   load() {
     this.setData({ loading: true });
-    const params = new URLSearchParams({
-      category: this.data.active,
-      q: this.data.keyword
-    }).toString();
-    request({ url: `/knowledge?${params}`, showLoading: false })
-      .then((data) => this.setData({ list: data.items || [], loading: false }))
+    const q = encodeURIComponent(this.data.keyword || '');
+    const url = `/knowledge?category=${this.data.active}&q=${q}`;
+    request({ url, showLoading: false })
+      .then((data) => this.setData({ list: (data && data.items) || [], loading: false }))
       .catch(() => this.setData({ loading: false }));
   },
 
   openArticle(e) {
     const { id } = e.currentTarget.dataset;
+    if (!id) return;
     wx.navigateTo({ url: `/pages/knowledge-detail/knowledge-detail?id=${id}` });
   }
 });

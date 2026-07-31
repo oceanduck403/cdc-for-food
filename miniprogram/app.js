@@ -1,4 +1,5 @@
 // app.js
+const config = require('./utils/config.js');
 const auth = require('./utils/auth.js');
 
 App({
@@ -18,11 +19,13 @@ App({
     }
 
     // 收集系统信息
-    wx.getSystemInfo({
-      success: (res) => {
-        this.globalData.systemInfo = res;
-      }
-    });
+    if (wx.getSystemInfo) {
+      wx.getSystemInfo({
+        success: (res) => {
+          this.globalData.systemInfo = res;
+        }
+      });
+    }
 
     // 隐私协议二次确认（微信要求 2023-09 起弹窗）
     if (wx.getPrivacySetting) {
@@ -37,6 +40,11 @@ App({
 
     // 版本更新检查
     this.checkUpdate();
+
+    // demo 模式提示（仅控制台）
+    if (config.useMock) {
+      console.log('[DEMO MODE] useMock=true，所有 API 请求走 utils/mock.js 静态数据');
+    }
   },
 
   onShow() {
@@ -45,7 +53,6 @@ App({
   },
 
   popPrivacyDialog() {
-    // 微信原生隐私弹窗组件
     if (wx.openPrivacyContract) {
       wx.openPrivacyContract({
         success: () => {

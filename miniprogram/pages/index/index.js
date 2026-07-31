@@ -11,7 +11,8 @@ Page({
       { icon: '👤', label: '健康档案', path: '/pages/profile/profile' }
     ],
     todayCalories: 0,
-    todayTarget: 2000
+    todayTarget: 2000,
+    heatPercent: 0
   },
 
   onShow() {
@@ -29,11 +30,14 @@ Page({
   },
 
   loadTodaySummary() {
-    request({ url: '/reports/today', showLoading: false })
+    request({ url: '/reports/today', showLoading: false, silent: true })
       .then((data) => {
+        const calories = (data && data.calories) || 0;
+        const target = (data && data.target) || 2000;
         this.setData({
-          todayCalories: data.calories || 0,
-          todayTarget: data.target || 2000
+          todayCalories: calories,
+          todayTarget: target,
+          heatPercent: Math.min(100, Math.round((calories / target) * 100))
         });
       })
       .catch(() => {});

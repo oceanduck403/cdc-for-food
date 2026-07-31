@@ -1,5 +1,6 @@
 // pages/report/report.js
 const { request } = require('../../utils/request.js');
+const mock = require('../../utils/mock.js');
 
 Page({
   data: {
@@ -14,8 +15,9 @@ Page({
 
   load() {
     this.setData({ loading: true });
-    request({ url: `/meals/${this.data.mealId || 'latest'}/report`, showLoading: false })
-      .then((data) => this.setData({ report: data, loading: false }))
-      .catch(() => this.setData({ loading: false }));
+    const url = `/meals/${this.data.mealId || 'latest'}/report`;
+    request({ url, showLoading: false })
+      .then((data) => this.setData({ report: data || mock.mealReport, loading: false }))
+      .catch(() => this.setData({ report: mock.mealReport, loading: false }));
   }
 });
