@@ -1,0 +1,2 @@
+.row { display: flex; align-items: center; gap: 16rpx; margin-top: 24rpx; }
+.footnote { margin-top: 24rpx; color: #9CA3AF; font-size: 24rpx; text-align: center; }

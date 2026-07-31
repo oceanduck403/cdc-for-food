@@ -1,0 +1,6 @@
+.search input { width: 100%; padding: 12rpx 0; }
+.tabs { white-space: nowrap; padding: 0 24rpx; }
+.tab { display: inline-block; padding: 12rpx 28rpx; margin-right: 12rpx; border-radius: 999rpx; background: #FFFFFF; color: #6B7280; }
+.tab.active { background: #0F8A65; color: #FFFFFF; }
+.list .row { padding: 24rpx 0; border-bottom: 1rpx solid #F1F5F9; }
+.list .row:last-child { border-bottom: none; }

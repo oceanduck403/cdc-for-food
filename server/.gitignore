@@ -1,0 +1,16 @@
+# Server
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+data/
+storage/
+logs/
+*.log
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/

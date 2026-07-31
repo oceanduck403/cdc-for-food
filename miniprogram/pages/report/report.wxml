@@ -1,0 +1,35 @@
+<view class="container">
+  <view class="card" wx:if="{{loading}}">
+    <view>正在生成报告…</view>
+  </view>
+
+  <block wx:elif="{{report}}">
+    <view class="card">
+      <view class="title">本次摄入</view>
+      <view>总能量：{{report.totalKcal}} kcal</view>
+      <view>蛋白 {{report.protein}} g · 脂肪 {{report.fat}} g · 碳水 {{report.carbs}} g · 钠 {{report.sodium}} mg</view>
+    </view>
+
+    <view class="card">
+      <view class="title">膳食结构</view>
+      <view wx:for="{{report.structure}}" wx:key="name" class="structure-row">
+        <view>{{item.name}}</view>
+        <view class="bar"><view class="bar-fill" style="width: {{item.percent}}%"/></view>
+        <view class="text-muted">{{item.percent}}%</view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="title">个性化建议</view>
+      <view wx:for="{{report.advice}}" wx:key="index" class="advice-item">· {{item}}</view>
+    </view>
+
+    <view class="card footnote">
+      <view>本报告由 AI 模型依据《中国居民膳食指南》生成，仅作科普参考，不作为诊疗依据。</view>
+    </view>
+  </block>
+
+  <view class="card" wx:else>
+    <view class="text-muted">暂无报告</view>
+  </view>
+</view>

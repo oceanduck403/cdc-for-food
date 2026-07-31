@@ -1,0 +1,28 @@
+<view class="container">
+  <view class="card user" wx:if="{{isLogin}}">
+    <view class="title">{{profile.nickname || '微信用户'}}</view>
+    <view class="subtitle">已登录 · 点击编辑健康档案</view>
+    <view class="btn-ghost" bindtap="goProfile">健康档案</view>
+  </view>
+
+  <view class="card" wx:else>
+    <view class="title">您还未登录</view>
+    <view class="btn-primary" bindtap="goLogin">去登录</view>
+  </view>
+
+  <view class="card list">
+    <view class="row" bindtap="callSupport">
+      <view>联系客服</view>
+      <view class="text-muted">87033314</view>
+    </view>
+    <view class="row">
+      <view>隐私协议</view>
+      <view class="text-muted">v1.0</view>
+    </view>
+    <view class="row" wx:if="{{isLogin}}" bindtap="onLogout">
+      <view class="text-danger">退出登录</view>
+    </view>
+  </view>
+
+  <view class="footnote">本应用由成都市疾病预防控制中心委托开发，仅提供营养与食品安全科普信息。</view>
+</view>

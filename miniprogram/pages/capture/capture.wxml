@@ -1,0 +1,30 @@
+<view class="container">
+  <view class="card">
+    <view class="title">拍照识膳食</view>
+    <view class="subtitle">今日剩余分析次数：{{remaining}}</view>
+  </view>
+
+  <view class="card picker" bindtap="chooseImage">
+    <block wx:if="{{imagePath}}">
+      <image src="{{imagePath}}" mode="aspectFill" class="preview"/>
+    </block>
+    <block wx:else>
+      <view class="placeholder">点击拍照或选择图片</view>
+    </block>
+  </view>
+
+  <button class="btn-primary" bindtap="analyze" disabled="{{!imagePath || analyzing}}">
+    {{analyzing ? '分析中…' : '开始分析'}}
+  </button>
+
+  <view class="error" wx:if="{{errorMsg}}">{{errorMsg}}</view>
+
+  <view class="card" wx:if="{{result}}">
+    <view class="title">分析结果</view>
+    <view wx:for="{{result.items}}" wx:key="name">
+      <view>{{item.name}} · {{item.grams}} g</view>
+      <view class="subtitle">能量 {{item.kcal}} kcal · 蛋白 {{item.protein}} g · 脂肪 {{item.fat}} g · 碳水 {{item.carbs}} g</view>
+    </view>
+    <view class="btn-ghost" bindtap="viewReport">查看完整报告</view>
+  </view>
+</view>

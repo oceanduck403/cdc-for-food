@@ -1,0 +1,48 @@
+<view class="container">
+  <view class="card">
+    <view class="title">个人健康档案</view>
+    <view class="subtitle">用于个性化营养建议，数据仅保存在您授权的服务端。</view>
+  </view>
+
+  <view class="card">
+    <view class="form-row">
+      <text>年龄</text>
+      <input type="number" data-field="age" value="{{profile.age}}" bindinput="onInput" placeholder="如 35"/>
+    </view>
+    <view class="form-row">
+      <text>性别</text>
+      <picker mode="selector" range="{{['男','女']}}" data-field="sex"
+              value="{{profile.sex === 'female' ? 1 : 0}}" bindchange="e=>onPick({detail:{value: e.detail.value===0?'male':'female'}, currentTarget:{dataset:{field:'sex'}}})">
+        <view>{{profile.sex === 'female' ? '女' : '男'}}</view>
+      </picker>
+    </view>
+    <view class="form-row">
+      <text>身高 (cm)</text>
+      <input type="digit" data-field="heightCm" value="{{profile.heightCm}}" bindinput="onInput"/>
+    </view>
+    <view class="form-row">
+      <text>体重 (kg)</text>
+      <input type="digit" data-field="weightKg" value="{{profile.weightKg}}" bindinput="onInput"/>
+    </view>
+    <view class="form-row">
+      <text>活动水平</text>
+      <picker mode="selector" range="{{activityOptions}}" range-key="label"
+              data-field="activityLevel" value="{{profile.activityLevelIndex || 1}}"
+              bindchange="e=>onPick({detail:{value: activityOptions[e.detail.value].value}, currentTarget:{dataset:{field:'activityLevel'}}})">
+        <view>{{profile.activityLevel}}</view>
+      </picker>
+    </view>
+    <view class="form-row column">
+      <text>健康备注</text>
+      <textarea data-field="healthNotes" value="{{profile.healthNotes}}" bindinput="onInput"
+                placeholder="如：高血压、糖尿病等（选填）"/>
+    </view>
+  </view>
+
+  <view class="card" wx:if="{{tdee}}">
+    <view>预估每日总能量需求：<text class="text-success">{{tdee}} kcal</text></view>
+    <view class="subtitle">仅供膳食参考，非医学建议。</view>
+  </view>
+
+  <button class="btn-primary" bindtap="save" disabled="{{saving}}">保存档案</button>
+</view>

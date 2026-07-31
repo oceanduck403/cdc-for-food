@@ -1,0 +1,19 @@
+<view class="container">
+  <view class="card">
+    <view class="title">欢迎使用</view>
+    <view class="subtitle">营养与食品安全 AI 小助手</view>
+  </view>
+
+  <view class="card">
+    <view>隐私协议（{{privacyVersion}}）</view>
+    <view class="subtitle" bindtap="openPrivacy">点击查看完整协议</view>
+    <view class="row">
+      <switch checked="{{privacyAccepted}}" bindchange="onAcceptPrivacy"/>
+      <text>已阅读并同意《隐私协议》与《用户服务条款》</text>
+    </view>
+  </view>
+
+  <button class="btn-primary" bindtap="onWechatLogin" disabled="{{!privacyAccepted}}">微信一键登录</button>
+
+  <view class="footnote">登录即代表您同意我们按照协议收集与使用必要的个人信息（最小必要原则）。</view>
+</view>

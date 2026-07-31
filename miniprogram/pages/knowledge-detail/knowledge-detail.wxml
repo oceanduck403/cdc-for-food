@@ -1,0 +1,15 @@
+<view class="container">
+  <view class="card" wx:if="{{loading}}">加载中…</view>
+  <block wx:elif="{{article}}">
+    <view class="card">
+      <view class="title">{{article.title}}</view>
+      <view class="subtitle">{{article.source}} · {{article.updatedAt}}</view>
+    </view>
+    <view class="card content">
+      <rich-text nodes="{{article.contentHtml}}"/>
+    </view>
+    <view class="card footnote">
+      <view>免责声明：本文仅作科普参考，不作为诊疗或具体监管依据。</view>
+    </view>
+  </block>
+</view>

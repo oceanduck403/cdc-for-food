@@ -1,0 +1,22 @@
+<view class="container">
+  <view class="hero card">
+    <view class="title">{{greeting}}</view>
+    <view class="subtitle">今日已摄入 {{todayCalories}} / {{todayTarget}} kcal</view>
+    <view class="bar">
+      <view class="bar-fill" style="width: {{todayCalories / todayTarget * 100}}%"></view>
+    </view>
+  </view>
+
+  <view class="grid">
+    <view class="grid-item card" wx:for="{{quickEntries}}" wx:key="label"
+          data-path="{{item.path}}" bindtap="goTo">
+      <view class="emoji">{{item.icon}}</view>
+      <view class="label">{{item.label}}</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="title" style="font-size:30rpx">温馨提示</view>
+    <view class="subtitle">本工具仅提供营养与食品安全科普信息，不作为诊疗依据。如有不适请及时就医。</view>
+  </view>
+</view>

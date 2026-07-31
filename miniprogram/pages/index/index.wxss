@@ -1,0 +1,7 @@
+.hero { padding: 36rpx; }
+.bar { margin-top: 24rpx; height: 16rpx; background: #E5E7EB; border-radius: 8rpx; overflow: hidden; }
+.bar-fill { height: 100%; background: linear-gradient(90deg, #0F8A65, #34D399); }
+.grid { display: flex; flex-wrap: wrap; justify-content: space-between; }
+.grid-item { width: 48%; text-align: center; padding: 36rpx 16rpx; }
+.emoji { font-size: 56rpx; }
+.label { margin-top: 12rpx; color: #1F2D3D; font-size: 28rpx; }

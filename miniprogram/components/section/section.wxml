@@ -1,0 +1,4 @@
+<view class="section">
+  <view class="title">{{title}}</view>
+  <view class="more" wx:if="{{moreText}}" bindtap="onMore">{{moreText}}</view>
+</view>

@@ -1,0 +1,21 @@
+<view class="container">
+  <view class="card search">
+    <input placeholder="搜索知识关键词" value="{{keyword}}" bindinput="onSearch"/>
+  </view>
+
+  <scroll-view scroll-x="true" class="tabs">
+    <view wx:for="{{categories}}" wx:key="id"
+          class="tab {{active === item.id ? 'active' : ''}}"
+          data-id="{{item.id}}" bindtap="switchCategory">{{item.name}}</view>
+  </scroll-view>
+
+  <view class="card list" wx:if="{{!loading}}">
+    <view wx:for="{{list}}" wx:key="id" class="row" data-id="{{item.id}}" bindtap="openArticle">
+      <view class="title" style="font-size:30rpx">{{item.title}}</view>
+      <view class="subtitle">{{item.summary}}</view>
+    </view>
+    <view wx:if="{{!list.length}}" class="text-muted">暂无内容</view>
+  </view>
+
+  <view class="card" wx:else>加载中…</view>
+</view>

@@ -1,0 +1,3 @@
+.section { display: flex; justify-content: space-between; align-items: center; padding: 16rpx 24rpx; }
+.title { font-size: 30rpx; font-weight: 600; }
+.more { color: #0F8A65; font-size: 24rpx; }

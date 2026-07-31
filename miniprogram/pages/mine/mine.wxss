@@ -1,0 +1,4 @@
+.user { display: flex; flex-direction: column; gap: 16rpx; }
+.list .row { display: flex; justify-content: space-between; padding: 24rpx 0; border-bottom: 1rpx solid #F1F5F9; }
+.list .row:last-child { border-bottom: none; }
+.footnote { margin-top: 24rpx; color: #9CA3AF; font-size: 24rpx; text-align: center; }

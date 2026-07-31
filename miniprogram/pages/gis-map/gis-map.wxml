@@ -1,0 +1,13 @@
+<view class="map-wrap">
+  <map id="mushroom-map" latitude="{{latitude}}" longitude="{{longitude}}"
+       markers="{{markers}}" scale="11" show-location="true"
+       bindmarkertap="onMarkerTap" style="width:100%;height:100%"/>
+</view>
+
+<view class="detail card" wx:if="{{selected}}">
+  <view class="title">{{selected.name}}</view>
+  <view class="subtitle">{{selected.species}} · 风险等级：{{selected.level}}</view>
+  <view>{{selected.description}}</view>
+  <view class="text-warning">中毒高发期：{{selected.period}}</view>
+  <view class="text-muted">如误食请立即就医。</view>
+</view>

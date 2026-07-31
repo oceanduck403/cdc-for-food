@@ -1,0 +1,5 @@
+/* styles/theme.wxss  共享设计 token */
+.brand-green { color: #0F8A65; }
+.bg-soft { background: #F5F7FA; }
+.text-muted { color: #9CA3AF; }
+.divider { height: 1rpx; background: #F1F5F9; }
