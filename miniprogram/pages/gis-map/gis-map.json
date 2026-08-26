@@ -1,8 +1,3 @@
 {
-  "navigationBarTitleText": "毒蘑菇风险地图",
-  "permission": {
-    "scope.userLocation": {
-      "desc": "用于在地图上显示您的位置与附近的风险点"
-    }
-  }
+  "navigationBarTitleText": "毒蘑菇风险地图"
 }

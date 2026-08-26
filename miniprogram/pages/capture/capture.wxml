@@ -1,30 +1,123 @@
 <view class="container">
-  <view class="card">
-    <view class="title">拍照识膳食</view>
-    <view class="subtitle">今日剩余分析次数：{{remaining}}</view>
+
+  <!-- 顶部状态卡 -->
+  <view class="status-card card">
+    <view class="status-left">
+      <text class="status-icon">📷</text>
+      <view>
+        <text class="status-title">拍照识膳食</text>
+        <text class="status-sub">AI 智能营养分析</text>
+      </view>
+    </view>
+    <view class="quota-badge" style="{{remaining === 0 ? 'background:#FEE2E2;color:#EF4444' : 'background:#E8F5F0;color:#0F8A65'}}">
+      {{remaining === 0 ? '今日已用完' : '剩余 ' + remaining + ' 次'}}
+    </view>
   </view>
 
-  <view class="card picker" bindtap="chooseImage">
+  <!-- 次数用完提示 -->
+  <view class="limit-overlay" wx:if="{{remaining <= 0 && showLimitTip}}">
+    <view class="limit-card card">
+      <view class="limit-icon">📊</view>
+      <view class="limit-title">今日分析次数已用完</view>
+      <view class="limit-desc">开通会员可获得更多分析次数</view>
+      <view class="limit-actions">
+        <view class="btn-outline" bindtap="dismissLimitTip">稍后再说</view>
+        <view class="btn-primary" bindtap="goPayment">立即开通</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 图片上传区 -->
+  <view class="upload-wrap card" bindtap="chooseImage">
     <block wx:if="{{imagePath}}">
-      <image src="{{imagePath}}" mode="aspectFill" class="preview"/>
+      <image src="{{imagePath}}" mode="aspectFill" class="preview-img"/>
+      <view class="preview-overlay">
+        <text class="preview-tip">点击重新选择图片</text>
+      </view>
     </block>
     <block wx:else>
-      <view class="placeholder">点击拍照或选择图片</view>
+      <view class="upload-zone">
+        <text class="upload-icon">📸</text>
+        <text class="upload-text">点击拍照或从相册选择</text>
+        <text class="upload-hint">支持 JPG / PNG / WEBP</text>
+      </view>
     </block>
   </view>
 
-  <button class="btn-primary" bindtap="analyze" disabled="{{!imagePath || analyzing}}">
-    {{analyzing ? '分析中…' : '开始分析'}}
+  <!-- 分析按钮 -->
+  <button class="btn-primary analyze-btn"
+          bindtap="analyze"
+          disabled="{{!imagePath || analyzing || remaining === 0}}">
+    <block wx:if="{{analyzing}}">
+      <text class="spinner"/>分析中…
+    </block>
+    <block wx:elif="{{remaining === 0}}">
+      今日次数已用完
+    </block>
+    <block wx:else>
+      开始分析
+    </block>
   </button>
 
-  <view class="error" wx:if="{{errorMsg}}">{{errorMsg}}</view>
-
-  <view class="card" wx:if="{{result}}">
-    <view class="title">分析结果</view>
-    <view wx:for="{{result.items}}" wx:key="name">
-      <view>{{item.name}} · {{item.grams}} g</view>
-      <view class="subtitle">能量 {{item.kcal}} kcal · 蛋白 {{item.protein}} g · 脂肪 {{item.fat}} g · 碳水 {{item.carbs}} g</view>
-    </view>
-    <view class="btn-ghost" bindtap="viewReport">查看完整报告</view>
+  <!-- 错误提示 -->
+  <view class="error-box" wx:if="{{errorMsg}}">
+    <text>⚠ {{errorMsg}}</text>
   </view>
+
+  <!-- 分析结果 -->
+  <block wx:if="{{result}}">
+
+    <!-- 结果摘要 -->
+    <view class="result-summary card">
+      <view class="summary-header">
+        <text class="result-badge">AI 分析结果</text>
+        <text class="result-count">共 {{result.items.length}} 种食材</text>
+      </view>
+      <view class="summary-total">
+        <text class="total-kcal">{{result.totalKcal}}</text>
+        <text class="total-unit">kcal</text>
+      </view>
+      <view class="total-breakdown">
+        <view class="breakdown-item">
+          <text class="bd-val text-warning">{{result.totalProtein}}g</text>
+          <text class="bd-label">蛋白质</text>
+        </view>
+        <view class="breakdown-item">
+          <text class="bd-val text-warning">{{result.totalFat}}g</text>
+          <text class="bd-label">脂肪</text>
+        </view>
+        <view class="breakdown-item">
+          <text class="bd-val text-warning">{{result.totalCarbs}}g</text>
+          <text class="bd-label">碳水</text>
+        </view>
+        <view class="breakdown-item">
+          <text class="bd-val text-warning">{{result.totalSodium}}mg</text>
+          <text class="bd-label">钠</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 食材明细 -->
+    <view class="section-title">食材明细</view>
+    <view class="item-list">
+      <view class="item-card card" wx:for="{{result.items}}" wx:key="name">
+        <view class="item-top">
+          <text class="item-name">{{item.name}}</text>
+          <text class="item-kcal">{{item.kcal}} kcal</text>
+        </view>
+        <view class="bar">
+          <view class="bar-fill" style="width: {{item.percent}}%"/>
+        </view>
+        <view class="item-meta">
+          <text>约 {{item.grams}} g</text>
+          <text class="text-muted">蛋白 {{item.protein}}g · 脂肪 {{item.fat}}g · 碳水 {{item.carbs}}g</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 报告按钮 -->
+    <button class="btn-ghost" bindtap="viewReport">查看完整膳食报告</button>
+
+  </block>
+
 </view>

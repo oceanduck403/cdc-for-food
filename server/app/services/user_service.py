@@ -68,8 +68,44 @@ async def update_profile(db: AsyncSession, user_id: str, payload: dict) -> Optio
 
 async def get_daily_quota(db: AsyncSession, user_id: str) -> dict:
     """返回当前用户今日已使用次数（成本闸口）"""
-    # 这里简单返回 0；真实实现可基于 Redis 计数器
-    return {"used": 0, "limit": settings.daily_analysis_limit_per_user}
+    try:
+        uid = int(user_id)
+    except ValueError:
+        return {"used": 0, "remaining": 20, "limit": 20, "is_vip": False}
+
+    user = await db.get(User, uid)
+    if not user:
+        return {"used": 0, "remaining": 20, "limit": 20, "is_vip": False}
+
+    today = date.today()
+
+    # VIP用户
+    if user.is_vip and user.vip_expire_at and user.vip_expire_at >= today:
+        return {
+            "used": 0,
+            "remaining": user.purchased_analysis_count,
+            "limit": user.purchased_analysis_count,
+            "is_vip": True,
+            "expire_at": user.vip_expire_at.isoformat(),
+        }
+
+    # 免费用户：每日限制
+    if user.last_active_on == today:
+        return {
+            "used": settings.daily_analysis_limit_per_user,
+            "remaining": 0,
+            "limit": settings.daily_analysis_limit_per_user,
+            "is_vip": False,
+            "expire_at": None,
+        }
+
+    return {
+        "used": 0,
+        "remaining": settings.daily_analysis_limit_per_user,
+        "limit": settings.daily_analysis_limit_per_user,
+        "is_vip": False,
+        "expire_at": None,
+    }
 
 
 async def update_phone(db: AsyncSession, user_id: int, phone: str) -> None:

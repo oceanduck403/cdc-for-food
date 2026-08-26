@@ -1,2 +1,11 @@
-.content { line-height: 1.7; }
-.footnote { color: #6B7280; font-size: 24rpx; }
+/* pages/knowledge-detail/knowledge-detail.wxss */
+.content {
+  line-height: 1.8;
+  font-size: 29rpx;
+  color: var(--text-primary, #111827);
+}
+.footnote {
+  color: var(--text-muted, #9CA3AF);
+  font-size: 24rpx;
+  line-height: 1.7;
+}

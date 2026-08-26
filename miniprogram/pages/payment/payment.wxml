@@ -1,0 +1,90 @@
+<view class="container">
+
+  <!-- 头部区域 -->
+  <view class="header">
+    <view class="header-icon">👑</view>
+    <view class="header-title">开通会员</view>
+    <view class="header-sub">解锁更多分析次数，畅享营养AI服务</view>
+  </view>
+
+  <!-- 会员特权 -->
+  <view class="section card">
+    <view class="section-title">会员特权</view>
+    <view class="privileges">
+      <view class="privilege-item">
+        <text class="p-icon">📊</text>
+        <text class="p-text">每日{{dailyLimit}}次免费分析</text>
+      </view>
+      <view class="privilege-item">
+        <text class="p-icon">💎</text>
+        <text class="p-text">月度/季度/年度套餐可选</text>
+      </view>
+      <view class="privilege-item">
+        <text class="p-icon">🔒</text>
+        <text class="p-text">支付安全由微信提供保障</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 当前状态 -->
+  <view class="section card status-card" wx:if="{{isLogin}}">
+    <view class="status-row">
+      <text class="status-label">当前状态</text>
+      <text class="status-value {{isVip ? 'vip' : 'free'}}">
+        {{isVip ? '⭐ 会员' : '免费用户'}}
+      </text>
+    </view>
+    <view class="status-row" wx:if="{{isVip}}">
+      <text class="status-label">会员到期</text>
+      <text class="status-value">{{expireDate}}</text>
+    </view>
+    <view class="status-row">
+      <text class="status-label">剩余次数</text>
+      <text class="status-value {{remaining <= 0 ? 'warning' : ''}}">{{remaining}} 次</text>
+    </view>
+  </view>
+
+  <!-- 套餐选择 -->
+  <view class="section">
+    <view class="section-title">选择套餐</view>
+    <view class="packages">
+      <block wx:for="{{packages}}" wx:key="id">
+        <view class="package-item card {{item.id === selectedPackage ? 'selected' : ''}}"
+              bindtap="selectPackage" data-id="{{item.id}}">
+          <view class="package-check">
+            <view class="check-circle {{item.id === selectedPackage ? 'checked' : ''}}"/>
+          </view>
+          <view class="package-info">
+            <view class="package-name">{{item.name}}</view>
+            <view class="package-desc">{{item.description}}</view>
+            <view class="package-count">{{item.analysisCount}} 次分析</view>
+          </view>
+          <view class="package-price">
+            <text class="price-symbol">¥</text>
+            <text class="price-value">{{item.priceYuan}}</text>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="bottom-bar">
+    <view class="total-info">
+      <text class="total-label">应付</text>
+      <text class="total-price">¥{{selectedPrice}}</text>
+    </view>
+    <view class="pay-btn {{!isLogin ? 'disabled' : ''}}" bindtap="{{isLogin ? 'startPayment' : 'goLogin'}}">
+      {{isLogin ? '微信支付' : '请先登录'}}
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-mask" wx:if="{{paying}}">
+    <view class="loading-content">
+      <view class="loading-icon">⏳</view>
+      <text class="loading-text">正在调起支付...</text>
+    </view>
+  </view>
+
+</view>

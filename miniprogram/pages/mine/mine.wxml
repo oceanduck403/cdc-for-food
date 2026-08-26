@@ -1,28 +1,109 @@
 <view class="container">
-  <view class="card user" wx:if="{{isLogin}}">
-    <view class="title">{{profile.nickname || '微信用户'}}</view>
-    <view class="subtitle">已登录 · 点击编辑健康档案</view>
-    <view class="btn-ghost" bindtap="goProfile">健康档案</view>
+
+  <!-- 用户信息卡 -->
+  <view class="user-card card">
+    <view class="user-bg-decoration"/>
+    <block wx:if="{{isLogin && profile}}">
+      <view class="user-info">
+        <view class="avatar-wrap">
+          <image class="avatar" src="{{profile.avatar || '/images/default-avatar.png'}}"
+                 mode="aspectFill" binderror="onAvatarError"/>
+          <view class="login-badge">
+            <text wx:if="{{profile.isVip}}" class="vip-star">⭐</text>
+          </view>
+        </view>
+        <view class="user-meta">
+          <text class="user-name">{{profile.nickname || '微信用户'}}</text>
+          <text class="user-sub" wx:if="{{profile.age}}">{{profile.age}}岁 · {{profile.sexLabel || ''}}</text>
+          <text class="user-sub" wx:else>已登录</text>
+        </view>
+        <view class="user-edit-btn" bindtap="goProfile">
+          <text>编辑档案</text>
+        </view>
+      </view>
+
+      <!-- 健康数据摘要 -->
+      <view class="health-summary" wx:if="{{profile.heightCm && profile.weightKg}}">
+        <view class="hs-item">
+          <text class="hs-val">{{profile.heightCm}}</text>
+          <text class="hs-label">身高 cm</text>
+        </view>
+        <view class="hs-divider"/>
+        <view class="hs-item">
+          <text class="hs-val">{{profile.weightKg}}</text>
+          <text class="hs-label">体重 kg</text>
+        </view>
+        <view class="hs-divider"/>
+        <view class="hs-item">
+          <text class="hs-val">{{bmi}}</text>
+          <text class="hs-label">BMI</text>
+        </view>
+      </view>
+    </block>
+
+    <!-- 未登录 -->
+    <block wx:else>
+      <view class="guest-info">
+        <view class="avatar-wrap avatar-guest">
+          <text class="guest-emoji">👤</text>
+        </view>
+        <view class="user-meta">
+          <text class="user-name">游客</text>
+          <text class="user-sub">登录后享受完整功能</text>
+        </view>
+        <view class="btn-primary login-btn" bindtap="goLogin">
+          立即登录
+        </view>
+      </view>
+    </block>
   </view>
 
-  <view class="card" wx:else>
-    <view class="title">您还未登录</view>
-    <view class="btn-primary" bindtap="goLogin">去登录</view>
+  <!-- 快捷入口 -->
+  <view class="quick-links">
+    <view class="quick-link card" bindtap="goProfile">
+      <text class="ql-icon">📋</text>
+      <text class="ql-text">健康档案</text>
+      <text class="ql-arrow">›</text>
+    </view>
+    <view class="quick-link card" bindtap="goPayment">
+      <text class="ql-icon">👑</text>
+      <text class="ql-text">开通会员</text>
+      <text class="ql-sub" wx:if="{{isVip}}">⭐ 会员中</text>
+      <text class="ql-sub" wx:elif="{{remaining > 0}}">剩余{{remaining}}次</text>
+      <text class="ql-sub" wx:else>次数已用完</text>
+      <text class="ql-arrow">›</text>
+    </view>
+    <view class="quick-link card" bindtap="callSupport">
+      <text class="ql-icon">📞</text>
+      <text class="ql-text">联系客服</text>
+      <text class="ql-sub">87033314</text>
+      <text class="ql-arrow">›</text>
+    </view>
   </view>
 
-  <view class="card list">
-    <view class="row" bindtap="callSupport">
-      <view>联系客服</view>
-      <view class="text-muted">87033314</view>
+  <!-- 设置列表 -->
+  <view class="settings-section card">
+    <view class="settings-row" bindtap="openPrivacy">
+      <text class="sr-icon">📜</text>
+      <text class="sr-text">隐私协议</text>
+      <text class="sr-arrow">›</text>
     </view>
-    <view class="row">
-      <view>隐私协议</view>
-      <view class="text-muted">v1.0</view>
-    </view>
-    <view class="row" wx:if="{{isLogin}}" bindtap="onLogout">
-      <view class="text-danger">退出登录</view>
+    <view class="settings-row" bindtap="openAbout">
+      <text class="sr-icon">ℹ️</text>
+      <text class="sr-text">关于我们</text>
+      <text class="sr-ver">v1.0.0</text>
+      <text class="sr-arrow">›</text>
     </view>
   </view>
 
-  <view class="footnote">本应用由成都市疾病预防控制中心委托开发，仅提供营养与食品安全科普信息。</view>
+  <!-- 退出登录 -->
+  <view class="logout-section" wx:if="{{isLogin}}">
+    <view class="btn-danger" bindtap="onLogout">退出登录</view>
+  </view>
+
+  <!-- 免责声明 -->
+  <view class="disclaimer">
+    <text>本应用由成都市疾病预防控制中心提供\n仅供营养与食品安全科普使用，不作为诊疗依据</text>
+  </view>
+
 </view>

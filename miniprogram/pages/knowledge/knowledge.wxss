@@ -1,6 +1,184 @@
-.search input { width: 100%; padding: 12rpx 0; }
-.tabs { white-space: nowrap; padding: 0 24rpx; }
-.tab { display: inline-block; padding: 12rpx 28rpx; margin-right: 12rpx; border-radius: 999rpx; background: #FFFFFF; color: #6B7280; }
-.tab.active { background: #0F8A65; color: #FFFFFF; }
-.list .row { padding: 24rpx 0; border-bottom: 1rpx solid #F1F5F9; }
-.list .row:last-child { border-bottom: none; }
+/* ── 搜索框 ─────────────────────────────────────────────────────────── */
+
+.search-wrap {
+  margin-bottom: 20rpx;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background: var(--bg-white, #FFFFFF);
+  border-radius: 999rpx;
+  padding: 0 24rpx;
+  height: 88rpx;
+  box-shadow: var(--shadow-sm, 0 1rpx 4rpx rgba(15,138,101,0.06));
+  border: 1rpx solid var(--border, #E5E7EB);
+  gap: 12rpx;
+}
+
+.search-icon {
+  font-size: 30rpx;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: var(--text-primary, #111827);
+  height: 100%;
+}
+
+.search-clear {
+  font-size: 28rpx;
+  color: var(--text-muted, #9CA3AF);
+  padding: 8rpx;
+  flex-shrink: 0;
+}
+
+/* ── 分类标签 ──────────────────────────────────────────────────────── */
+
+.tab-scroll {
+  margin-bottom: 28rpx;
+  /* 隐藏滚动条 */
+  white-space: nowrap;
+}
+
+.tab-list {
+  display: inline-flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 4rpx 4rpx;
+}
+
+.tab-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 14rpx 28rpx;
+  border-radius: 999rpx;
+  background: var(--bg-white, #FFFFFF);
+  color: var(--text-secondary, #4B5563);
+  font-size: 27rpx;
+  font-weight: 500;
+  white-space: nowrap;
+  border: 1rpx solid var(--border, #E5E7EB);
+  box-shadow: var(--shadow-sm, 0 1rpx 4rpx rgba(15,138,101,0.06));
+  transition: all 0.2s;
+}
+
+.tab-item.active {
+  background: var(--brand, #0F8A65);
+  color: #FFFFFF;
+  border-color: var(--brand, #0F8A65);
+  box-shadow: 0 4rpx 12rpx rgba(15, 138, 101, 0.3);
+}
+
+.tab-item:active { opacity: 0.8; }
+
+/* ── 文章卡片 ─────────────────────────────────────────────────────── */
+
+.article-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  padding-bottom: 24rpx;
+}
+
+.article-card {
+  padding: 28rpx;
+  margin-bottom: 0;
+  border-radius: var(--radius-lg, 24rpx);
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: 1rpx solid rgba(15, 138, 101, 0.06);
+}
+
+.article-card:active {
+  transform: scale(0.98);
+  box-shadow: var(--shadow-md, 0 4rpx 16rpx rgba(15,138,101,0.10));
+}
+
+.article-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14rpx;
+}
+
+.article-tag {
+  display: inline-block;
+  padding: 4rpx 14rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  background: var(--brand-light, #E8F5F0);
+  color: var(--brand, #0F8A65);
+}
+
+.article-date {
+  font-size: 22rpx;
+  color: var(--text-muted, #9CA3AF);
+}
+
+.article-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--text-primary, #111827);
+  line-height: 1.4;
+  margin-bottom: 10rpx;
+}
+
+.article-summary {
+  font-size: 25rpx;
+  color: var(--text-secondary, #4B5563);
+  line-height: 1.6;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.article-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14rpx;
+  padding-top: 14rpx;
+  border-top: 1rpx solid var(--border, #E5E7EB);
+}
+
+.article-source {
+  font-size: 23rpx;
+  color: var(--text-muted, #9CA3AF);
+}
+
+.article-arrow {
+  font-size: 36rpx;
+  color: var(--border, #E5E7EB);
+  font-weight: 300;
+}
+
+/* ── 加载动画 ─────────────────────────────────────────────────────── */
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  padding: 60rpx 0;
+}
+
+.loading-dot {
+  width: 16rpx;
+  height: 16rpx;
+  background: var(--brand, #0F8A65);
+  border-radius: 50%;
+  animation: bounce 1.2s ease-in-out infinite;
+}
+
+.loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}

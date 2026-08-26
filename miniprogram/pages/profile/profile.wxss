@@ -1,3 +1,274 @@
-.form-row { display: flex; align-items: center; justify-content: space-between; padding: 20rpx 0; border-bottom: 1rpx solid #F1F5F9; }
-.form-row.column { flex-direction: column; align-items: stretch; }
-.form-row textarea { width: 100%; min-height: 140rpx; margin-top: 12rpx; }
+/* ── 头部说明 ─────────────────────────────────────────────────────── */
+
+.intro-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+  padding: 24rpx 28rpx;
+  border-left: 6rpx solid var(--brand, #0F8A65);
+}
+
+.intro-icon {
+  font-size: 40rpx;
+  flex-shrink: 0;
+  margin-top: 4rpx;
+}
+
+.intro-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.intro-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--text-primary, #111827);
+  margin-bottom: 8rpx;
+}
+
+.intro-sub {
+  font-size: 25rpx;
+  color: var(--text-secondary, #4B5563);
+  line-height: 1.6;
+}
+
+/* ── 表单 ─────────────────────────────────────────────────────────── */
+
+.form-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 28rpx;
+}
+
+.form-divider {
+  height: 1rpx;
+  background: var(--border, #E5E7EB);
+  margin: 0 28rpx;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  font-size: 30rpx;
+  color: var(--text-primary, #111827);
+  font-weight: 500;
+  flex-shrink: 0;
+  min-width: 160rpx;
+}
+
+.label-icon {
+  font-size: 28rpx;
+}
+
+.form-optional {
+  font-size: 22rpx;
+  color: var(--text-muted, #9CA3AF);
+  font-weight: 400;
+}
+
+.form-input {
+  flex: 1;
+  text-align: right;
+  font-size: 30rpx;
+  color: var(--text-primary, #111827);
+  height: 60rpx;
+  padding: 0;
+}
+
+.form-input::placeholder {
+  color: var(--text-muted, #9CA3AF);
+}
+
+.input-with-unit {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.input-unit {
+  font-size: 26rpx;
+  color: var(--text-muted, #9CA3AF);
+  flex-shrink: 0;
+}
+
+.picker-value {
+  font-size: 30rpx;
+  color: var(--text-primary, #111827);
+  text-align: right;
+}
+
+.picker-value.placeholder {
+  color: var(--text-muted, #9CA3AF);
+}
+
+/* textarea */
+.form-section {
+  padding: 28rpx 28rpx 24rpx;
+  border-top: 1rpx solid var(--border, #E5E7EB);
+  margin-top: 4rpx;
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 160rpx;
+  font-size: 28rpx;
+  color: var(--text-primary, #111827);
+  line-height: 1.7;
+  margin-top: 16rpx;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.form-textarea::placeholder {
+  color: var(--text-muted, #9CA3AF);
+  font-size: 26rpx;
+}
+
+/* ── BMI 卡片 ─────────────────────────────────────────────────────── */
+
+.bmi-card {
+  padding: 24rpx 28rpx;
+  border-left: 6rpx solid var(--accent, #F59E0B);
+}
+
+.bmi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.bmi-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+}
+
+.bmi-badge {
+  font-size: 23rpx;
+  font-weight: 600;
+  padding: 4rpx 16rpx;
+  border-radius: 999rpx;
+}
+
+.bmi-badge.under   { background: #EFF6FF; color: #3B82F6; }
+.bmi-badge.normal  { background: #E8F5F0; color: #0F8A65; }
+.bmi-badge.over    { background: #FEF3C7; color: #B45309; }
+.bmi-badge.obese   { background: #FEE2E2; color: #EF4444; }
+
+.bmi-value-row {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.bmi-num {
+  font-size: 64rpx;
+  font-weight: 800;
+  color: var(--text-primary, #111827);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.bmi-scale {
+  flex: 1;
+  display: flex;
+  gap: 0;
+}
+
+.scale-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.scale-val {
+  font-size: 20rpx;
+  font-weight: 600;
+}
+
+.scale-val.under   { color: #3B82F6; }
+.scale-val.normal  { color: #0F8A65; }
+.scale-val.over    { color: #B45309; }
+.scale-val.obese   { color: #EF4444; }
+
+.scale-name {
+  font-size: 19rpx;
+  color: var(--text-muted, #9CA3AF);
+}
+
+/* ── TDEE 卡片 ─────────────────────────────────────────────────────── */
+
+.tdee-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+  padding: 24rpx 28rpx;
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  border: 1rpx solid #FCD34D;
+}
+
+.tdee-icon {
+  font-size: 40rpx;
+  flex-shrink: 0;
+  margin-top: 4rpx;
+}
+
+.tdee-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.tdee-title {
+  font-size: 26rpx;
+  color: var(--warn, #B45309);
+  margin-bottom: 8rpx;
+}
+
+.tdee-num {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+  margin-bottom: 10rpx;
+}
+
+.tdee-val {
+  font-size: 52rpx;
+  font-weight: 800;
+  color: var(--warn, #B45309);
+  line-height: 1;
+}
+
+.tdee-unit {
+  font-size: 26rpx;
+  color: var(--warn, #B45309);
+}
+
+.tdee-hint {
+  font-size: 23rpx;
+  color: #92400E;
+  line-height: 1.6;
+}
+
+/* ── 保存提示 ─────────────────────────────────────────────────────── */
+
+.save-hint {
+  text-align: center;
+  font-size: 23rpx;
+  color: var(--text-muted, #9CA3AF);
+  margin-top: 16rpx;
+}

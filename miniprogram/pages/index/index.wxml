@@ -1,22 +1,78 @@
 <view class="container">
-  <view class="hero card">
-    <view class="title">{{greeting}}</view>
-    <view class="subtitle">今日已摄入 {{todayCalories}} / {{todayTarget}} kcal</view>
-    <view class="bar">
-      <view class="bar-fill" style="width: {{heatPercent}}%"></view>
+
+  <!-- Hero 热量卡片 -->
+  <view class="hero-card card">
+    <!-- 顶部：问候语 + 日期 -->
+    <view class="hero-top">
+      <view class="hero-greeting">
+        <text class="greeting-text">{{greeting}}</text>
+        <text class="greeting-date">{{todayDate}}</text>
+      </view>
+      <view class="calorie-ring-wrap">
+        <canvas class="ring" canvas-id="calorieRing" id="calorieRing"></canvas>
+        <view class="ring-center">
+          <text class="ring-num">{{heatPercent}}</text>
+          <text class="ring-unit">%</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 热量进度条 -->
+    <view class="hero-bottom">
+      <view class="calorie-stats">
+        <view class="stat-item">
+          <text class="stat-num">{{todayCalories}}</text>
+          <text class="stat-label">已摄入 kcal</text>
+        </view>
+        <view class="stat-divider"/>
+        <view class="stat-item">
+          <text class="stat-num">{{todayTarget}}</text>
+          <text class="stat-label">目标 kcal</text>
+        </view>
+        <view class="stat-divider"/>
+        <view class="stat-item">
+          <text class="stat-num {{remainingClass}}">{{remaining}}</text>
+          <text class="stat-label">剩余次数</text>
+        </view>
+      </view>
+      <view class="bar">
+        <view class="bar-fill" style="width: {{heatPercent}}%"/>
+      </view>
+      <view class="bar-hint" wx:if="{{heatPercent >= 80}}">
+        <text class="text-warning">已接近目标热量，建议适量控制</text>
+      </view>
     </view>
   </view>
 
-  <view class="grid">
-    <view class="grid-item card" wx:for="{{quickEntries}}" wx:key="label"
+  <!-- 快速入口网格 -->
+  <view class="section-title">快捷功能</view>
+  <view class="quick-grid">
+    <view class="quick-item card"
+          wx:for="{{quickEntries}}" wx:key="label"
           data-path="{{item.path}}" bindtap="goTo">
-      <view class="emoji">{{item.icon}}</view>
-      <view class="label">{{item.label}}</view>
+      <view class="quick-icon" style="background: {{item.bgColor}}">
+        <text>{{item.iconText}}</text>
+      </view>
+      <view class="quick-info">
+        <text class="quick-name">{{item.label}}</text>
+        <text class="quick-desc">{{item.desc}}</text>
+      </view>
+      <text class="quick-arrow">›</text>
     </view>
   </view>
 
-  <view class="card">
-    <view class="title" style="font-size:30rpx">温馨提示</view>
-    <view class="subtitle">本工具仅提供营养与食品安全科普信息，不作为诊疗依据。如有不适请及时就医。</view>
+  <!-- 科普提示卡 -->
+  <view class="tip-card card">
+    <view class="tip-header">
+      <text class="tip-icon">💡</text>
+      <text class="tip-title">健康提示</text>
+    </view>
+    <view class="tip-body">{{tipOfDay}}</view>
   </view>
+
+  <!-- 免责声明 -->
+  <view class="disclaimer">
+    <text>本工具仅提供营养与食品安全科普信息，不作为诊疗依据。\n如有不适请及时就医。</text>
+  </view>
+
 </view>

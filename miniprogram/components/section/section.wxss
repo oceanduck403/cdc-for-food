@@ -1,3 +1,17 @@
-.section { display: flex; justify-content: space-between; align-items: center; padding: 16rpx 24rpx; }
-.title { font-size: 30rpx; font-weight: 600; }
-.more { color: #0F8A65; font-size: 24rpx; }
+/* components/section/section.wxss */
+.section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8rpx 4rpx 16rpx;
+}
+.section .title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--text-primary, #111827);
+}
+.section .more {
+  color: var(--brand, #0F8A65);
+  font-size: 26rpx;
+  font-weight: 500;
+}

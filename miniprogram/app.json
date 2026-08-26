@@ -8,7 +8,8 @@
     "pages/knowledge/knowledge",
     "pages/knowledge-detail/knowledge-detail",
     "pages/gis-map/gis-map",
-    "pages/mine/mine"
+    "pages/mine/mine",
+    "pages/payment/payment"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -18,35 +19,40 @@
     "backgroundColor": "#F5F7FA"
   },
   "tabBar": {
-    "color": "#7A8794",
+    "color": "#9CA3AF",
     "selectedColor": "#0F8A65",
     "backgroundColor": "#FFFFFF",
     "borderStyle": "white",
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "首页"
+        "text": "首页",
+        "iconPath": "images/home.png",
+        "selectedIconPath": "images/home_active.png"
       },
       {
         "pagePath": "pages/knowledge/knowledge",
-        "text": "知识库"
+        "text": "知识库",
+        "iconPath": "images/knowledge.png",
+        "selectedIconPath": "images/knowledge_active.png"
       },
       {
         "pagePath": "pages/gis-map/gis-map",
-        "text": "风险地图"
+        "text": "风险地图",
+        "iconPath": "images/map.png",
+        "selectedIconPath": "images/map_active.png"
       },
       {
         "pagePath": "pages/mine/mine",
-        "text": "我的"
+        "text": "我的",
+        "iconPath": "images/mine.png",
+        "selectedIconPath": "images/mine_active.png"
       }
     ]
   },
   "permission": {
     "scope.userLocation": {
       "desc": "用于在地图上显示附近的食品安全风险点"
-    },
-    "scope.camera": {
-      "desc": "用于拍照进行膳食评估"
     }
   },
   "requiredPrivateInfos": [

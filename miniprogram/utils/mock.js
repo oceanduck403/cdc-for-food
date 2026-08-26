@@ -142,10 +142,11 @@ const mushroomMarkers = {
 
 const mealAnalyzeResult = {
   mealId: 'demo-meal-001',
+  totalKcal: 440, totalProtein: 17, totalFat: 13.6, totalCarbs: 61, totalSodium: 680,
   items: [
-    { name: '米饭', grams: 180, kcal: 234, protein: 4, fat: 0.6, carbs: 51 },
-    { name: '番茄炒蛋', grams: 120, kcal: 168, protein: 11, fat: 11, carbs: 7 },
-    { name: '清炒小白菜', grams: 100, kcal: 38, protein: 2, fat: 2, carbs: 3 }
+    { name: '米饭', grams: 180, kcal: 234, protein: 4, fat: 0.6, carbs: 51, percent: 53 },
+    { name: '番茄炒蛋', grams: 120, kcal: 168, protein: 11, fat: 11, carbs: 7, percent: 38 },
+    { name: '清炒小白菜', grams: 100, kcal: 38, protein: 2, fat: 2, carbs: 3, percent: 9 }
   ]
 };
 

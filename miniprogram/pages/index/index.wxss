@@ -1,7 +1,244 @@
-.hero { padding: 36rpx; }
-.bar { margin-top: 24rpx; height: 16rpx; background: #E5E7EB; border-radius: 8rpx; overflow: hidden; }
-.bar-fill { height: 100%; background: linear-gradient(90deg, #0F8A65, #34D399); }
-.grid { display: flex; flex-wrap: wrap; justify-content: space-between; }
-.grid-item { width: 48%; text-align: center; padding: 36rpx 16rpx; }
-.emoji { font-size: 56rpx; }
-.label { margin-top: 12rpx; color: #1F2D3D; font-size: 28rpx; }
+/* ── Hero 热量卡片 ──────────────────────────────────────────────────────── */
+
+.hero-card {
+  padding: 32rpx;
+  background: linear-gradient(135deg, #0F8A65 0%, #10B981 100%);
+  border: none;
+  box-shadow: 0 8rpx 32rpx rgba(15, 138, 101, 0.30);
+  margin-bottom: 28rpx;
+}
+
+.hero-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.hero-greeting {
+  display: flex;
+  flex-direction: column;
+}
+
+.greeting-text {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1.2;
+}
+
+.greeting-date {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 8rpx;
+}
+
+/* 环形进度（圆弧） */
+.calorie-ring-wrap {
+  position: relative;
+  width: 120rpx;
+  height: 120rpx;
+}
+
+.ring {
+  width: 120rpx;
+  height: 120rpx;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.ring-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: baseline;
+  color: #FFFFFF;
+}
+
+.ring-num {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.ring-unit {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 热量统计 */
+.hero-bottom {
+  margin-top: 24rpx;
+}
+
+.calorie-stats {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-num {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.stat-num.over { color: #FCD34D; }
+.stat-num.ok   { color: #6EE7B7; }
+.stat-num.low  { color: rgba(255,255,255,0.7); }
+
+.stat-label {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.65);
+  margin-top: 2rpx;
+}
+
+.stat-divider {
+  width: 1rpx;
+  height: 36rpx;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* 进度条（覆盖为白色） */
+.hero-card .bar {
+  height: 12rpx;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999rpx;
+  overflow: hidden;
+}
+
+.hero-card .bar-fill {
+  height: 100%;
+  background: #FFFFFF;
+  border-radius: 999rpx;
+}
+
+.bar-hint {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: center;
+}
+
+/* ── 快速入口网格 ──────────────────────────────────────────────────────── */
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--text-primary, #111827);
+  margin-bottom: 16rpx;
+  padding-left: 4rpx;
+}
+
+.quick-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-bottom: 28rpx;
+}
+
+.quick-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 28rpx;
+  margin-bottom: 0;
+  border-radius: var(--radius-lg, 24rpx);
+  border: 1rpx solid rgba(15, 138, 101, 0.06);
+  box-shadow: var(--shadow-sm, 0 1rpx 4rpx rgba(15,138,101,0.06));
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.quick-item:active {
+  transform: scale(0.98);
+  box-shadow: var(--shadow-md, 0 4rpx 16rpx rgba(15,138,101,0.10));
+}
+
+.quick-icon {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: var(--radius-md, 16rpx);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44rpx;
+  flex-shrink: 0;
+}
+
+.quick-info {
+  flex: 1;
+  margin-left: 24rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.quick-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+  line-height: 1.3;
+}
+
+.quick-desc {
+  font-size: 24rpx;
+  color: var(--text-muted, #9CA3AF);
+  margin-top: 4rpx;
+  line-height: 1.4;
+}
+
+.quick-arrow {
+  font-size: 40rpx;
+  color: var(--border, #E5E7EB);
+  font-weight: 300;
+  flex-shrink: 0;
+}
+
+/* ── 科普提示卡 ───────────────────────────────────────────────────────── */
+
+.tip-card {
+  border-left: 6rpx solid var(--accent, #F59E0B);
+  padding: 24rpx 28rpx;
+  background: var(--bg-white, #FFFFFF);
+}
+
+.tip-header {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  margin-bottom: 12rpx;
+}
+
+.tip-icon { font-size: 32rpx; }
+
+.tip-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+}
+
+.tip-body {
+  font-size: 26rpx;
+  color: var(--text-secondary, #4B5563);
+  line-height: 1.7;
+}
+
+/* ── 免责声明 ─────────────────────────────────────────────────────────── */
+
+.disclaimer {
+  margin-top: 24rpx;
+  padding: 20rpx 16rpx;
+  text-align: center;
+}
+
+.disclaimer text {
+  font-size: 22rpx;
+  color: var(--text-muted, #9CA3AF);
+  line-height: 1.8;
+}

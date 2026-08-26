@@ -19,12 +19,9 @@ App({
     }
 
     // 收集系统信息
-    if (wx.getSystemInfo) {
-      wx.getSystemInfo({
-        success: (res) => {
-          this.globalData.systemInfo = res;
-        }
-      });
+    if (wx.getSystemSetting) {
+      const info = wx.getSystemSetting();
+      this.globalData.systemInfo = info;
     }
 
     // 隐私协议二次确认（微信要求 2023-09 起弹窗）

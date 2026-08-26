@@ -1,48 +1,135 @@
 <view class="container">
-  <view class="card">
-    <view class="title">个人健康档案</view>
-    <view class="subtitle">用于个性化营养建议，数据仅保存在您授权的服务端。</view>
+
+  <!-- 头部说明卡 -->
+  <view class="intro-card card">
+    <view class="intro-icon">📋</view>
+    <view class="intro-text">
+      <text class="intro-title">个人健康档案</text>
+      <text class="intro-sub">用于个性化营养建议，数据仅保存在您授权的服务端，严格保密。</text>
+    </view>
   </view>
 
-  <view class="card">
+  <!-- 表单 -->
+  <view class="form-card card">
+    <!-- 年龄 -->
     <view class="form-row">
-      <text>年龄</text>
-      <input type="number" data-field="age" value="{{profile.age}}" bindinput="onInput" placeholder="如 35"/>
+      <view class="form-label">
+        <text class="label-icon">🎂</text>
+        <text>年龄</text>
+      </view>
+      <input class="form-input" type="number"
+             data-field="age" value="{{profile.age}}"
+             bindinput="onInput" placeholder="如 35"/>
     </view>
+    <view class="form-divider"/>
+
+    <!-- 性别 -->
     <view class="form-row">
-      <text>性别</text>
+      <view class="form-label">
+        <text class="label-icon">⚧</text>
+        <text>性别</text>
+      </view>
       <picker mode="selector" range="{{['男','女']}}" data-field="sex"
               value="{{sexIndex}}" bindchange="onPickSex">
-        <view>{{profile.sex === 'female' ? '女' : '男'}}</view>
+        <view class="picker-value {{profile.sex ? '' : 'placeholder'}}">
+          {{profile.sex === 'female' ? '女' : profile.sex === 'male' ? '男' : '请选择'}}
+        </view>
       </picker>
     </view>
+    <view class="form-divider"/>
+
+    <!-- 身高 -->
     <view class="form-row">
-      <text>身高 (cm)</text>
-      <input type="digit" data-field="heightCm" value="{{profile.heightCm}}" bindinput="onInput"/>
+      <view class="form-label">
+        <text class="label-icon">📏</text>
+        <text>身高</text>
+      </view>
+      <view class="input-with-unit">
+        <input class="form-input" type="digit"
+               data-field="heightCm" value="{{profile.heightCm}}"
+               bindinput="onInput" placeholder="170"/>
+        <text class="input-unit">cm</text>
+      </view>
     </view>
+    <view class="form-divider"/>
+
+    <!-- 体重 -->
     <view class="form-row">
-      <text>体重 (kg)</text>
-      <input type="digit" data-field="weightKg" value="{{profile.weightKg}}" bindinput="onInput"/>
+      <view class="form-label">
+        <text class="label-icon">⚖️</text>
+        <text>体重</text>
+      </view>
+      <view class="input-with-unit">
+        <input class="form-input" type="digit"
+               data-field="weightKg" value="{{profile.weightKg}}"
+               bindinput="onInput" placeholder="65"/>
+        <text class="input-unit">kg</text>
+      </view>
     </view>
+    <view class="form-divider"/>
+
+    <!-- 活动水平 -->
     <view class="form-row">
-      <text>活动水平</text>
+      <view class="form-label">
+        <text class="label-icon">🏃</text>
+        <text>活动水平</text>
+      </view>
       <picker mode="selector" range="{{activityOptions}}" range-key="label"
               data-field="activityLevel" value="{{activityIndex}}"
               bindchange="onPickActivity">
-        <view>{{profile.activityLevelLabel}}</view>
+        <view class="picker-value {{profile.activityLevelLabel ? '' : 'placeholder'}}">
+          {{profile.activityLevelLabel || '请选择'}}
+        </view>
       </picker>
     </view>
-    <view class="form-row column">
-      <text>健康备注</text>
-      <textarea data-field="healthNotes" value="{{profile.healthNotes}}" bindinput="onInput"
-                placeholder="如：高血压、糖尿病等（选填）"/>
+
+    <!-- 健康备注 -->
+    <view class="form-section">
+      <view class="form-label">
+        <text class="label-icon">💊</text>
+        <text>健康备注</text>
+        <text class="form-optional">选填</text>
+      </view>
+      <textarea class="form-textarea"
+                data-field="healthNotes" value="{{profile.healthNotes}}"
+                bindinput="onInput"
+                placeholder="如：高血压、糖尿病、食物过敏等（有助于更精准的营养建议）"
+                maxlength="200"/>
     </view>
   </view>
 
-  <view class="card" wx:if="{{tdee}}">
-    <view>预估每日总能量需求：<text class="text-success">{{tdee}} kcal</text></view>
-    <view class="subtitle">仅供膳食参考，非医学建议。</view>
+  <!-- BMI 预览 -->
+  <view class="bmi-card card" wx:if="{{bmiResult.show}}">
+    <view class="bmi-header">
+      <text class="bmi-label">BMI 体质指数</text>
+      <view class="bmi-badge {{bmiResult.cls}}">{{bmiResult.label}}</view>
+    </view>
+    <view class="bmi-value-row">
+      <text class="bmi-num">{{bmiResult.value}}</text>
+      <view class="bmi-scale">
+        <view class="scale-item"><text class="scale-val under">＜18.5</text><text class="scale-name">偏瘦</text></view>
+        <view class="scale-item"><text class="scale-val normal">18.5-24</text><text class="scale-name">正常</text></view>
+        <view class="scale-item"><text class="scale-val over">24-28</text><text class="scale-name">超重</text></view>
+        <view class="scale-item"><text class="scale-val obese">＞28</text><text class="scale-name">肥胖</text></view>
+      </view>
+    </view>
   </view>
 
-  <button class="btn-primary" bindtap="save" disabled="{{saving}}">保存档案</button>
+  <!-- TDEE 热量需求 -->
+  <view class="tdee-card card" wx:if="{{tdee}}">
+    <view class="tdee-icon">🔥</view>
+    <view class="tdee-content">
+      <text class="tdee-title">预估每日总能量需求</text>
+      <view class="tdee-num"><text class="tdee-val">{{tdee}}</text><text class="tdee-unit">kcal / 天</text></view>
+      <text class="tdee-hint">基于您的身高、体重、年龄、活动水平计算，仅供膳食参考，非医学建议。</text>
+    </view>
+  </view>
+
+  <!-- 保存按钮 -->
+  <button class="btn-primary" bindtap="save" disabled="{{saving}}">
+    {{saving ? '保存中…' : '保存档案'}}
+  </button>
+
+  <view class="save-hint">保存后将自动用于个性化营养建议</view>
+
 </view>

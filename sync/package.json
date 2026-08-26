@@ -1,0 +1,13 @@
+{
+  "name": "cdc-knowledge-sync",
+  "version": "1.0.0",
+  "description": "疾控知识库 RSS 同步工具",
+  "main": "sync.js",
+  "type": "module",
+  "scripts": {
+    "sync": "node sync.js"
+  },
+  "dependencies": {
+    "rss-parser": "^3.13.0"
+  }
+}

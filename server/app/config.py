@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     wechat_appid: str = ""
     wechat_secret: str = ""
 
+    # 微信支付配置
+    wechat_mchid: str = ""
+    wechat_mchkey: str = ""
+    wechat_notify_url: str = ""
+
     vision_provider: str = "baidu"
     vision_api_key: str = ""
     vision_api_secret: str = ""

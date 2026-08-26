@@ -58,6 +58,16 @@ _plan_helper.md
 _bootstrap_dirs.ps1
 _brief_extracted/
 
+# Test images and data (local testing only)
+测试/
+*.jpg
+*.jpeg
+*.png
+*.gif
+
+# Data files (local development only)
+*.csv
+
 # 甲方原始资料（含项目编号、预算、联系人等敏感信息，不上传公开仓库）
 *.docx
 !docs/**/*.docx

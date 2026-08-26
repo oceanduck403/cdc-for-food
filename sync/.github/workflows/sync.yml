@@ -1,0 +1,53 @@
+# GitHub Actions 自动同步工作流
+name: Sync Knowledge Base
+
+on:
+  # 每天早上 8 点自动运行
+  schedule:
+    - cron: '0 0 * * *'
+  
+  # 也可以手动触发
+  workflow_dispatch:
+  
+  # 推送代码时运行
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install dependencies
+        run: |
+          cd sync
+          npm install
+          
+      - name: Run sync
+        run: |
+          cd sync
+          node sync.js
+          
+      - name: Commit and push
+        run: |
+          cd sync
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # 检查是否有变更
+          if git diff --quiet data/; then
+            echo "No changes to commit"
+          else
+            git add data/
+            git commit -m "📚 更新知识库 $(date '+%Y-%m-%d %H:%M')"
+            git push
+          fi

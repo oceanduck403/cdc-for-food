@@ -1,5 +1,20 @@
-/* styles/theme.wxss  共享设计 token */
-.brand-green { color: #0F8A65; }
-.bg-soft { background: #F5F7FA; }
-.text-muted { color: #9CA3AF; }
-.divider { height: 1rpx; background: #F1F5F9; }
+/* styles/theme.wxss — 共享设计 token（与 app.wxss CSS 变量保持一致） */
+
+.brand-green  { color: var(--brand, #0F8A65); }
+.brand-light   { color: var(--brand-light, #E8F5F0); }
+.bg-soft       { background: var(--bg, #F2F5F8); }
+.text-muted    { color: var(--text-muted, #9CA3AF); }
+.text-success  { color: var(--brand, #0F8A65); }
+.text-warning  { color: var(--warn, #B45309); }
+.text-danger   { color: var(--danger, #EF4444); }
+.divider       { height: 1rpx; background: var(--border, #E5E7EB); }
+
+/* 阴影工具类 */
+.shadow-sm { box-shadow: var(--shadow-sm, 0 1rpx 4rpx rgba(15,138,101,0.06)); }
+.shadow-md { box-shadow: var(--shadow-md, 0 4rpx 16rpx rgba(15,138,101,0.10)); }
+.shadow-lg { box-shadow: var(--shadow-lg, 0 8rpx 32rpx rgba(15,138,101,0.14)); }
+
+/* 圆角 */
+.radius-sm { border-radius: var(--radius-sm, 12rpx); }
+.radius-md { border-radius: var(--radius-md, 16rpx); }
+.radius-lg { border-radius: var(--radius-lg, 24rpx); }

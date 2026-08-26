@@ -1,19 +1,51 @@
 <view class="container">
-  <view class="card">
-    <view class="title">欢迎使用</view>
-    <view class="subtitle">营养与食品安全 AI 小助手</view>
+
+  <!-- 品牌区 -->
+  <view class="brand-section">
+    <view class="brand-logo">
+      <text class="brand-emoji">🏥</text>
+    </view>
+    <text class="brand-title">营养健康 AI 小助手</text>
+    <text class="brand-subtitle">成都市疾病预防控制中心</text>
   </view>
 
-  <view class="card">
-    <view>隐私协议（{{privacyVersion}}）</view>
-    <view class="subtitle" bindtap="openPrivacy">点击查看完整协议</view>
-    <view class="row">
-      <switch checked="{{privacyAccepted}}" bindchange="onAcceptPrivacy"/>
-      <text>已阅读并同意《隐私协议》与《用户服务条款》</text>
+  <!-- 功能介绍 -->
+  <view class="feature-list card">
+    <view class="feature-item" wx:for="{{features}}" wx:key="icon">
+      <text class="feature-icon">{{item.icon}}</text>
+      <view class="feature-text">
+        <text class="feature-name">{{item.name}}</text>
+        <text class="feature-desc">{{item.desc}}</text>
+      </view>
     </view>
   </view>
 
-  <button class="btn-primary" bindtap="onWechatLogin" disabled="{{!privacyAccepted}}">微信一键登录</button>
+  <!-- 隐私协议 -->
+  <view class="privacy-card card">
+    <view class="privacy-row" bindtap="togglePrivacy">
+      <view class="checkbox {{privacyAccepted ? 'checked' : ''}}">
+        <text wx:if="{{privacyAccepted}}">✓</text>
+      </view>
+      <view class="privacy-content">
+        <text class="privacy-main">已阅读并同意</text>
+        <text class="privacy-link" bindtap="openPrivacy">《隐私协议》</text>
+        <text class="privacy-main">与</text>
+        <text class="privacy-link" bindtap="openTerms">《用户服务条款》</text>
+      </view>
+    </view>
+  </view>
 
-  <view class="footnote">登录即代表您同意我们按照协议收集与使用必要的个人信息（最小必要原则）。</view>
+  <!-- 登录按钮 -->
+  <button class="btn-primary login-btn"
+          bindtap="onWechatLogin"
+          disabled="{{!privacyAccepted}}">
+    <text class="btn-icon">🌿</text>
+    微信一键登录
+  </button>
+
+  <!-- 页脚 -->
+  <view class="login-footer">
+    <text>登录即代表您同意我们按照协议收集与使用必要的个人信息\n（最小必要原则，数据仅用于个性化营养建议）</text>
+  </view>
+
 </view>

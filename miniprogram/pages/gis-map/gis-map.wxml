@@ -1,13 +1,188 @@
-<view class="map-wrap">
-  <map id="mushroom-map" latitude="{{latitude}}" longitude="{{longitude}}"
-       markers="{{markers}}" scale="11" show-location="true"
-       bindmarkertap="onMarkerTap" style="width:100%;height:100%"/>
-</view>
+<view class="container">
 
-<view class="detail card" wx:if="{{selected}}">
-  <view class="title">{{selected.name}}</view>
-  <view class="subtitle">{{selected.species}} · 风险等级：{{selected.level}}</view>
-  <view>{{selected.description}}</view>
-  <view class="text-warning">中毒高发期：{{selected.period}}</view>
-  <view class="text-muted">如误食请立即就医。</view>
+  <!-- 顶部工具栏 -->
+  <view class="toolbar">
+    <!-- 离线模式提示 -->
+    <view class="offline-tip" wx:if="{{offlineMode}}">
+      <text>📴 离线模式</text>
+    </view>
+
+    <!-- 区域选择 -->
+    <view class="region-picker">
+      <picker mode="selector" range="{{regions}}" bindchange="onRegionChange">
+        <view class="picker-value">
+          <text>{{currentRegion}}</text>
+          <text class="arrow">▼</text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 工具按钮 -->
+    <view class="tool-buttons">
+      <view class="tool-btn {{markMode ? 'active' : ''}}" bindtap="toggleMarkMode">
+        <text>{{markMode ? '✓ 标记中' : '📍 标记'}}</text>
+      </view>
+      <view class="tool-btn" bindtap="locateToCurrent">
+        <text>📍 定位</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 标记模式提示 -->
+  <view class="mark-mode-tip" wx:if="{{markMode}}">
+    <text>点击地图选择位置添加标记</text>
+    <text class="tip-cancel" bindtap="toggleMarkMode">取消</text>
+  </view>
+
+  <!-- 地图组件 -->
+  <map id="mushroom-map" class="map-wrap"
+       latitude="{{latitude}}" longitude="{{longitude}}" scale="{{scale}}"
+       markers="{{markers}}"
+       show-location="true"
+       bindtap="onMapTap"
+       bindmarkertap="onMarkerTap"
+       enable-poi="true"
+       enable-traffic="false"
+       show-compass="true"
+       show-scale="true"/>
+
+  <!-- 底部信息栏 -->
+  <view class="info-bar">
+    <view class="info-item">
+      <text class="info-num">{{presetMarkers.length}}</text>
+      <text class="info-label">系统点位</text>
+    </view>
+    <view class="info-divider"/>
+    <view class="info-item">
+      <text class="info-num">{{userMarkers.length}}</text>
+      <text class="info-label">我的标记</text>
+    </view>
+    <view class="info-divider"/>
+    <view class="info-item">
+      <text class="info-num {{showUserMarkers ? '' : 'muted'}}">{{showUserMarkers ? '显示' : '隐藏'}}</text>
+      <text class="info-label" bindtap="toggleUserMarkers">我的标记</text>
+    </view>
+    <view class="info-action" bindtap="openAddForm">+ 添加</view>
+  </view>
+
+  <!-- 详情弹窗 -->
+  <view class="detail-overlay" wx:if="{{selected}}" bindtap="closeDetail">
+    <view class="detail card" catchtap="preventBubble" wx:if="{{selected}}">
+      <view class="detail-header">
+        <view class="title-row">
+          <text class="detail-title">{{selected.name}}</text>
+          <view class="level-badge {{selected.level === '高风险' ? 'high' : (selected.level === '中风险' ? 'medium' : 'low')}}">
+            {{selected.level}}
+          </view>
+        </view>
+        <view class="close-btn" bindtap="closeDetail">×</view>
+      </view>
+
+      <view class="detail-body">
+        <view class="detail-row" wx:if="{{selected.species}}">
+          <text class="detail-label">疑似品种</text>
+          <text class="detail-value">{{selected.species}}</text>
+        </view>
+        <view class="detail-row" wx:if="{{selected.period}}">
+          <text class="detail-label">高发期</text>
+          <text class="detail-value warn">{{selected.period}}</text>
+        </view>
+        <view class="detail-row" wx:if="{{selected.region}}">
+          <text class="detail-label">所属区域</text>
+          <text class="detail-value">{{selected.region}}</text>
+        </view>
+        <view class="detail-row" wx:if="{{selected.createdAt}}">
+          <text class="detail-label">标记时间</text>
+          <text class="detail-value muted">{{selected.createdAt}}</text>
+        </view>
+        <view class="detail-desc" wx:if="{{selected.description}}">
+          {{selected.description}}
+        </view>
+        <view class="detail-warning" wx:if="{{selected.level === '高风险'}}">
+          ⚠️ 高风险区域，请勿采摘任何野生菌！
+        </view>
+      </view>
+
+      <!-- 用户标记操作按钮 -->
+      <view class="detail-actions" wx:if="{{selected.isUser}}">
+        <view class="action-btn danger" bindtap="deleteMarker">删除标记</view>
+      </view>
+
+      <view class="detail-footer">
+        <text>如误食请立即就医，不要延误！</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 添加标记表单 -->
+  <view class="form-overlay" wx:if="{{showAddForm}}" bindtap="closeAddForm">
+    <view class="add-form card" catchtap="preventBubble">
+      <view class="form-header">
+        <text class="form-title">添加标记点</text>
+        <view class="close-btn" bindtap="closeAddForm">×</view>
+      </view>
+
+      <view class="form-body">
+        <!-- 位置信息 -->
+        <view class="form-hint" wx:if="{{newMarker.lat}}">
+          📍 位置: {{newMarker.lat.toFixed(4)}}, {{newMarker.lng.toFixed(4)}}
+        </view>
+
+        <!-- 名称 -->
+        <view class="form-item">
+          <text class="form-label required">标记名称</text>
+          <input class="form-input" placeholder="如: 龙泉山入口处" value="{{newMarker.name}}"
+                 data-field="name" bindinput="onFormInput"/>
+        </view>
+
+        <!-- 疑似品种 -->
+        <view class="form-item">
+          <text class="form-label">疑似品种</text>
+          <input class="form-input" placeholder="如: 疑似致命鹅膏" value="{{newMarker.species}}"
+                 data-field="species" bindinput="onFormInput"/>
+        </view>
+
+        <!-- 风险等级 -->
+        <view class="form-item">
+          <text class="form-label">风险等级</text>
+          <picker mode="selector" range="{{['高风险', '中风险', '低风险']}}" bindchange="onLevelChange">
+            <view class="form-picker">
+              <text>{{newMarker.level}}</text>
+              <text class="arrow">▼</text>
+            </view>
+          </picker>
+        </view>
+
+        <!-- 高发期 -->
+        <view class="form-item">
+          <text class="form-label">高发期</text>
+          <input class="form-input" placeholder="如: 6-9月" value="{{newMarker.period}}"
+                 data-field="period" bindinput="onFormInput"/>
+        </view>
+
+        <!-- 备注 -->
+        <view class="form-item">
+          <text class="form-label">备注信息</text>
+          <textarea class="form-textarea" placeholder="其他说明..." value="{{newMarker.description}}"
+                    data-field="description" bindinput="onFormInput"/>
+        </view>
+      </view>
+
+      <view class="form-actions">
+        <view class="form-btn cancel" bindtap="closeAddForm">取消</view>
+        <view class="form-btn submit" bindtap="saveMarker">保存</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 更多操作菜单 -->
+  <view class="more-menu card" wx:if="{{userMarkers.length > 0}}">
+    <view class="menu-item" bindtap="exportMarkers">
+      <text>📤 导出数据</text>
+    </view>
+    <view class="menu-item danger" bindtap="clearAllMarkers">
+      <text>🗑 清空标记</text>
+    </view>
+  </view>
+
 </view>

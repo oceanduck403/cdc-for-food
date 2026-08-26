@@ -6,12 +6,20 @@ const mock = require('./mock.js');
 const mockRoutes = [
   { match: /\/reports\/today$/, data: () => mock.todaySummary },
   { match: /\/knowledge(\?.*)?$/, data: (url) => {
+    // 外部知识库模式
+    if (config.knowledgeBase && config.knowledgeBase.enabled) {
+      return fetchExternalKnowledge(url);
+    }
     const u = new URL(url.startsWith('http') ? url : 'http://x' + url);
     const cat = u.searchParams.get('category') || 'guide';
     const list = (mock.knowledgeMap[cat] || mock.knowledgeMap.guide).items;
     return { items: list };
   }},
   { match: /\/knowledge\/(.+)$/, data: (url) => {
+    // 外部知识库模式
+    if (config.knowledgeBase && config.knowledgeBase.enabled) {
+      return fetchExternalArticle(url);
+    }
     const m = url.match(/\/knowledge\/([^?&#/]+)/);
     const id = m ? m[1] : '';
     return mock.knowledgeArticles[id] || {
@@ -43,6 +51,69 @@ const mockRoutes = [
   }), method: 'POST' }
 ];
 
+// 外部知识库：获取文章列表
+async function fetchExternalKnowledge(url) {
+  const u = new URL(url.startsWith('http') ? url : 'http://x' + url);
+  const category = u.searchParams.get('category') || 'guide';
+  
+  try {
+    const resp = await wx.request({
+      url: `${config.knowledgeBase.baseUrl}/knowledge-index.json`,
+      method: 'GET'
+    });
+    
+    if (resp.statusCode === 200 && resp.data) {
+      const catData = resp.data[category];
+      if (catData && catData.items) {
+        return { items: catData.items };
+      }
+    }
+  } catch (e) {
+    console.error('外部知识库加载失败', e);
+  }
+  
+  // 降级到 mock
+  const list = (mock.knowledgeMap[category] || mock.knowledgeMap.guide).items;
+  return { items: list };
+}
+
+// 外部知识库：获取单篇文章
+async function fetchExternalArticle(url) {
+  const m = url.match(/\/knowledge\/([^?&#/]+)/);
+  const id = m ? m[1] : '';
+  
+  try {
+    const resp = await wx.request({
+      url: `${config.knowledgeBase.baseUrl}/knowledge.json`,
+      method: 'GET'
+    });
+    
+    if (resp.statusCode === 200 && resp.data && resp.data.items) {
+      const article = resp.data.items.find(item => item.id === id);
+      if (article) {
+        return {
+          id: article.id,
+          title: article.title,
+          source: article.source,
+          updatedAt: article.updatedAt,
+          contentHtml: `<p>${article.summary}</p><p><a href="${article.originalUrl}">阅读原文</a></p>`
+        };
+      }
+    }
+  } catch (e) {
+    console.error('外部知识库加载失败', e);
+  }
+  
+  // 降级到 mock
+  return mock.knowledgeArticles[id] || {
+    id,
+    title: '文章不存在',
+    source: '未知来源',
+    updatedAt: new Date().toISOString().split('T')[0],
+    contentHtml: '<p>无法加载文章内容，请稍后重试。</p>'
+  };
+}
+
 function findMock(url, method) {
   for (const r of mockRoutes) {
     if (r.match.test(url) && (!r.method || r.method === method)) {
@@ -54,7 +125,7 @@ function findMock(url, method) {
 
 function request({ url, method = 'GET', data = {}, header = {}, showLoading = true, silent = false }) {
   const app = getApp();
-  const token = app.globalData.token || wx.getStorageSync('token') || '';
+  const token = (app && app.globalData && app.globalData.token) || wx.getStorageSync('token') || '';
 
   if (showLoading) {
     wx.showLoading({ title: '加载中', mask: true });

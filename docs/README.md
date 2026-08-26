@@ -16,6 +16,8 @@
 | 类目审核说明 | [legal/category-review-doc.md](./legal/category-review-doc.md) | 健康保健类目审核提交用 |
 | ICP 备案模板 | [legal/icp-template.md](./legal/icp-template.md) | 备案信息模板与流程 |
 | 生产环境部署手册 | [deploy-prod-manual.md](./deploy-prod-manual.md) | Nginx + HTTPS + Docker + systemd |
+| 微信支付接入 | [payment-guide.md](./payment-guide.md) | 微信支付开通、配置、测试指南 |
+| 离线地图功能 | [offline-map.md](./offline-map.md) | 毒蘑菇风险地图离线使用说明 |
 
 ## 协作约定
 

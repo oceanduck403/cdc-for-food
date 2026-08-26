@@ -1,21 +1,63 @@
 <view class="container">
-  <view class="card search">
-    <input placeholder="搜索知识关键词" value="{{keyword}}" bindinput="onSearch"/>
+
+  <!-- 搜索框 -->
+  <view class="search-wrap">
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <input class="search-input"
+             placeholder="搜索知识文章"
+             value="{{keyword}}"
+             bindinput="onSearch"
+             bindconfirm="onSearch"/>
+      <text class="search-clear" wx:if="{{keyword}}" catchtap="clearSearch">✕</text>
+    </view>
   </view>
 
-  <scroll-view scroll-x="true" class="tabs">
-    <view wx:for="{{categories}}" wx:key="id"
-          class="tab {{active === item.id ? 'active' : ''}}"
-          data-id="{{item.id}}" bindtap="switchCategory">{{item.name}}</view>
+  <!-- 分类标签 -->
+  <scroll-view scroll-x="true" class="tab-scroll">
+    <view class="tab-list">
+      <view wx:for="{{categories}}" wx:key="id"
+            class="tab-item {{active === item.id ? 'active' : ''}}"
+            data-id="{{item.id}}" bindtap="switchCategory">
+        <text>{{item.icon}}</text>
+        <text>{{item.name}}</text>
+      </view>
+    </view>
   </scroll-view>
 
-  <view class="card list" wx:if="{{!loading}}">
-    <view wx:for="{{list}}" wx:key="id" class="row" data-id="{{item.id}}" bindtap="openArticle">
-      <view class="title" style="font-size:30rpx">{{item.title}}</view>
-      <view class="subtitle">{{item.summary}}</view>
+  <!-- 文章列表 -->
+  <view class="article-list" wx:if="{{!loading}}">
+    <block wx:if="{{list.length}}">
+      <view class="article-card card"
+            wx:for="{{list}}" wx:key="id"
+            data-id="{{item.id}}" bindtap="openArticle">
+        <view class="article-top">
+          <view class="article-tag" style="background: {{item.tagColor || '#E8F5F0'}}; color: {{item.tagColor ? '#fff' : '#0F8A65'}}">
+            {{item.category || '知识'}}
+          </view>
+          <text class="article-date">{{item.updatedAt}}</text>
+        </view>
+        <view class="article-title">{{item.title}}</view>
+        <view class="article-summary">{{item.summary}}</view>
+        <view class="article-footer">
+          <text class="article-source">{{item.source}}</text>
+          <text class="article-arrow">›</text>
+        </view>
+      </view>
+    </block>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:else>
+      <text class="empty-state__icon">📭</text>
+      <text class="empty-state__text">暂无相关文章</text>
     </view>
-    <view wx:if="{{!list.length}}" class="text-muted">暂无内容</view>
   </view>
 
-  <view class="card" wx:else>加载中…</view>
+  <!-- 加载中 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <view class="loading-dot"/>
+    <view class="loading-dot"/>
+    <view class="loading-dot"/>
+  </view>
+
 </view>
