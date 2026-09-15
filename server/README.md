@@ -1,6 +1,6 @@
 # 营养健康 AI 小助手 · 后端服务（FastAPI）
 
-提供微信小程序所需的全部 API：用户档案、AI 识图膳食评估、个性化报告、知识库、毒蘑菇 GIS、管理后台等。
+提供微信小程序 API：用户档案、AI 识图膳食评估、个性化报告、知识库、毒蘑菇 GIS、管理后台，以及文章互动与站内消息。
 
 ## 目录结构
 
@@ -40,6 +40,8 @@ python main.py
 - 鉴权使用 JWT（`Authorization: Bearer <token>`）
 - 限流键 `user:{id}:{day}`，由 Redis 实现每日分析次数闸口
 - 商用菜品识别 API 通过 `vision_service.py` 抽象，便于切换供应商
+- 文章列表、详情、点赞、收藏、评论、举报和站内消息位于 `/api/v1/community`；个人操作需登录，举报处理仅管理员可用。`alembic/versions/0002_community.py` 包含互动数据表迁移。
+- 患者在 `/api/v1/users/me` 修改昵称；头像通过带登录令牌的 `POST /api/v1/users/me/avatar` 上传。服务端只接收 5 MB 以内的有效 JPG/PNG/WebP，裁成 512×512 JPEG 并清除原图元数据，文件位于 `uploads/avatars/`。Docker Compose 已挂载 `./uploads:/app/uploads`，部署时需保留该目录或迁移到对象存储；此入口只用于个人头像，不用于科普素材。
 
 ## 下一步
 

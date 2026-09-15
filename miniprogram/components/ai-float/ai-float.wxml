@@ -1,0 +1,6 @@
+<view wx:if="{{visible}}" class="float-wrap" style="left: {{x}}px; top: {{y}}px;">
+  <button class="ai-orb {{dragging ? 'is-dragging' : ''}}" aria-label="打开 AI 咨询，可拖动位置" hover-class="orb-pressed" catchtouchstart="touchStart" catchtouchmove="touchMove" catchtouchend="touchEnd" catchtouchcancel="touchCancel" bindtap="openAiPage">
+    <view class="mascot"><view class="mascot-ear ear-left"></view><view class="mascot-ear ear-right"></view><view class="mascot-eye eye-left"></view><view class="mascot-eye eye-right"></view><view class="mascot-smile"></view><view class="mascot-shine"></view></view>
+    <text class="orb-label">AI 咨询</text>
+  </button>
+</view>

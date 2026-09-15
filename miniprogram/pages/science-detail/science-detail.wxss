@@ -1,0 +1,53 @@
+/* pages/science-detail/science-detail.wxss */
+.container {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 32rpx 30rpx calc(56rpx + env(safe-area-inset-bottom));
+  background: #f4f8fb;
+  color: #1d3d52;
+}
+
+.loading {
+  padding: 100rpx 24rpx;
+  color: #526d7c;
+  font-size: 30rpx;
+  text-align: center;
+}
+
+.article-header,
+.article-content {
+  padding: 30rpx 32rpx;
+  background: #fff;
+  border: 1rpx solid #dce7ef;
+}
+
+.article-header {
+  border-bottom: 0;
+  border-radius: 20rpx 20rpx 0 0;
+}
+
+.article-title {
+  display: block;
+  margin-bottom: 20rpx;
+  color: #173b50;
+  font-size: 38rpx;
+  font-weight: 700;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+
+.article-date {
+  color: #536e7d;
+  font-size: 28rpx;
+}
+
+.article-content {
+  min-height: 300rpx;
+  border-top: 1rpx solid #e5edf2;
+  border-radius: 0 0 20rpx 20rpx;
+  color: #263f4e;
+  font-size: 31rpx;
+  line-height: 1.85;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

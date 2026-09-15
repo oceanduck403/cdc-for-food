@@ -3,16 +3,16 @@ const { request } = require('../../utils/request.js');
 const config = require('../../utils/config.js');
 
 const CATEGORIES = [
-  { id: 'guide',   name: '膳食指南',    icon: '🥗' },
-  { id: 'mushroom',name: '毒蘑菇',      icon: '🍄' },
-  { id: 'safety',  name: '食品安全',    icon: '🔬' },
-  { id: 'disease', name: '食源性疾病',  icon: '🦠' },
-  { id: 'vaccine', name: '疫苗科普',    icon: '💉' },
+  { id: 'guide',   name: '膳食指南',    icon: 'leaf' },
+  { id: 'mushroom',name: '毒蘑菇',      icon: 'shield' },
+  { id: 'safety',  name: '食品安全',    icon: 'check' },
+  { id: 'disease', name: '食源性疾病',  icon: 'medicine' },
+  { id: 'vaccine', name: '疫苗科普',    icon: 'shield' },
 ];
 
 // 分类 → 标签色
 const TAG_COLORS = {
-  guide:    { bg: '#E8F5F0', text: '#0F8A65' },
+  guide:    { bg: '#EAF3FD', text: '#0D4E89' },
   mushroom: { bg: '#FEE2E2', text: '#EF4444' },
   safety:   { bg: '#FEF3C7', text: '#B45309' },
   disease:  { bg: '#EDE9FE', text: '#7C3AED' },
@@ -62,7 +62,8 @@ Page({
         const items = (data && data.items) || [];
         const colored = items.map(item => ({
           ...item,
-          tagColor: TAG_COLORS[this.data.active]?.bg || '#E8F5F0',
+          tagColor: TAG_COLORS[this.data.active]?.bg || '#EAF3FD',
+          tagTextColor: TAG_COLORS[this.data.active]?.text || '#0D4E89',
         }));
         this.setData({ list: colored, loading: false });
       })
@@ -94,7 +95,8 @@ Page({
           // 添加标签颜色
           items = items.map(item => ({
             ...item,
-            tagColor: TAG_COLORS[category]?.bg || '#E8F5F0',
+            tagColor: TAG_COLORS[category]?.bg || '#EAF3FD',
+            tagTextColor: TAG_COLORS[category]?.text || '#0D4E89',
           }));
 
           this.setData({ list: items, loading: false });

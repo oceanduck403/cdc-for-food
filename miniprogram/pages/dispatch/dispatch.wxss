@@ -1,0 +1,20 @@
+.dispatch-page { padding: 28rpx 28rpx 60rpx; background: #F5F9FC; min-height: 100vh; box-sizing: border-box; }
+.dispatch-hero { background: #1769A6; padding: 32rpx; border-radius: 24rpx; color: white; }
+.eyebrow { display: block; font-size: 24rpx; opacity: .85; }
+.heading { display: block; font-size: 36rpx; font-weight: 600; margin: 16rpx 0 28rpx; }
+.metrics { display: flex; justify-content: space-between; font-size: 24rpx; }
+.number { display: block; font-size: 48rpx; font-weight: 600; margin-bottom: 8rpx; }
+.refresh-line, .doctor-row, .card-top, .actions { display: flex; justify-content: space-between; align-items: center; gap: 16rpx; }
+.refresh-line { font-size: 21rpx; color: #667A72; padding: 24rpx 0; }
+.refresh-line button, .doctor-row button, .actions button { margin: 0; flex-shrink: 0; }
+.section-heading { display: block; font-size: 30rpx; font-weight: 600; margin: 24rpx 0; }
+.doctor-row, .appointment-card { background: white; border: 1rpx solid #E5EEEA; border-radius: 20rpx; padding: 24rpx; margin-bottom: 18rpx; }
+.row-title { display: block; font-size: 30rpx; font-weight: 600; }
+.muted { display: block; color: #667A72; font-size: 24rpx; margin-top: 12rpx; }
+.badge { font-size: 28rpx; color: #1769A6; background: #EAF4FB; padding: 8rpx 14rpx; border-radius: 10rpx; }
+.waiting { background: #FFF3D9; color: #91621C; }
+.assigned-doctor { display: block; font-size: 26rpx; margin: 24rpx 0; }
+.actions { flex-wrap: wrap; justify-content: flex-start; }
+.actions button { font-size: 23rpx; }
+.empty { color: #667A72; text-align: center; padding: 40rpx 16rpx; }
+.error-box { padding: 24rpx; color: #9D3E30; background: #FFF0EC; border-radius: 16rpx; }

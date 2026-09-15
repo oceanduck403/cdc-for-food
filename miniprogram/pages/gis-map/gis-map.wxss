@@ -66,7 +66,7 @@
 }
 
 .tool-btn.active {
-  background: var(--brand, #0F8A65);
+  background: var(--brand, #1769A6);
   color: #fff;
 }
 
@@ -76,7 +76,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 16rpx 24rpx;
-  background: linear-gradient(90deg, var(--brand, #0F8A65), #34D399);
+  background: linear-gradient(90deg, var(--brand, #1769A6), #57A4D2);
   color: #fff;
   font-size: 26rpx;
 }
@@ -108,7 +108,7 @@
 .info-num {
   font-size: 32rpx;
   font-weight: 700;
-  color: var(--brand, #0F8A65);
+  color: var(--brand, #1769A6);
 }
 
 .info-num.muted {
@@ -129,7 +129,7 @@
 
 .info-action {
   padding: 12rpx 24rpx;
-  background: var(--brand, #0F8A65);
+  background: var(--brand, #1769A6);
   color: #fff;
   font-size: 26rpx;
   font-weight: 600;
@@ -328,8 +328,8 @@
 
 .form-hint {
   font-size: 24rpx;
-  color: var(--brand, #0F8A65);
-  background: #E8F5F0;
+  color: var(--brand, #1769A6);
+  background: #EAF4FB;
   padding: 12rpx 16rpx;
   border-radius: var(--radius-sm, 12rpx);
   margin-bottom: 20rpx;
@@ -412,7 +412,7 @@
 }
 
 .form-btn.submit {
-  background: var(--brand, #0F8A65);
+  background: var(--brand, #1769A6);
   color: #fff;
 }
 
@@ -468,6 +468,6 @@
 }
 
 .level-badge.low {
-  background: #E8F5F0;
-  color: #0F8A65;
+  background: #EAF4FB;
+  color: #1769A6;
 }

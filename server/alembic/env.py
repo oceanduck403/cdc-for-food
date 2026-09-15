@@ -17,8 +17,13 @@ from app.models import Base as target_metadata  # noqa: E402
 
 config = context.config
 
-# 用 settings.database_url 覆盖 alembic.ini 中的 sqlalchemy.url
-config.set_main_option("sqlalchemy.url", settings.database_url)
+# Alembic 的在线迁移使用 AsyncEngine；开发和迁移测试的 SQLite 地址也要
+# 显式选择异步驱动。ConfigParser 会解析百分号，因此保留 URL 中已编码的
+# 密码字符时需要转义。
+database_url = settings.database_url
+if database_url.startswith("sqlite://"):
+    database_url = database_url.replace("sqlite://", "sqlite+aiosqlite://", 1)
+config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

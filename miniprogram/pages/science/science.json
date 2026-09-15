@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "科普互动",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "ai-float": "/components/ai-float/ai-float",
+    "ui-icon": "/components/ui-icon/ui-icon",
+    "inbox-entry": "/components/inbox-entry/inbox-entry"
+  }
+}

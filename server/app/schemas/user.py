@@ -21,7 +21,6 @@ class UserProfileOut(BaseModel):
 
 class UserProfileUpdate(BaseModel):
     nickname: Optional[str] = None
-    avatar: Optional[str] = None
     age: Optional[int] = None
     sex: Optional[str] = None
     heightCm: Optional[float] = None

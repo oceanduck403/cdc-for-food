@@ -1,0 +1,144 @@
+<view class="container service-page">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <view class="hero-emblem"><ui-icon name="checkin" tone="white" size="68" /></view>
+    <text class="hero-eyebrow">日常记录 · 长期陪伴</text>
+    <text class="page-title">打卡指导</text>
+    <text class="page-desc">每日一小步，让健康习惯坚持下来</text>
+  </view>
+
+  <text class="service-note">打卡记录保存在当前设备，可在“查看全部”中回看。</text>
+  <!-- 今日打卡状态 -->
+  <view class="today-card card">
+    <view class="card-header">
+      <text class="card-title">今日打卡</text>
+      <text class="card-date">{{today}}</text>
+    </view>
+
+    <!-- 打卡按钮网格 -->
+    <view class="checkin-grid">
+      <view class="checkin-item {{todayCheckin.diet ? 'done' : ''}}" data-type="diet" bindtap="doCheckin" hover-class="checkin-item-pressed" hover-stay-time="120">
+        <view class="checkin-icon"><image class="habit-icon" src="/images/ui/leaf.png" mode="aspectFit"/></view>
+        <text class="checkin-label">膳食打卡</text>
+        <text class="checkin-status">{{todayCheckin.diet ? '已打卡' : '未打卡'}}</text>
+      </view>
+
+      <view class="checkin-item {{todayCheckin.exercise ? 'done' : ''}}" data-type="exercise" bindtap="doCheckin" hover-class="checkin-item-pressed" hover-stay-time="120">
+        <view class="checkin-icon"><image class="habit-icon" src="/images/ui/activity.png" mode="aspectFit"/></view>
+        <text class="checkin-label">运动打卡</text>
+        <text class="checkin-status">{{todayCheckin.exercise ? '已打卡' : '未打卡'}}</text>
+      </view>
+
+      <view class="checkin-item {{todayCheckin.water ? 'done' : ''}}" data-type="water" bindtap="doCheckin" hover-class="checkin-item-pressed" hover-stay-time="120">
+        <view class="checkin-icon"><image class="habit-icon" src="/images/ui/water.png" mode="aspectFit"/></view>
+        <text class="checkin-label">饮水打卡</text>
+        <text class="checkin-status">{{todayCheckin.water ? '已打卡' : '未打卡'}}</text>
+      </view>
+
+    </view>
+  </view>
+
+  <!-- 每日完成后的正反馈：按当天实际打卡记录点亮，不设置惩罚或补签压力。 -->
+  <view class="feedback-card card">
+    <view class="feedback-top">
+      <view class="feedback-heading">
+        <view class="feedback-spark"><ui-icon name="checkin" size="28" /></view>
+        <text class="feedback-label">今日点亮</text>
+      </view>
+      <text class="feedback-count">{{positiveFeedback.doneCount}} / 3 项</text>
+    </view>
+    <text class="feedback-title">{{positiveFeedback.title}}</text>
+    <text class="feedback-message">{{positiveFeedback.message}}</text>
+    <view class="feedback-progress" role="progressbar" aria-valuenow="{{positiveFeedback.percent}}" aria-valuemin="0" aria-valuemax="100">
+      <view class="feedback-progress-fill" style="width: {{positiveFeedback.percent}}%"></view>
+    </view>
+    <view class="feedback-week-trail">
+      <view class="feedback-day {{item.active ? 'feedback-day-active' : ''}} {{item.isToday ? 'feedback-day-today' : ''}}" wx:for="{{positiveFeedback.weekTrail}}" wx:key="label" aria-label="{{item.label}}，{{item.active ? '有记录' : '暂无记录'}}">
+        <view class="feedback-day-dot"><view class="feedback-day-core"></view></view>
+        <text class="feedback-day-label">{{item.label}}</text>
+      </view>
+    </view>
+    <view class="feedback-bottom">
+      <text class="feedback-week">近 7 天有记录 {{positiveFeedback.weekDays}} 天</text>
+      <text class="feedback-types">膳食 · 运动 · 饮水</text>
+    </view>
+    <text class="feedback-last" wx:if="{{positiveFeedback.lastAction}}">刚刚：{{positiveFeedback.lastAction}}</text>
+  </view>
+
+  <!-- 微信运动 -->
+  <view class="steps-card card" wx:if="{{wechatSteps > 0}}">
+    <view class="card-header">
+      <view class="card-title"><ui-icon name="activity" size="30" /> 微信运动</view>
+      <text class="card-sub">今日步数</text>
+    </view>
+    <view class="steps-display">
+      <text class="steps-num">{{wechatSteps}}</text>
+      <text class="steps-unit">步</text>
+    </view>
+    <view class="steps-progress">
+      <view class="progress-bar">
+        <view class="progress-fill" style="width: {{wechatSteps / targetSteps * 100 > 100 ? 100 : wechatSteps / targetSteps * 100}}%"></view>
+      </view>
+      <text class="progress-text">目标 {{targetSteps}} 步</text>
+    </view>
+  </view>
+
+  <!-- 统计数据 -->
+  <view class="stats-card card">
+    <view class="card-header">
+      <text class="card-title">坚持的每一天</text>
+      <view class="card-link" bindtap="viewRecords"><text>查看全部</text><ui-icon name="right" size="26" /></view>
+    </view>
+    <view class="stats-grid">
+      <view class="stat-item">
+        <text class="stat-num">{{stats.totalDays}}</text>
+        <text class="stat-label">累计天数</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-num">{{stats.continueDays}}</text>
+        <text class="stat-label">连续天数</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-num">{{stats.totalActions}}</text>
+        <text class="stat-label">累计打卡项</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- AI 智能建议 -->
+  <view class="ai-card card">
+    <view class="card-header">
+      <text class="card-title">AI 每日建议</text>
+      <button class="suggestion-refresh" bindtap="refreshAISuggestions" loading="{{loadingAI}}" disabled="{{loadingAI}}" hover-class="suggestion-refresh-pressed">{{loadingAI ? '更新中' : '刷新'}}</button>
+    </view>
+    <view wx:if="{{loadingAI}}">
+      <view class="ai-loading">
+        <text class="loading-dot"></text>
+        <text class="loading-dot"></text>
+        <text class="loading-dot"></text>
+        <text class="loading-text">AI 正在为您生成建议...</text>
+      </view>
+    </view>
+    <view wx:else class="ai-content">
+      <text>{{aiSuggestionText}}</text>
+    </view>
+    <text class="suggestion-error" wx:if="{{aiSuggestionError}}">{{aiSuggestionError}}</text>
+  </view>
+
+  <!-- 最近打卡记录 -->
+  <view class="records-section" wx:if="{{recentRecords.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">最近打卡</text>
+    </view>
+    <view class="record-list">
+      <view class="record-item" wx:for="{{recentRecords}}" wx:key="id">
+        <view class="record-icon"><ui-icon name="{{item.type === 'diet' ? 'leaf' : item.type === 'exercise' ? 'activity' : 'water'}}" size="38" /></view>
+        <view class="record-info">
+          <text class="record-type">{{item.typeText}}</text>
+          <text class="record-time">{{item.date}} {{item.time}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+<ai-float />

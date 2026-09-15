@@ -1,5 +1,6 @@
 <view class="bar">
-  <view class="back" wx:if="{{showBack}}" bindtap="onBack">‹</view>
+  <view class="back" wx:if="{{showBack}}" bindtap="onBack" hover-class="back-pressed" aria-label="返回" role="button"><view class="back-icon"><ui-icon name="right" size="32" tone="active" /></view></view>
+  <view class="back-spacer" wx:else></view>
   <view class="title">{{title}}</view>
   <view class="placeholder"></view>
 </view>

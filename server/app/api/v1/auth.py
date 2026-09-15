@@ -1,22 +1,24 @@
-"""鉴权：微信 code 换 session、手机号绑定、当前用户信息"""
+"""鉴权：微信 code 换 session、手机号绑定、当前用户信息、医生/管理员登录"""
 from typing import Optional
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from loguru import logger
 from pydantic import BaseModel
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import current_user_id, get_db
 from app.config import settings
-from app.core.security import create_access_token
+from app.core.security import admin_auth_fingerprint, create_access_token, verify_password
+from app.models.user import User
 from app.services.user_service import ensure_user, get_profile
 
 router = APIRouter()
 
 
 # ────────────────────────────────────────────────────────────────────
-# 微信登录
+# 微信登录（患者）
 # ────────────────────────────────────────────────────────────────────
 
 class WechatLoginRequest(BaseModel):
@@ -30,6 +32,7 @@ class WechatLoginResponse(BaseModel):
     profile: dict
     openid: str
     unionid: Optional[str] = None
+    role: str = "patient"
 
 
 class WxSessionResponse(BaseModel):
@@ -42,10 +45,6 @@ class WxSessionResponse(BaseModel):
 
 
 async def _code2session(code: str) -> WxSessionResponse:
-    """调用微信 jscode2session 换取 openid / session_key
-
-    文档：https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/login/auth.code2Session.html
-    """
     if not settings.wechat_appid or not settings.wechat_secret:
         raise HTTPException(
             status_code=503,
@@ -80,24 +79,127 @@ async def _code2session(code: str) -> WxSessionResponse:
 
 @router.post("/wechat", response_model=WechatLoginResponse)
 async def login_with_wechat(body: WechatLoginRequest, db: AsyncSession = Depends(get_db)) -> WechatLoginResponse:
-    """生产环境：通过 jscode2session 换取真实 openid
-
-    开发环境降级：未配置 AppID/Secret 时，使用 mock openid，便于本地联调
-    """
+    """患者微信登录"""
     if settings.wechat_appid and settings.wechat_secret:
         wx = await _code2session(body.code)
         openid = wx.openid
         unionid = wx.unionid
-    else:
-        # 开发期降级
+    elif settings.app_env == "development":
         logger.warning("WECHAT_APPID 未配置，使用 mock openid（仅限开发环境）")
         openid = f"mock-openid-{body.code[:8]}" if body.code else "mock-openid-anonymous"
         unionid = None
+    else:
+        raise HTTPException(status_code=503, detail="微信登录服务配置不完整")
 
     user = await ensure_user(db, openid=openid, nickname=body.nickname, avatar=body.avatar)
     profile = await get_profile(db, user.id)
-    token = create_access_token(subject=str(user.id), extra={"openid": openid, "unionid": unionid})
-    return WechatLoginResponse(token=token, profile=profile, openid=openid, unionid=unionid)
+    token = create_access_token(subject=str(user.id), extra={"role": "patient", "openid": openid})
+    return WechatLoginResponse(token=token, profile=profile, openid=openid, unionid=unionid, role="patient")
+
+
+# ────────────────────────────────────────────────────────────────────
+# 手机号验证码登录（患者）
+# ────────────────────────────────────────────────────────────────────
+
+class PhoneLoginRequest(BaseModel):
+    phone: str
+    code: str  # 验证码（开发期固定为 123456）
+
+
+class PhoneLoginResponse(BaseModel):
+    token: str
+    profile: dict
+    role: str = "patient"
+
+
+@router.post("/phone-login", response_model=PhoneLoginResponse)
+async def phone_login(body: PhoneLoginRequest, db: AsyncSession = Depends(get_db)) -> PhoneLoginResponse:
+    """患者通过手机号 + 验证码登录
+
+    开发期验证码固定为 123456，生产环境接入短信网关。
+    """
+    if settings.app_env != "development":
+        raise HTTPException(status_code=503, detail="手机号验证码登录暂未开放")
+    if body.code != "123456":
+        raise HTTPException(status_code=400, detail="验证码错误（开发期固定为 123456）")
+
+    # 查找现有手机号用户
+    stmt = select(User).where(User.phone == body.phone)
+    res = await db.execute(stmt)
+    user = res.scalar_one_or_none()
+
+    if not user:
+        # 自动创建患者账号
+        user = User(phone=body.phone, role="patient", nickname=f"用户{body.phone[-4:]}")
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+
+    profile = await get_profile(db, user.id)
+    token = create_access_token(subject=str(user.id), extra={"role": "patient", "phone": body.phone})
+    return PhoneLoginResponse(token=token, profile=profile, role="patient")
+
+
+# ────────────────────────────────────────────────────────────────────
+# 账号密码登录（医生 / 管理员）
+# ────────────────────────────────────────────────────────────────────
+
+class AccountLoginRequest(BaseModel):
+    username: str
+    password: str
+    role: str = "doctor"  # 期望的角色
+
+
+class AccountLoginResponse(BaseModel):
+    token: str
+    profile: dict
+    role: str
+
+
+@router.post("/account-login", response_model=AccountLoginResponse)
+async def account_login(body: AccountLoginRequest, db: AsyncSession = Depends(get_db)) -> AccountLoginResponse:
+    """医生/管理员账号密码登录
+
+    - 医生：管理员分配账号后才能登录
+    - 管理员：首次生产部署由安全环境变量引导创建
+    """
+    stmt = select(User).where(User.username == body.username, User.role == body.role)
+    res = await db.execute(stmt)
+    user = res.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=404, detail=f"账号不存在或角色错误（{body.role}）")
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="账号已被禁用，请联系管理员")
+    if not user.password_hash or not verify_password(body.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="账号或密码错误")
+
+    # 角色不匹配
+    if user.role != body.role:
+        raise HTTPException(status_code=403, detail=f"该账号不是{body.role}角色")
+
+    token_extra = {"role": user.role, "username": user.username}
+    if user.role == "admin":
+        token_extra["admin_auth"] = admin_auth_fingerprint(user)
+    token = create_access_token(subject=str(user.id), extra=token_extra)
+
+    profile = {
+        "id": user.id,
+        "username": user.username,
+        "nickname": user.nickname,
+        "real_name": user.real_name,
+        "avatar": user.avatar,
+        "role": user.role,
+    }
+    if user.role == "doctor":
+        profile.update({
+            "department": user.department,
+            "title": user.title,
+            "intro": user.intro,
+            "is_available": user.is_available,
+        })
+
+    return AccountLoginResponse(token=token, profile=profile, role=user.role)
 
 
 # ────────────────────────────────────────────────────────────────────
@@ -113,14 +215,9 @@ class BindPhoneResponse(BaseModel):
 
 
 async def _get_phone_number(code: str) -> str:
-    """调用 getuserphonenumber 获取用户手机号
-
-    文档：https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/user-info/phonenumber.getPhoneNumber.html
-    """
     if not settings.wechat_appid or not settings.wechat_secret:
         raise HTTPException(status_code=503, detail="WECHAT_APPID / WECHAT_SECRET 未配置")
 
-    # 第一步：用 AppID + AppSecret 换 access_token
     token_url = "https://api.weixin.qq.com/cgi-bin/token"
     token_params = {
         "grant_type": "client_credential",
@@ -138,7 +235,6 @@ async def _get_phone_number(code: str) -> str:
         logger.error("get wx token http error: {}", exc)
         raise HTTPException(status_code=502, detail="调用微信接口失败") from exc
 
-    # 第二步：用 access_token + code 换手机号
     phone_url = "https://api.weixin.qq.com/wxa/business/getuserphonenumber"
     try:
         async with httpx.AsyncClient(timeout=8.0) as client:
@@ -173,7 +269,7 @@ async def bind_phone(
     db: AsyncSession = Depends(get_db),
 ) -> BindPhoneResponse:
     """绑定手机号：通过 wx.getPhoneNumber 的 code 调用微信接口"""
-    from app.services.user_service import update_phone  # 避免循环导入
+    from app.services.user_service import update_phone
 
     phone = await _get_phone_number(body.code)
     await update_phone(db, int(user_id), phone)
@@ -181,8 +277,36 @@ async def bind_phone(
 
 
 # ────────────────────────────────────────────────────────────────────
-# 健康检查（供小程序后台填写服务器可用性测试 URL）
+# 当前用户信息（含角色判断）
 # ────────────────────────────────────────────────────────────────────
+
+@router.get("/me")
+async def me(user_id: str = Depends(current_user_id), db: AsyncSession = Depends(get_db)) -> dict:
+    """返回当前登录用户的角色与基本信息"""
+    try:
+        uid = int(user_id)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=401, detail="无效的登录态")
+
+    user = await db.get(User, uid)
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在")
+
+    return {
+        "id": user.id,
+        "role": user.role,
+        "username": user.username,
+        "nickname": user.nickname,
+        "real_name": user.real_name,
+        "avatar": user.avatar,
+        "phone": user.phone,
+        "department": user.department,
+        "title": user.title,
+        "intro": user.intro,
+        "is_available": user.is_available,
+        "is_active": user.is_active,
+    }
+
 
 @router.get("/health")
 async def health() -> dict:

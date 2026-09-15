@@ -4,6 +4,7 @@
 | --- | --- | --- |
 | 总体架构 | [architecture.md](./architecture.md) | 系统架构、数据流、关键决策 |
 | API 规范 | [api.md](./api.md) | REST 接口约定、错误码、示例 |
+| 问卷与就诊登记 | [survey-registration.md](./survey-registration.md) | Word 字段、加载修复、登记保存与验证 |
 | 部署指南 | [deployment.md](./deployment.md) | 本地、Docker、生产部署 |
 | 合规与隐私 | [compliance.md](./compliance.md) | 隐私协议、数据合规、健康免责声明 |
 | 阶段路线图 | [roadmap.md](./roadmap.md) | P0-P5 长期计划 |

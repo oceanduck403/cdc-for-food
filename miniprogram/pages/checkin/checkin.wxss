@@ -1,0 +1,432 @@
+@import "../../styles/service.wxss";
+/* pages/checkin/checkin.wxss */
+
+.container {
+  padding: 30rpx;
+  background: #F5F7FA;
+  min-height: 100vh;
+  padding-bottom: 120rpx;
+}
+
+.page-header {
+  margin-bottom: 30rpx;
+}
+
+.page-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin-bottom: 10rpx;
+}
+
+.page-desc {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+}
+
+/* 卡片通用样式 */
+.card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.card-date, .card-sub {
+  font-size: 28rpx;
+  color: #9CA3AF;
+}
+
+.card-link {
+  font-size: 28rpx;
+  color: #1769B2;
+}
+
+.suggestion-refresh { margin: 0; padding: 0 24rpx; min-width: 120rpx; height: 68rpx; line-height: 68rpx; border-radius: 34rpx; background: #fff; color: #0D4E89; font-size: 28rpx; border: 1rpx solid #B7D0E7; transition: transform .15s, background .15s; }
+.suggestion-refresh::after { border: none; }
+.suggestion-refresh-pressed { transform: scale(.94); background: #DDECF8; }
+.suggestion-refresh[disabled] { color: #6B7F92; background: #F0F5FA; }
+.suggestion-error { display: block; margin-top: 16rpx; color: #9A5734; font-size: 28rpx; }
+
+/* 今日打卡网格 */
+.checkin-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20rpx;
+}
+
+.checkin-item {
+  background: #F9FAFB;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.checkin-item:active {
+  transform: scale(0.98);
+}
+
+.checkin-item-pressed {
+  transform: scale(0.96);
+  background: #DCEBFA;
+  box-shadow: 0 0 0 3rpx #8DBBDE inset;
+}
+
+.checkin-item.done {
+  background: #F2F8FF;
+}
+
+.checkin-item.done .checkin-icon {
+  background: #DCEBFA;
+}
+
+.checkin-item.photo {
+  background: #FEF3C7;
+}
+
+.checkin-icon {
+  width: 80rpx;
+  height: 80rpx;
+  background: #E5E7EB;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16rpx;
+  font-size: 40rpx;
+}
+
+.checkin-label {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin-bottom: 8rpx;
+}
+
+.checkin-status {
+  font-size: 28rpx;
+  color: #9CA3AF;
+}
+
+.checkin-item.done .checkin-status {
+  color: #1769B2;
+}
+
+/* 每日点亮：及时反馈当天进度，也让一项打卡有被看见的感觉。 */
+.service-page .feedback-card {
+  border: 1rpx solid #CDE4DF;
+  background: linear-gradient(135deg, #F4FBF9, #F3F8FF);
+  box-shadow: 0 5rpx 18rpx rgba(18, 89, 112, 0.06);
+}
+
+.feedback-top,
+.feedback-heading,
+.feedback-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.feedback-top { margin-bottom: 18rpx; }
+.feedback-heading { justify-content: flex-start; gap: 12rpx; }
+.feedback-spark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44rpx;
+  height: 44rpx;
+  flex: none;
+  border-radius: 50%;
+  background: #DBF2EA;
+  color: #147B5A;
+}
+.feedback-label { color: #176448; font-size: 30rpx; font-weight: 700; }
+.feedback-count {
+  padding: 7rpx 17rpx;
+  border-radius: 24rpx;
+  background: #DDEFFA;
+  color: #0E4D7C;
+  font-size: 28rpx;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.feedback-title {
+  display: block;
+  color: #173B60;
+  font-size: 33rpx;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 8rpx;
+}
+.feedback-message {
+  display: block;
+  color: #405D70;
+  font-size: 28rpx;
+  line-height: 1.6;
+}
+.feedback-progress {
+  overflow: hidden;
+  height: 18rpx;
+  border-radius: 12rpx;
+  margin: 22rpx 0 14rpx;
+  background: #D7E8EF;
+}
+.feedback-progress-fill {
+  height: 100%;
+  border-radius: 12rpx;
+  background: linear-gradient(90deg, #1B8B73, #1B6BA8);
+  transition: width 0.35s ease;
+}
+.feedback-week-trail {
+  display: flex;
+  justify-content: space-between;
+  gap: 4rpx;
+  margin: 14rpx 0 18rpx;
+}
+.feedback-day {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 6rpx;
+  color: #667D89;
+}
+.feedback-day-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 46rpx;
+  height: 46rpx;
+  border: 2rpx solid #D7E8EF;
+  border-radius: 50%;
+  background: #E8F1F5;
+}
+.feedback-day-core { width: 12rpx; height: 12rpx; border-radius: 50%; background: transparent; }
+.feedback-day-active .feedback-day-dot {
+  border-color: #1B6BA8;
+  background: #1B6BA8;
+}
+.feedback-day-active .feedback-day-core { background: #fff; }
+.feedback-day-today .feedback-day-dot { box-shadow: 0 0 0 4rpx #98D5C3; }
+.feedback-day-label { font-size: 26rpx; line-height: 1.3; white-space: nowrap; }
+.feedback-day-active .feedback-day-label { color: #0E4D7C; font-weight: 600; }
+.feedback-bottom { gap: 12rpx; flex-wrap: wrap; }
+.feedback-week { color: #176448; font-size: 28rpx; font-weight: 600; }
+.feedback-types { color: #506A76; font-size: 26rpx; }
+.feedback-last {
+  display: block;
+  margin-top: 16rpx;
+  color: #0E4D7C;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+/* 微信运动 */
+.steps-card {
+  background: linear-gradient(135deg, #1769B2, #2D83C9);
+  color: #fff;
+}
+
+.steps-card .card-title, .steps-card .card-sub {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.steps-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  margin-bottom: 20rpx;
+}
+
+.steps-num {
+  font-size: 72rpx;
+  font-weight: 700;
+}
+
+.steps-unit {
+  font-size: 32rpx;
+  margin-left: 8rpx;
+  opacity: 0.9;
+}
+
+.steps-progress {
+  text-align: center;
+}
+
+.progress-bar {
+  height: 12rpx;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 6rpx;
+  overflow: hidden;
+  margin-bottom: 8rpx;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #fff;
+  border-radius: 6rpx;
+  transition: width 0.3s;
+}
+
+.progress-text {
+  font-size: 28rpx;
+  opacity: 0.9;
+}
+
+/* 统计卡片 */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20rpx;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-num {
+  display: block;
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #1769B2;
+  margin-bottom: 8rpx;
+}
+
+.stat-label {
+  font-size: 28rpx;
+  color: #9CA3AF;
+}
+
+/* AI 建议卡片 */
+.ai-card {
+  background: linear-gradient(135deg, #F0F9FF, #E0F2FE);
+  border-left: 6rpx solid #0EA5E9;
+}
+
+.ai-content {
+  font-size: 28rpx;
+  color: #0C4A6E;
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.ai-loading {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0;
+}
+
+.loading-dot {
+  width: 12rpx;
+  height: 12rpx;
+  background: #0EA5E9;
+  border-radius: 50%;
+  margin-right: 8rpx;
+  animation: bounce 1.4s infinite ease-in-out;
+}
+
+.loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.loading-dot:nth-child(3) { animation-delay: 0.4s; margin-right: 16rpx; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #0EA5E9;
+}
+
+/* 最近记录 */
+.records-section {
+  margin-top: 30rpx;
+}
+
+.section-header {
+  margin-bottom: 20rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.record-list {
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.record-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 30rpx;
+  border-bottom: 1rpx solid #F3F4F6;
+}
+
+.record-item:last-child {
+  border-bottom: none;
+}
+
+.record-icon {
+  font-size: 36rpx;
+  margin-right: 20rpx;
+}
+
+.record-info {
+  flex: 1;
+}
+
+.record-type {
+  display: block;
+  font-size: 28rpx;
+  color: #1A1A1A;
+  margin-bottom: 4rpx;
+}
+
+.record-time {
+  font-size: 28rpx;
+  color: #9CA3AF;
+}
+
+/* Reading and touch targets remain comfortable on compact phones. */
+.service-page .checkin-item { min-height: 190rpx; padding: 26rpx 6rpx; }
+.service-page .checkin-label { font-size: 30rpx; font-weight: 600; }
+.service-page .checkin-status { font-size: 28rpx; color: #536c79; }
+.service-page .card-title { font-size: 33rpx; color: #173B60; }
+.service-page .card-date, .service-page .card-sub, .service-page .card-link { font-size: 28rpx; color: #4c6877; }
+.service-page .stat-label, .service-page .record-time { font-size: 28rpx; color: #506a76; }
+.service-page .suggestion-refresh { min-width: 140rpx; min-height: 88rpx; line-height: 88rpx; font-size: 30rpx; color: #1769B2; }
+.service-page .card-link { min-height: 88rpx; display: inline-flex; align-items: center; gap: 6rpx; font-size: 29rpx; }
+.service-page .suggestion-error { font-size: 28rpx; color: #4B5D70; }
+
+/* A calmer service hierarchy and full-width, easy-to-tap actions. */
+.container.service-page { padding-bottom: calc(190rpx + env(safe-area-inset-bottom)); }
+.service-page .card { padding: 28rpx; margin-bottom: 22rpx; }
+.service-page .checkin-grid { gap: 12rpx; }
+.service-page .checkin-item { box-sizing: border-box; min-width: 0; }
+.service-page .checkin-item:active { background: #DCEBFA; border-color: #8DBBDE; }
+.service-page .checkin-item.done .checkin-status { color: #176448; font-weight: 600; }
+.service-page .record-type { font-size: 30rpx; color: #183B58; }

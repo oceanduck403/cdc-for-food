@@ -1,0 +1,70 @@
+<view class="container">
+<!-- 顶部医生信息 -->
+  <view class="top-bar">
+    <view class="doctor-info" bindtap="goProfile">
+      <view class="avatar">{{profile.real_name ? profile.real_name[0] : (profile.nickname ? profile.nickname[0] : '医')}}</view>
+      <view class="info">
+        <view class="name">{{profile.real_name || profile.nickname || '医生'}}</view>
+        <view class="meta">{{profile.department || ''}} {{profile.title || ''}}</view>
+      </view>
+    </view>
+    <view class="logout-btn" bindtap="logout">
+      <text>退出</text>
+    </view>
+  </view>
+
+  <!-- 搜索 -->
+  <view class="search-bar">
+    <view class="search-input-wrap">
+      <ui-icon name="search" size="30" tone="muted" />
+      <input class="search-input" placeholder="按姓名/手机号/ID搜索患者"
+             value="{{keyword}}" bindinput="onKeywordInput" bindconfirm="onSearch" />
+      <view wx:if="{{keyword}}" class="clear-btn" bindtap="clearKeyword">
+        <ui-icon name="close" size="28" />
+      </view>
+    </view>
+    <view class="search-btn" bindtap="onSearch">
+      <text>搜索</text>
+    </view>
+  </view>
+
+  <!-- 提示 -->
+  <view class="tip">
+    <view><ui-icon name="info" size="26" /> 共 {{patients.length}} 位患者，点击患者可查看资料并沟通</view>
+  </view>
+
+  <!-- 患者列表 -->
+  <scroll-view class="patient-list" scroll-y>
+    <view wx:if="{{loading}}" class="loading-state">
+      <text>加载中...</text>
+    </view>
+    <view wx:elif="{{loadError}}" class="empty-state"><text>{{loadError}}</text><button bindtap="loadPatients">重新加载</button></view>
+    <view wx:elif="{{patients.length === 0}}" class="empty-state">
+      <ui-icon name="team" size="70" tone="muted" />
+      <text class="empty-text">暂无患者</text>
+      <text class="empty-hint">患者首次咨询时会自动分配给您</text>
+    </view>
+
+    <view wx:for="{{patients}}" wx:key="assignment_id"
+          class="patient-card" data-assignmentid="{{item.assignment_id}}"
+          data-patientid="{{item.patient_id}}" data-patientname="{{item.patient_name}}"
+          bindtap="goChat">
+      <view class="patient-avatar">{{item.patient_name[0] || '患'}}</view>
+      <view class="patient-info">
+        <view class="patient-name-row">
+          <text class="patient-name">{{item.patient_name}}</text>
+          <text wx:if="{{item.patient_age}}" class="patient-meta">{{item.patient_age}}岁 {{item.patient_sex || ''}}</text>
+        </view>
+        <view wx:if="{{item.last_message_preview}}" class="last-msg">
+          <text>{{item.last_message_preview}}</text>
+        </view>
+        <view wx:else class="last-msg empty">
+          <text>暂无消息</text>
+        </view>
+      </view>
+      <view wx:if="{{item.last_message_at}}" class="patient-time">
+        <text>{{item.lastMessageTime}}</text>
+      </view>
+    </view>
+  </scroll-view>
+</view>

@@ -1,12 +1,13 @@
 // app.js
 const config = require('./utils/config.js');
 const auth = require('./utils/auth.js');
+const appointments = require('./utils/appointments.js');
 
 App({
   globalData: {
     userInfo: null,
     token: '',
-    apiBase: 'https://api.example-cdc.local/v1',
+    apiBase: config.apiBase,
     systemInfo: null,
     dailyAnalysisCount: 0
   },
@@ -46,7 +47,17 @@ App({
 
   onShow() {
     // 重新进入前台时刷新每日计数
-    auth.refreshDailyQuota(this);
+    clearInterval(this._presenceTimer);
+    this._heartbeat();
+    this._presenceTimer = setInterval(() => this._heartbeat(), 30000);
+    return auth.refreshDailyQuota(this);
+  },
+
+  onHide() { clearInterval(this._presenceTimer); },
+  _heartbeat() {
+    if (auth.getRole() === 'doctor' && auth.getToken()) {
+      appointments.heartbeat().catch(() => {});
+    }
   },
 
   popPrivacyDialog() {

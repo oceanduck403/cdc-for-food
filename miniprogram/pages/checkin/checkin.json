@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "打卡指导",
+  "usingComponents": {
+    "ai-float": "/components/ai-float/ai-float"
+  }
+}

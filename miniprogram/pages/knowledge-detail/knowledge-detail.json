@@ -1,3 +1,5 @@
 {
-  "navigationBarTitleText": "知识详情"
+  "navigationBarTitleText": "健康科普",
+  "enablePullDownRefresh": true,
+  "usingComponents": { "ui-icon": "/components/ui-icon/ui-icon" }
 }

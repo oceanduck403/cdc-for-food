@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "免费咨询",
+  "usingComponents": {
+    "ai-float": "/components/ai-float/ai-float"
+  }
+}

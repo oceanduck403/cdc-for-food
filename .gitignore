@@ -41,11 +41,27 @@ logs/
 server/app/static/uploads/
 server/data/
 server/storage/
+server/uploads/
 
 # WeChat DevTools cache
 miniprogram/.eslintcache
 miniprogram/node_modules/
 miniprogram/miniprogram_npm/
+miniprogram/project.private.config.json
+
+# One-off extraction and local smoke-test artefacts
+extract_stderr.txt
+extracted.txt
+raw_doc.xml
+server/-w
+server/test_*.json
+server_fixed.zip
+server/check_env.ps1
+server/deploy.bat
+server/deploy.cmd
+server/open_ports*.bat
+server/run.bat
+server/start.bat
 
 # Secrets / credentials
 *.pem
@@ -64,6 +80,7 @@ _brief_extracted/
 *.jpeg
 *.png
 *.gif
+!miniprogram/images/**
 
 # Data files (local development only)
 *.csv

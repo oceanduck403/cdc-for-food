@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>生成 TabBar 图标</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
+    h1 { color: #333; }
+    .icon-list { display: flex; flex-wrap: wrap; gap: 20px; }
+    .icon-item { background: white; padding: 20px; border-radius: 12px; text-align: center; }
+    canvas { border: 1px solid #ddd; }
+    p { margin: 10px 0 0; font-size: 14px; color: #666; }
+    button { margin-top: 10px; padding: 8px 16px; cursor: pointer; }
+    .download { display: none; }
+  </style>
+</head>
+<body>
+  <h1>📱 TabBar 图标生成器</h1>
+  <p>点击每个「下载」按钮下载图标，共 10 个文件</p>
+  <div class="icon-list">
+    <div class="icon-item">
+      <canvas id="survey" width="81" height="81"></canvas>
+      <p>survey.png</p>
+      <button onclick="download('survey')">下载</button>
+    </div>
+    <div class="icon-item">
+      <canvas id="survey_active" width="81" height="81"></canvas>
+      <p>survey_active.png</p>
+      <button onclick="download('survey_active')">下载</button>
+    </div>
+    <div class="icon-item">
+      <canvas id="checkin" width="81" height="81"></canvas>
+      <p>checkin.png</p>
+      <button onclick="download('checkin')">下载</button>
+    </div>
+    <div class="icon-item">
+      <canvas id="checkin_active" width="81" height="81"></canvas>
+      <p>checkin_active.png</p>
+      <button onclick="download('checkin_active')">下载</button>
+    </div>
+    <div class="icon-item">
+      <canvas id="consult" width="81" height="81"></canvas>
+      <p>consult.png</p>
+      <button onclick="download('consult')">下载</button>
+    </div>
+    <div class="icon-item">
+      <canvas id="consult_active" width="81" height="81"></canvas>
+      <p>consult_active.png</p>
+      <button onclick="download('consult_active')">下载</button>
+    </div>
+    <div class="icon-item">
+      <canvas id="science" width="81" height="81"></canvas>
+      <p>science.png</p>
+      <button onclick="download('science')">下载</button>
+    </div>
+    <div class="icon-item">
+      <canvas id="science_active" width="81" height="81"></canvas>
+      <p>science_active.png</p>
+      <button onclick="download('science_active')">下载</button>
+    </div>
+    <div class="icon-item">
+      <canvas id="mine" width="81" height="81"></canvas>
+      <p>mine.png</p>
+      <button onclick="download('mine')">下载</button>
+    </div>
+    <div class="icon-item">
+      <canvas id="mine_active" width="81" height="81"></canvas>
+      <p>mine_active.png</p>
+      <button onclick="download('mine_active')">下载</button>
+    </div>
+  </div>
+
+  <script>
+    const icons = {
+      survey: { bg: '#E8F5F0', color: '#0F8A65' },
+      survey_active: { bg: '#CCE8E0', color: '#0F8A65' },
+      checkin: { bg: '#FEF3C7', color: '#F59E0B' },
+      checkin_active: { bg: '#FFE4B5', color: '#D97706' },
+      consult: { bg: '#FEE2E2', color: '#EF4444' },
+      consult_active: { bg: '#FFC0C0', color: '#DC2626' },
+      science: { bg: '#DBEAFE', color: '#3B82F6' },
+      science_active: { bg: '#B3D9FF', color: '#2563EB' },
+      mine: { bg: '#EDE9FE', color: '#8B5CF6' },
+      mine_active: { bg: '#DDD6FE', color: '#7C3AED' }
+    };
+
+    function drawIcon(id) {
+      const canvas = document.getElementById(id);
+      const ctx = canvas.getContext('2d');
+      const { bg, color } = icons[id];
+
+      // 背景圆
+      ctx.beginPath();
+      ctx.arc(40.5, 40.5, 40, 0, Math.PI * 2);
+      ctx.fillStyle = bg;
+      ctx.fill();
+
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      if (id.startsWith('survey')) {
+        // 问卷表格
+        ctx.beginPath();
+        ctx.roundRect(22, 22, 36, 36, 3);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(28, 32); ctx.lineTo(52, 32);
+        ctx.moveTo(28, 40); ctx.lineTo(48, 40);
+        ctx.moveTo(28, 48); ctx.lineTo(44, 48);
+        ctx.stroke();
+      } else if (id.startsWith('checkin')) {
+        // 日历勾选
+        ctx.beginPath();
+        ctx.arc(40, 40, 18, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(30, 40); ctx.lineTo(38, 48); ctx.lineTo(52, 32);
+        ctx.stroke();
+      } else if (id.startsWith('consult')) {
+        // 消息气泡
+        ctx.beginPath();
+        ctx.ellipse(40, 35, 22, 18, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(34, 50); ctx.lineTo(34, 56); ctx.lineTo(42, 50);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(32, 32, 3, 0, Math.PI * 2);
+        ctx.arc(48, 32, 3, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (id.startsWith('science')) {
+        // 书本
+        ctx.beginPath();
+        ctx.roundRect(24, 20, 32, 42, 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(40, 20); ctx.lineTo(40, 62);
+        ctx.stroke();
+      } else if (id.startsWith('mine')) {
+        // 人物
+        ctx.beginPath();
+        ctx.arc(40, 30, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(40, 56, 16, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function download(id) {
+      const canvas = document.getElementById(id);
+      const link = document.createElement('a');
+      link.download = id + '.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // 初始化
+    Object.keys(icons).forEach(drawIcon);
+  </script>
+</body>
+</html>

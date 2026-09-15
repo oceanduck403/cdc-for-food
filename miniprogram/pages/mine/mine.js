@@ -1,35 +1,31 @@
 // pages/mine/mine.js
 const storage = require('../../utils/storage.js');
-const mock = require('../../utils/mock.js');
 const config = require('../../utils/config.js');
+const navigation = require('../../utils/navigation.js');
+const auth = require('../../utils/auth.js');
+
+function avatarDisplayUrl(avatar) {
+  if (!avatar) return '';
+  if (avatar.startsWith('//')) return `https:${avatar}`;
+  if (/^(https?:|wxfile:|cloud:|data:)/i.test(avatar)) return avatar;
+  return avatar.startsWith('/') && config.baseUrl ? `${config.baseUrl}${avatar}` : avatar;
+}
 
 Page({
   data: {
     profile: null,
     isLogin: false,
-    isVip: false,
-    remaining: 0,
     bmi: '--',
   },
 
   onShow() {
     let profile = storage.get('profile');
     let token = storage.get('token');
-    // demo 模式：第一次进入时预填演示档案
-    if (!profile) {
-      profile = mock.profile;
-      storage.set('profile', profile);
-    }
-    if (!token) {
-      token = 'demo-token';
-      storage.set('token', token);
-    }
+    // 未登录时展示空档案，不能生成无效的演示 token。
+    profile = profile || {};
+    if (token && token.startsWith('demo-')) token = '';
     const bmi = this.calcBmi(profile);
-    const isVip = profile && profile.isVip;
-    const remaining = profile && profile.remainingCount !== undefined
-      ? profile.remainingCount
-      : config.dailyAnalysisLimit;
-    this.setData({ profile, isLogin: !!token, bmi, isVip, remaining });
+    this.setData({ profile: { ...profile, avatarDisplayUrl: avatarDisplayUrl(profile.avatar) }, isLogin: !!token, bmi });
   },
 
   calcBmi(profile) {
@@ -41,19 +37,15 @@ Page({
 
   onAvatarError(e) {
     // 头像加载失败时用默认图兜底（静默）
-    this.setData({ 'profile.avatar': '' });
+    this.setData({ 'profile.avatarDisplayUrl': '' });
   },
 
   goProfile() {
-    wx.navigateTo({ url: '/pages/profile/profile' });
-  },
-
-  goPayment() {
-    wx.navigateTo({ url: '/pages/payment/payment' });
+    navigation.open('/pages/profile/profile');
   },
 
   goLogin() {
-    wx.navigateTo({ url: '/pages/login/login' });
+    navigation.login();
   },
 
   callSupport() {
@@ -72,7 +64,7 @@ Page({
   openAbout() {
     wx.showModal({
       title: '关于我们',
-      content: '成都市疾病预防控制中心\n营养与食品安全 AI 小助手 v1.0.0\n\n本应用由成都市疾病预防控制中心委托开发，提供营养与食品安全科普信息，不作为诊疗依据。',
+      content: '营养与食品安全 AI 小助手 v1.0.0\n\n本应用由成都市疾病预防控制中心提供，仅供营养与食品安全科普使用，不作为诊疗依据。',
       showCancel: false,
       confirmText: '知道了',
     });
@@ -84,9 +76,7 @@ Page({
       content: '确定要退出当前账号吗？',
       success: (res) => {
         if (res.confirm) {
-          storage.clearUserData();
-          this.setData({ isLogin: false, profile: null, bmi: '--' });
-          wx.showToast({ title: '已退出' });
+          auth.logout();
         }
       }
     });

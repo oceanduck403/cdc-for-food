@@ -1,0 +1,418 @@
+/* pages/doctor-chat/doctor-chat.wxss */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #EDEDED;
+}
+
+/* ── 患者信息头部 ───────────────────── */
+.patient-header {
+  padding: 24rpx 30rpx;
+  background: #FFFFFF;
+  border-bottom: 1rpx solid #E5E7EB;
+}
+
+.patient-detail-row {
+  display: flex;
+  align-items: baseline;
+  gap: 16rpx;
+  margin-bottom: 8rpx;
+}
+
+.patient-name {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1A1A1A;
+}
+
+.patient-tags {
+  font-size: 22rpx;
+  color: #6B7280;
+}
+
+.patient-tags text {
+  margin-right: 12rpx;
+}
+
+.patient-extra {
+  font-size: 24rpx;
+  color: #6B7280;
+  margin-bottom: 4rpx;
+}
+
+.patient-extra.notes {
+  background: #FEF3C7;
+  padding: 12rpx 16rpx;
+  border-radius: 8rpx;
+  color: #92400E;
+  margin-top: 8rpx;
+}
+
+/* ── 聊天区 ─────────────────────── */
+.chat-scroll {
+  flex: 1;
+  padding: 20rpx 24rpx;
+}
+
+.chat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 60rpx 0;
+  color: #9CA3AF;
+}
+
+.msg-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+}
+
+.msg-row.mine {
+  justify-content: flex-end;
+}
+
+.msg-row.other {
+  justify-content: flex-start;
+}
+
+.msg-row.system {
+  justify-content: center;
+}
+
+.avatar {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.patient-avatar-small {
+  background: linear-gradient(135deg, #1A6DD3, #4F8FE5);
+  color: #FFFFFF;
+}
+
+.doctor-avatar-small {
+  background: linear-gradient(135deg, #1769B2, #2D83C9);
+  color: #FFFFFF;
+}
+
+.msg-content-wrap {
+  max-width: 75%;
+  display: flex;
+  flex-direction: column;
+}
+
+.msg-row.mine .msg-content-wrap {
+  align-items: flex-end;
+}
+
+.msg-row.other .msg-content-wrap {
+  align-items: flex-start;
+}
+
+.msg-bubble {
+  background: #FFFFFF;
+  padding: 20rpx 24rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: #1A1A1A;
+  word-break: break-all;
+}
+
+.msg-row.mine .msg-bubble {
+  background: #DCEBFA;
+}
+
+.msg-image {
+  padding: 8rpx;
+}
+
+.msg-image-img {
+  width: 360rpx;
+  border-radius: 8rpx;
+  display: block;
+}
+
+.msg-system {
+  background: rgba(0, 0, 0, 0.06);
+  color: #6B7280;
+  padding: 12rpx 24rpx;
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  text-align: center;
+}
+
+/* ── 会诊邀请卡片 ───────────────────── */
+.consult-card {
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  border: 2rpx solid #F59E0B;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  min-width: 480rpx;
+}
+
+.consult-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #92400E;
+  margin-bottom: 12rpx;
+}
+
+.consult-body {
+  font-size: 26rpx;
+  color: #78350F;
+  line-height: 1.6;
+  margin-bottom: 16rpx;
+}
+
+.consult-note {
+  display: block;
+  font-size: 22rpx;
+  color: #92400E;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 8rpx 12rpx;
+  border-radius: 8rpx;
+  margin-top: 8rpx;
+}
+
+.consult-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 12rpx;
+}
+
+.btn-refuse,
+.btn-accept {
+  flex: 1;
+  padding: 16rpx 0;
+  border-radius: 12rpx;
+  text-align: center;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.btn-refuse {
+  background: #FFFFFF;
+  color: #6B7280;
+  border: 1rpx solid #D1D5DB;
+}
+
+.btn-accept {
+  background: #1769B2;
+  color: #FFFFFF;
+}
+
+.msg-time {
+  font-size: 20rpx;
+  color: #9CA3AF;
+  margin-top: 6rpx;
+  padding: 0 6rpx;
+}
+
+/* ── 输入栏 ──────────────────────── */
+.input-bar {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 20rpx;
+  background: #F7F7F7;
+  border-top: 1rpx solid #E5E7EB;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+}
+
+.btn-image,
+.btn-consult {
+  width: 64rpx;
+  height: 64rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E5E7EB;
+  border-radius: 12rpx;
+  margin-right: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btn-consult {
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  border-color: #F59E0B;
+}
+
+.btn-image-icon {
+  font-size: 32rpx;
+}
+
+.input-wrapper {
+  flex: 1;
+  background: #FFFFFF;
+  border: 1rpx solid #E5E7EB;
+  border-radius: 10rpx;
+  padding: 0 20rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  margin-right: 16rpx;
+}
+
+.input-field {
+  flex: 1;
+  background: transparent;
+  border: none;
+  font-size: 28rpx;
+  height: 100%;
+  padding: 0;
+  min-width: 0;
+}
+
+.btn-send {
+  background: #2D83C9;
+  color: #FFFFFF;
+  font-size: 26rpx;
+  padding: 0 24rpx;
+  height: 64rpx;
+  line-height: 64rpx;
+  border-radius: 10rpx;
+  border: none;
+  flex-shrink: 0;
+  min-width: 100rpx;
+}
+
+.btn-send[disabled] {
+  background: #C8E6D4;
+}
+
+/* ── 会诊邀请弹窗 ─────────────────── */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  z-index: 999;
+}
+
+.modal-content {
+  width: 100%;
+  background: #FFFFFF;
+  border-radius: 24rpx 24rpx 0 0;
+  padding: 30rpx 24rpx;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.modal-close {
+  width: 56rpx;
+  height: 56rpx;
+  background: #F3F4F6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  color: #6B7280;
+}
+
+.modal-hint {
+  font-size: 24rpx;
+  color: #6B7280;
+  margin-bottom: 24rpx;
+}
+
+.doctor-list {
+  flex: 1;
+  max-height: 60vh;
+}
+
+.empty-doctors {
+  text-align: center;
+  padding: 60rpx 0;
+  color: #9CA3AF;
+}
+
+.doctor-card {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 24rpx 16rpx;
+  border-bottom: 1rpx solid #F3F4F6;
+}
+
+.doctor-avatar-mini {
+  width: 72rpx;
+  height: 72rpx;
+  background: linear-gradient(135deg, #1769B2, #2D83C9);
+  color: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.doctor-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.doctor-card-name {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin-bottom: 4rpx;
+}
+
+.doctor-card-meta {
+  display: block;
+  font-size: 22rpx;
+  color: #1769B2;
+  margin-bottom: 4rpx;
+}
+
+.doctor-card-intro {
+  display: block;
+  font-size: 22rpx;
+  color: #9CA3AF;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doctor-arrow {
+  font-size: 36rpx;
+  color: #D1D5DB;
+}
+
+.btn-image, .btn-consult, .input-wrapper, .btn-send { height: 88rpx; box-sizing: border-box; }
+.btn-image, .btn-consult { width: 88rpx; }
+.btn-send { line-height: 88rpx; font-size: 30rpx; }
+.input-field { font-size: 30rpx; }
+.patient-extra, .doctor-card-meta, .doctor-card-intro { font-size: 28rpx; }

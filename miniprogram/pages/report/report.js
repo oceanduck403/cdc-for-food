@@ -1,6 +1,5 @@
 // pages/report/report.js
 const { request } = require('../../utils/request.js');
-const mock = require('../../utils/mock.js');
 
 Page({
   data: {
@@ -17,7 +16,10 @@ Page({
     this.setData({ loading: true });
     const url = `/meals/${this.data.mealId || 'latest'}/report`;
     request({ url, showLoading: false })
-      .then((data) => this.setData({ report: data || mock.mealReport, loading: false }))
-      .catch(() => this.setData({ report: mock.mealReport, loading: false }));
+      .then((data) => this.setData({ report: data || null, loading: false }))
+      .catch(() => {
+        this.setData({ report: null, loading: false });
+        wx.showToast({ title: '报告加载失败，请稍后重试', icon: 'none' });
+      });
   }
 });

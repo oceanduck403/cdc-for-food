@@ -5,7 +5,7 @@ Component({
   },
   methods: {
     onBack() {
-      wx.navigateBack({ delta: 1, fail: () => wx.switchTab({ url: '/pages/index/index' }) });
+      wx.navigateBack({ delta: 1, fail: () => wx.switchTab({ url: '/pages/survey/survey' }) });
     }
   }
 });

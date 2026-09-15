@@ -1,0 +1,1 @@
+:host { display: inline-flex; flex-shrink: 0; vertical-align: middle; align-items: center; justify-content: center; }.icon { display: block; flex-shrink: 0; }

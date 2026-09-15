@@ -5,13 +5,18 @@ import pytest
 pytestmark = pytest.mark.asyncio
 
 
-async def _login(client) -> str:
+async def _login(client, monkeypatch) -> str:
+    from app.api.v1 import auth
+    async def fake_exchange(code):
+        assert code == 'MEAL-CODE'
+        return auth.WxSessionResponse(openid='test-openid-meal', session_key='test-session')
+    monkeypatch.setattr(auth, '_code2session', fake_exchange)
     r = await client.post("/api/v1/auth/wechat", json={"code": "MEAL-CODE"})
     return r.json()["token"]
 
 
-async def test_analyze_meal_returns_items(client):
-    token = await _login(client)
+async def test_analyze_meal_returns_items(client, monkeypatch):
+    token = await _login(client, monkeypatch)
     fake = base64.b64encode(b"fake-image-bytes").decode("ascii")
     r = await client.post(
         "/api/v1/meals/analyze",
@@ -24,8 +29,8 @@ async def test_analyze_meal_returns_items(client):
     assert "totalKcal" in data
 
 
-async def test_latest_report(client):
-    token = await _login(client)
+async def test_latest_report(client, monkeypatch):
+    token = await _login(client, monkeypatch)
     r = await client.get(
         "/api/v1/meals/latest/report",
         headers={"Authorization": f"Bearer {token}"},

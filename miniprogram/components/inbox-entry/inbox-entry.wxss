@@ -1,0 +1,9 @@
+.entry-row { display: flex; gap: 16rpx; margin: 24rpx 0; }
+.entry { margin: 0; flex: 1.2; min-width: 0; min-height: 100rpx; display: flex; align-items: center; gap: 16rpx; text-align: left; padding: 22rpx 18rpx; line-height: 1.5; background: white; border: 1rpx solid #d7e5f0; border-radius: 24rpx; }
+.entry::after { border: none; }
+.favorite-entry { flex: 1; }
+.icon-wrap { position: relative; flex-shrink: 0; }
+.title { display: block; color: #164c78; font-size: 29rpx; font-weight: 600; }
+.note { display: block; color: #576e82; font-size: 25rpx; margin-top: 5rpx; }
+.badge { position: absolute; right: -12rpx; top: -15rpx; background: #d95342; color: white; border: 3rpx solid white; border-radius: 24rpx; min-width: 28rpx; padding: 0 5rpx; font-size: 22rpx; text-align: center; }
+.pressed { background: #eaf4fb; }

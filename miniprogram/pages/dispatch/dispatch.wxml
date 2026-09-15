@@ -1,0 +1,22 @@
+<view class="dispatch-page">
+  <view class="dispatch-hero">
+    <text class="eyebrow">免费预约 · 服务调度</text>
+    <text class="heading">让每一份预约都有回应</text>
+    <view class="metrics"><view><text class="number">{{waiting}}</text><text>等待接诊</text></view><view><text class="number">{{assigned}}</text><text>服务中</text></view><view><text class="number">{{onlineDoctors.length}}</text><text>在线接诊</text></view></view>
+  </view>
+  <view class="refresh-line"><text>{{updated ? '更新于 ' + updated + ' · 每5秒刷新' : '正在连接服务'}}</text><button size="mini" bindtap="refresh" disabled="{{busy}}">刷新</button></view>
+  <view class="error-box" wx:if="{{error}}">{{error}}</view>
+  <text class="section-heading">医生接诊状态</text>
+  <view class="doctor-row" wx:for="{{doctors}}" wx:key="id"><view><text class="row-title">{{item.name}}</text><text class="muted">{{item.online ? '在线接诊中' : (item.available ? '离线，暂不分配新预约' : '已暂停接诊')}}</text></view><button size="mini" data-id="{{item.id}}" data-available="{{item.available}}" bindtap="toggleDoctor" disabled="{{busy}}">{{item.available ? '暂停' : '恢复'}}</button></view>
+  <view class="empty" wx:if="{{!loading && !doctors.length}}">暂无启用的医生，请先在医生管理中添加。</view>
+  <text class="section-heading">当前预约</text>
+  <view class="appointment-card" wx:for="{{appointments}}" wx:key="id">
+    <view class="card-top"><text class="row-title">{{item.patient_name}}</text><text class="badge {{item.status}}">{{item.status === 'waiting' ? '等待接诊' : '服务中'}}</text></view>
+    <text class="muted">预约编号 {{item.id}} · 免费服务</text>
+    <text class="assigned-doctor">{{item.doctor ? '接诊医生：' + item.doctor.name : '等待系统匹配在线医生'}}</text>
+    <view class="actions">
+      <picker range="{{pickerDoctors}}" range-key="name" bindtap="prepareDoctors" bindchange="chooseDoctor" data-id="{{item.id}}" disabled="{{busy || !onlineDoctors.length}}"><button size="mini" type="primary" disabled="{{busy || !onlineDoctors.length}}">{{item.doctor ? '改派医生' : '指定医生'}}</button></picker>
+      <button wx:if="{{item.status === 'assigned'}}" size="mini" data-id="{{item.id}}" data-action="queue" bindtap="changeStatus" disabled="{{busy}}">重新排队</button><button size="mini" data-id="{{item.id}}" data-action="complete" bindtap="changeStatus" disabled="{{busy}}">结束服务</button></view>
+  </view>
+  <view class="empty" wx:if="{{!loading && !appointments.length && !error}}">暂无待处理预约</view>
+</view>

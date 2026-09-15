@@ -1,64 +1,77 @@
 {
   "pages": [
-    "pages/index/index",
     "pages/login/login",
-    "pages/profile/profile",
-    "pages/capture/capture",
-    "pages/report/report",
-    "pages/knowledge/knowledge",
-    "pages/knowledge-detail/knowledge-detail",
-    "pages/gis-map/gis-map",
+    "pages/survey/survey",
+    "pages/checkin/checkin",
+    "pages/consult/consult",
+    "pages/science/science",
     "pages/mine/mine",
-    "pages/payment/payment"
+    "pages/index/index",
+    "pages/survey-form/survey-form",
+    "pages/checkin-record/checkin-record",
+    "pages/science-detail/science-detail",
+    "pages/capture/capture",
+    "pages/profile/profile",
+    "pages/consult-ai/consult-ai",
+    "pages/doctor/doctor",
+    "pages/doctor-chat/doctor-chat",
+    "pages/doctor-profile/doctor-profile",
+    "pages/admin/admin",
+    "pages/admin-login/admin-login",
+    "pages/dispatch/dispatch",
+    "pages/knowledge-detail/knowledge-detail",
+    "pages/report/report",
+    "pages/messages/messages",
+    "pages/favorites/favorites"
   ],
+  "usingComponents": {
+    "ui-icon": "/components/ui-icon/ui-icon"
+  },
   "window": {
     "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#0F8A65",
+    "navigationBarBackgroundColor": "#0E4D7C",
     "navigationBarTitleText": "营养健康 AI 小助手",
     "navigationBarTextStyle": "white",
-    "backgroundColor": "#F5F7FA"
+    "backgroundColor": "#F5F9FC"
   },
   "tabBar": {
-    "color": "#9CA3AF",
-    "selectedColor": "#0F8A65",
+    "color": "#5E7082",
+    "selectedColor": "#0E4D7C",
     "backgroundColor": "#FFFFFF",
-    "borderStyle": "white",
+    "borderStyle": "black",
     "list": [
       {
-        "pagePath": "pages/index/index",
-        "text": "首页",
-        "iconPath": "images/home.png",
-        "selectedIconPath": "images/home_active.png"
+        "pagePath": "pages/survey/survey",
+        "text": "健康评估",
+        "iconPath": "images/ui/survey-muted.png",
+        "selectedIconPath": "images/ui/survey-tab-selected.png"
       },
       {
-        "pagePath": "pages/knowledge/knowledge",
-        "text": "知识库",
-        "iconPath": "images/knowledge.png",
-        "selectedIconPath": "images/knowledge_active.png"
+        "pagePath": "pages/checkin/checkin",
+        "text": "打卡指导",
+        "iconPath": "images/ui/checkin-muted.png",
+        "selectedIconPath": "images/ui/checkin-tab-selected.png"
       },
       {
-        "pagePath": "pages/gis-map/gis-map",
-        "text": "风险地图",
-        "iconPath": "images/map.png",
-        "selectedIconPath": "images/map_active.png"
+        "pagePath": "pages/consult/consult",
+        "text": "免费咨询",
+        "iconPath": "images/ui/chat-muted.png",
+        "selectedIconPath": "images/ui/chat-tab-selected.png"
+      },
+      {
+        "pagePath": "pages/science/science",
+        "text": "科普互动",
+        "iconPath": "images/ui/book-muted.png",
+        "selectedIconPath": "images/ui/book-tab-selected.png"
       },
       {
         "pagePath": "pages/mine/mine",
         "text": "我的",
-        "iconPath": "images/mine.png",
-        "selectedIconPath": "images/mine_active.png"
+        "iconPath": "images/ui/user-muted.png",
+        "selectedIconPath": "images/ui/user-tab-selected.png"
       }
     ]
   },
-  "permission": {
-    "scope.userLocation": {
-      "desc": "用于在地图上显示附近的食品安全风险点"
-    }
-  },
-  "requiredPrivateInfos": [
-    "getLocation",
-    "chooseLocation"
-  ],
   "style": "v2",
   "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents"

@@ -1,0 +1,15 @@
+.float-wrap { position: fixed; z-index: 80; box-sizing: border-box; width: 88px; height: 92px; }
+.ai-orb { position: relative; box-sizing: border-box; width: 88px; max-width: 88px; min-width: 0; height: 92px; padding: 6px 3px 5px; margin: 0; border: 2px solid #fff; border-radius: 26px; background: linear-gradient(155deg, #f1fcff 0%, #cbeef4 60%, #a9dbeb 100%); box-shadow: 0 8px 20px rgba(23, 93, 125, .23), 0 0 0 4px rgba(164, 219, 237, .27); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ai-orb::after { border: none; }
+.ai-orb.is-dragging { box-shadow: 0 12px 24px rgba(23, 93, 125, .3); }
+.orb-pressed { transform: scale(.95); }
+.mascot { position: relative; width: 42px; height: 42px; flex-shrink: 0; border-radius: 46% 46% 44% 44%; background: linear-gradient(150deg, #fff, #edf9f9); box-shadow: inset 0 -4px 0 #c6e9e9, 0 3px 6px rgba(22, 89, 113, .2); }
+.mascot-ear { position: absolute; top: 4px; width: 12px; height: 17px; border-radius: 10px 10px 3px 3px; background: #fff; box-shadow: inset 0 -3px 0 #d5eff0; }
+.ear-left { left: -3px; transform: rotate(-30deg); }
+.ear-right { right: -3px; transform: rotate(30deg); }
+.mascot-eye { position: absolute; top: 19px; width: 4px; height: 5px; border-radius: 50%; background: #236682; }
+.eye-left { left: 12px; }
+.eye-right { right: 12px; }
+.mascot-smile { position: absolute; left: 18px; top: 27px; width: 7px; height: 4px; border-bottom: 2px solid #236682; border-radius: 50%; }
+.mascot-shine { position: absolute; right: 6px; top: 8px; width: 7px; height: 7px; border-radius: 50%; background: rgba(143, 217, 231, .8); }
+.orb-label { display: block; margin-top: 6px; color: #175476; font-size: 13px; line-height: 1.2; font-weight: 700; white-space: nowrap; }

@@ -1,0 +1,70 @@
+/* pages/doctor-profile/doctor-profile.wxss */
+.container {
+  min-height: 100vh;
+  background: #F5F7FA;
+  padding: 24rpx;
+}
+
+.profile-card {
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 60rpx 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.avatar {
+  width: 140rpx;
+  height: 140rpx;
+  background: linear-gradient(135deg, #1769A6, #2985C1);
+  color: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56rpx;
+  font-weight: 700;
+  margin-bottom: 24rpx;
+}
+
+.name {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #1A1A1A;
+  margin-bottom: 8rpx;
+}
+
+.meta {
+  font-size: 26rpx;
+  color: #6B7280;
+  margin-bottom: 16rpx;
+}
+
+.intro {
+  font-size: 26rpx;
+  color: #4B5563;
+  text-align: center;
+  line-height: 1.7;
+}
+
+.action-list {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.action-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32rpx 30rpx;
+  border-bottom: 1rpx solid #F3F4F6;
+  font-size: 28rpx;
+}
+
+.arrow {
+  color: #9CA3AF;
+  font-size: 36rpx;
+}

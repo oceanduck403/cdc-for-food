@@ -1,5 +1,6 @@
 // utils/request.js
 const config = require('./config.js');
+const { networkError } = require('./network-error.js');
 const mock = require('./mock.js');
 
 // 简易 URL → mock 数据 路由（按 URL 前缀匹配）
@@ -55,13 +56,13 @@ const mockRoutes = [
 async function fetchExternalKnowledge(url) {
   const u = new URL(url.startsWith('http') ? url : 'http://x' + url);
   const category = u.searchParams.get('category') || 'guide';
-  
+
   try {
     const resp = await wx.request({
       url: `${config.knowledgeBase.baseUrl}/knowledge-index.json`,
       method: 'GET'
     });
-    
+
     if (resp.statusCode === 200 && resp.data) {
       const catData = resp.data[category];
       if (catData && catData.items) {
@@ -71,7 +72,7 @@ async function fetchExternalKnowledge(url) {
   } catch (e) {
     console.error('外部知识库加载失败', e);
   }
-  
+
   // 降级到 mock
   const list = (mock.knowledgeMap[category] || mock.knowledgeMap.guide).items;
   return { items: list };
@@ -81,13 +82,13 @@ async function fetchExternalKnowledge(url) {
 async function fetchExternalArticle(url) {
   const m = url.match(/\/knowledge\/([^?&#/]+)/);
   const id = m ? m[1] : '';
-  
+
   try {
     const resp = await wx.request({
       url: `${config.knowledgeBase.baseUrl}/knowledge.json`,
       method: 'GET'
     });
-    
+
     if (resp.statusCode === 200 && resp.data && resp.data.items) {
       const article = resp.data.items.find(item => item.id === id);
       if (article) {
@@ -103,7 +104,7 @@ async function fetchExternalArticle(url) {
   } catch (e) {
     console.error('外部知识库加载失败', e);
   }
-  
+
   // 降级到 mock
   return mock.knowledgeArticles[id] || {
     id,
@@ -125,7 +126,10 @@ function findMock(url, method) {
 
 function request({ url, method = 'GET', data = {}, header = {}, showLoading = true, silent = false }) {
   const app = getApp();
-  const token = (app && app.globalData && app.globalData.token) || wx.getStorageSync('token') || '';
+  const token = wx.getStorageSync('token') || '';
+
+  // 实际后端地址（本地开发）
+  const apiBase = config.apiBase;
 
   if (showLoading) {
     wx.showLoading({ title: '加载中', mask: true });
@@ -140,8 +144,9 @@ function request({ url, method = 'GET', data = {}, header = {}, showLoading = tr
 
   return new Promise((resolve, reject) => {
     wx.request({
-      url: (url.startsWith('http') ? '' : config.apiBase) + url,
+      url: (url.startsWith('http') ? '' : apiBase) + url,
       method,
+      timeout: 10000,
       data,
       header: Object.assign(
         { 'content-type': 'application/json' },
@@ -153,8 +158,12 @@ function request({ url, method = 'GET', data = {}, header = {}, showLoading = tr
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data);
         } else if (res.statusCode === 401) {
-          app.globalData.token = '';
-          wx.removeStorageSync('token');
+          if (token && wx.getStorageSync('token') === token) {
+            app.globalData.token = '';
+            app.globalData.role = '';
+            app.globalData.profile = {};
+            ['token', 'role', 'profile', 'userInfo'].forEach(key => wx.removeStorageSync(key));
+          }
           if (!silent) wx.showToast({ title: '请重新登录', icon: 'none' });
           reject(res.data);
         } else {
@@ -178,7 +187,7 @@ function request({ url, method = 'GET', data = {}, header = {}, showLoading = tr
           }
         }
         if (!silent) wx.showToast({ title: '网络异常', icon: 'none' });
-        reject(err);
+        reject(networkError(err));
       }
     });
   });

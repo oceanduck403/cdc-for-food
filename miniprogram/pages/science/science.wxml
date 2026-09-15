@@ -1,0 +1,109 @@
+<view class="container service-page">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <view class="hero-emblem"><ui-icon name="book" tone="white" size="68" /></view>
+    <text class="hero-eyebrow">科学认识 · 从容生活</text>
+    <text class="page-title">健康科普</text>
+    <text class="page-desc">健康知识 · 互动讨论</text>
+  </view>
+  <inbox-entry />
+
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input-wrap">
+      <ui-icon name="search" size="36" tone="muted" />
+      <input
+        class="search-input"
+        placeholder="搜索健康知识..."
+        value="{{keyword}}"
+        bindinput="onSearch"
+      />
+      <view wx:if="{{keyword}}" class="clear-icon" bindtap="clearSearch"><ui-icon name="close" size="30" tone="muted" /></view>
+    </view>
+  </view>
+
+  <!-- 分类标签 -->
+  <scroll-view class="category-scroll" scroll-x="true">
+    <view class="category-list">
+      <view
+        class="category-item {{active === item.id ? 'active' : ''}}"
+        wx:for="{{categories}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="switchCategory"
+        style="{{active === item.id ? 'background:' + item.color : ''}}"
+      >
+
+        <text class="cat-name" style="{{active === item.id ? 'color: #fff' : ''}}">{{item.name}}</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 热门推荐 -->
+  <view class="hot-section" wx:if="{{hotArticles.length > 0 && !keyword}}">
+    <view class="section-header">
+      <text class="section-title">最新内容</text>
+    </view>
+    <view class="hot-list">
+      <view
+        class="hot-item"
+        wx:for="{{hotArticles}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="openArticle"
+      >
+        <text class="hot-rank">{{index + 1}}</text>
+        <view class="hot-info">
+          <text class="hot-title">{{item.title}}</text>
+          <text class="hot-meta">{{item.date}} · {{item.likeCount || 0}} 人点赞</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 知识列表 -->
+  <view class="knowledge-list">
+    <view
+      class="knowledge-card"
+      wx:for="{{list}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="openArticle"
+    >
+      <view class="card-header">
+        <view class="tag" style="background: {{item.tagColor}}">
+          <text style="color: {{item.tagTextColor || '#1769A6'}}">{{item.categoryName || '科普'}}</text>
+        </view>
+        <text class="card-date">{{item.date}}</text>
+      </view>
+      <text class="card-title">{{item.title}}</text>
+      <text class="card-summary">{{item.summary}}</text>
+      <view class="card-footer">
+        <text class="card-views">{{item.commentCount || 0}} 条讨论</text>
+        <view class="card-actions">
+          <view class="action-btn {{item.liked ? 'selected' : ''}}" catchtap="likeArticle" data-id="{{item.id}}"><ui-icon name="like" tone="{{item.liked ? 'active' : 'muted'}}" size="32" />{{item.likeCount || 0}}</view>
+          <view class="action-btn {{item.favorited ? 'selected' : ''}}" catchtap="favoriteArticle" data-id="{{item.id}}"><ui-icon name="star" tone="{{item.favorited ? 'active' : 'muted'}}" size="32" />收藏</view>
+          <view class="action-btn" catchtap="openArticle" data-id="{{item.id}}"><ui-icon name="comment" size="32" tone="muted" />评论</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="list-footer" wx:if="{{loading}}">健康知识加载中…</view>
+  <view class="list-footer" wx:if="{{loadingMore}}">更多内容加载中…</view>
+  <button class="list-footer more-button" wx:if="{{listHasMore && !loadingMore}}" bindtap="loadMore">查看更多内容</button>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!loading && list.length === 0}}">
+    <ui-icon name="book" tone="muted" size="72" />
+    <text class="empty-text">{{loadError ? '内容暂时无法加载' : (keyword || active !== 'all' ? '暂无相关文章' : '暂无科普内容')}}</text>
+    <text class="empty-hint">{{loadError || (keyword || active !== 'all' ? '试试其他分类或搜索关键词' : '暂无科普内容，请稍后再来')}}</text>
+    <button wx:if="{{loadError}}" class="retry-btn" bindtap="load">重新加载</button>
+  </view>
+
+  <view class="science-disclaimer">
+    <text>本应用由成都市疾病预防控制中心提供</text>
+    <text>仅供营养与食品安全科普使用，不作为诊疗依据</text>
+  </view>
+</view>
+<ai-float />

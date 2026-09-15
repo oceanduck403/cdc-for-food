@@ -1,0 +1,199 @@
+@import "../../styles/service.wxss";
+/* pages/survey/survey.wxss */
+
+.container {
+  padding: 30rpx;
+  background: #F5F7FA;
+  min-height: 100vh;
+}
+
+.page-header {
+  margin-bottom: 30rpx;
+}
+
+.page-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin-bottom: 10rpx;
+}
+
+.page-desc {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+}
+
+/* 问卷类型列表 */
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin-bottom: 20rpx;
+  margin-top: 30rpx;
+}
+
+.survey-list {
+  margin-bottom: 30rpx;
+}
+
+.survey-card {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding: 30rpx;
+  background: #fff;
+  border-radius: 16rpx;
+}
+
+.survey-card-pressed { background: #EAF3FD; }
+
+.survey-icon {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
+}
+
+.survey-icon text {
+  font-size: 48rpx;
+}
+
+.survey-info {
+  flex: 1;
+}
+
+.survey-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin-bottom: 8rpx;
+}
+
+.survey-desc {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 10rpx;
+}
+
+.survey-meta {
+  display: flex;
+  align-items: center;
+}
+
+.meta-item {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.meta-divider {
+  margin: 0 12rpx;
+  color: #E5E7EB;
+}
+
+.survey-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.status-tag {
+  font-size: 28rpx;
+  color: #999;
+  background: #F3F4F6;
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+  margin-bottom: 10rpx;
+}
+
+.status-tag.completed {
+  color: #1769B2;
+  background: #DCEBFA;
+}
+
+.survey-arrow {
+  font-size: 36rpx;
+  color: #D1D5DB;
+}
+
+/* 历史记录 */
+.history-list {
+  margin-bottom: 30rpx;
+}
+
+.history-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 12rpx;
+  padding: 24rpx 30rpx;
+  margin-bottom: 16rpx;
+}
+
+.history-info {
+  flex: 1;
+}
+
+.history-title {
+  display: block;
+  font-size: 28rpx;
+  color: #1A1A1A;
+  margin-bottom: 8rpx;
+}
+
+.history-date {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.history-arrow {
+  font-size: 36rpx;
+  color: #D1D5DB;
+}
+
+/* 底部说明 */
+.info-footer {
+  text-align: center;
+  padding: 30rpx 0;
+}
+
+.info-footer text {
+  display: block;
+  font-size: 28rpx;
+  color: #9CA3AF;
+  margin-bottom: 10rpx;
+}
+
+/* Larger reading size and clearer action rows for older users. */
+.service-page .section-title { font-size: 34rpx; }
+.service-page .survey-card { min-height: 152rpx; border-color: #dce7ec; box-shadow: 0 7rpx 20rpx rgba(31,73,96,.05); }
+.service-page .survey-title { font-size: 33rpx; color: #173B60; }
+.service-page .survey-desc { font-size: 28rpx; color: #4d6673; }
+.service-page .survey-meta, .service-page .meta-item { font-size: 28rpx; color: #435C70; }
+.service-page .status-tag { font-size: 28rpx; }
+.service-page .history-card { min-height: 90rpx; border: 1rpx solid #dce7ec; }
+.service-page .history-title { font-size: 30rpx; color: #173B60; }
+.service-page .history-date { font-size: 28rpx; color: #4B5D70; }
+.service-page .state-card { font-size: 29rpx; line-height: 1.75; }
+.service-page .state-card button { min-height: 88rpx; line-height: 88rpx; font-size: 29rpx; color: #1769B2; }
+.service-page .empty-visual { display: flex; align-items: center; justify-content: center; width: 126rpx; height: 126rpx; margin: 0 auto 22rpx; border-radius: 30rpx; background: linear-gradient(140deg,#F5FAFE,#DCEFFA); box-shadow: 0 14rpx 25rpx rgba(23,105,166,.14), inset 0 3rpx 6rpx rgba(255,255,255,.8); }
+.service-page .empty-hint { display: block; margin-top: 10rpx; font-size: 28rpx; color: #506A80; }
+.service-page .state-card .secondary-action { color: #1769A6; background: #EAF4FB; border-radius: 14rpx; padding: 0 20rpx; }
+.service-page .info-footer text { font-size: 28rpx; color: #4B5D70; }
+
+/* Keep the last assessment action clear of the draggable AI entry. */
+.container.service-page { padding-bottom: calc(180rpx + env(safe-area-inset-bottom)); }
+.service-page .section-count { font-size: 28rpx; color: #506A80; }
+.service-page .survey-card, .service-page .history-card { border: 1rpx solid #D7E4EF; }
+.service-page .survey-desc { font-size: 29rpx; line-height: 1.65; }
+.service-page .survey-meta { margin-top: 12rpx; }
+.service-page .status-tag { margin-bottom: 0; }
+.service-page .info-footer { padding-top: 24rpx; }
+.service-page .info-footer text { line-height: 1.65; }

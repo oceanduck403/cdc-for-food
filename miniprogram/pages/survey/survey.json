@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "健康评估",
+  "usingComponents": {
+    "ai-float": "/components/ai-float/ai-float"
+  },
+  "enablePullDownRefresh": true
+}

@@ -1,0 +1,55 @@
+<view class="container">
+  <!-- 头部统计 -->
+  <view class="stats-header card">
+    <view class="stats-title">{{currentMonth}}打卡统计</view>
+    <view class="stats-grid">
+      <view class="stat-item">
+        <text class="stat-num">{{monthStats.total}}</text>
+        <text class="stat-label">总打卡</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-num">{{monthStats.diet}}</text>
+        <text class="stat-label">膳食</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-num">{{monthStats.exercise}}</text>
+        <text class="stat-label">运动</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-num">{{monthStats.water}}</text>
+        <text class="stat-label">饮水</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 记录列表 -->
+  <view class="section-heading"><text class="section-title">打卡记录</text><text class="section-hint" wx:if="{{records.length > 0}}">长按记录可删除</text></view>
+  <view class="record-list" wx:if="{{records.length > 0}}">
+    <view
+      class="record-card"
+      wx:for="{{records}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindlongpress="deleteRecord"
+    >
+      <view class="record-icon">
+        <ui-icon wx:if="{{item.type === 'diet'}}" name="leaf" size="38" />
+        <ui-icon wx:if="{{item.type === 'exercise'}}" name="activity" size="38" />
+        <ui-icon wx:if="{{item.type === 'water'}}" name="water" size="38" />
+        <ui-icon wx:if="{{item.type === 'photo'}}" name="camera" size="38" />
+      </view>
+      <view class="record-info">
+        <text class="record-type">{{item.typeText || item.type}}</text>
+        <text class="record-time">{{item.date}} {{item.time}}</text>
+      </view>
+      <text class="record-status">已完成</text>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!loading && records.length === 0}}">
+    <ui-icon name="calendar" size="72" />
+    <text class="empty-text">还没有打卡记录</text>
+    <text class="empty-hint">完成每日打卡后，可以在这里回看</text>
+  </view>
+</view>

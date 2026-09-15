@@ -1,0 +1,357 @@
+/* pages/consult/consult.wxss */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #F4F7F6;
+}
+
+.booking-panel { margin: 28rpx; padding: 36rpx 30rpx; border-radius: 24rpx; background: white; border: 1rpx solid #E0EDE7; }
+.booking-kicker { display: block; color: #1769A6; font-size: 28rpx; }
+.booking-title { display: block; font-size: 38rpx; line-height: 1.45; font-weight: 600; color: #163D31; margin: 22rpx 0; }
+.booking-desc { display: block; color: #657A71; line-height: 1.85; font-size: 28rpx; margin-bottom: 36rpx; }
+.booking-primary { background: #1769A6; color: white; border-radius: 16rpx; font-size: 30rpx; }
+.booking-error { margin: 0 28rpx 20rpx; padding: 24rpx; background: #FFF2EA; color: #954B2A; font-size: 28rpx; border-radius: 16rpx; }
+.booking-error button { margin-left: 20rpx; }
+.online-status { display: block; margin-top: 8rpx; color: #1769A6; font-size: 28rpx; }
+.booking-symbol { display: block; width: 110rpx; height: 110rpx; padding: 20rpx; border-radius: 30rpx; background: #EDF3E6; margin-bottom: 32rpx; }
+.booking-panel { margin: 32rpx 28rpx; padding: 38rpx 32rpx; border-color: #E2E8DC; }
+.booking-title { font-size: 40rpx; color: #1B4030; }
+.booking-primary { background: #1769A6; min-height: 92rpx; line-height: 92rpx; }
+
+/* ── 顶部医生信息卡 ───────────────────────────────── */
+.doctor-header {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 30rpx;
+  background: #FFFFFF;
+  border-bottom: 1rpx solid #E5E7EB;
+  gap: 24rpx;
+}
+
+.doctor-avatar {
+  width: 96rpx;
+  height: 96rpx;
+  background: linear-gradient(135deg, #1769A6, #2985C1);
+  color: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.doctor-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.doctor-name-line {
+  display: flex;
+  align-items: baseline;
+  gap: 12rpx;
+  margin-bottom: 6rpx;
+}
+
+.doctor-name {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1A1A1A;
+}
+
+.doctor-title {
+  font-size: 28rpx;
+  color: #1769A6;
+  background: #EAF4FB;
+  padding: 2rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.doctor-dept {
+  font-size: 28rpx;
+  color: #6B7280;
+  margin-bottom: 4rpx;
+  display: block;
+}
+
+.doctor-intro {
+  font-size: 28rpx;
+  color: #9CA3AF;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── 加载状态 ────────────────────────────────────── */
+.loading-state {
+  text-align: center;
+  padding: 80rpx 0;
+  color: #6B7280;
+  font-size: 28rpx;
+}
+
+/* ── 聊天区 ──────────────────────────────────────── */
+.chat-scroll {
+  flex: 1;
+  padding: 20rpx 24rpx;
+  box-sizing: border-box;
+}
+
+.chat-tip {
+  text-align: center;
+  margin: 20rpx 0 30rpx;
+}
+
+.chat-tip text {
+  font-size: 28rpx;
+  color: #9CA3AF;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+}
+
+.chat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.msg-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+}
+
+.msg-row.mine {
+  justify-content: flex-end;
+}
+
+.msg-row.other {
+  justify-content: flex-start;
+}
+
+.avatar {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.doctor-avatar-small {
+  background: linear-gradient(135deg, #1769A6, #2985C1);
+  color: #FFFFFF;
+}
+
+.my-avatar-small {
+  background: #1A6DD3;
+  color: #FFFFFF;
+  font-size: 28rpx;
+}
+
+.msg-bubble-wrap {
+  max-width: 70%;
+  display: flex;
+  flex-direction: column;
+}
+
+.msg-row.mine .msg-bubble-wrap {
+  align-items: flex-end;
+}
+
+.msg-row.other .msg-bubble-wrap {
+  align-items: flex-start;
+}
+
+.msg-bubble {
+  background: #FFFFFF;
+  padding: 20rpx 24rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: #1A1A1A;
+  word-break: break-all;
+  position: relative;
+}
+
+.msg-row.mine .msg-bubble {
+  background: #DCEBFA;
+  color: #1A1A1A;
+}
+
+.msg-image {
+  padding: 8rpx;
+  max-width: 400rpx;
+}
+
+.msg-image-img {
+  width: 320rpx;
+  border-radius: 8rpx;
+  display: block;
+}
+
+.msg-system {
+  background: rgba(0, 0, 0, 0.06);
+  color: #6B7280;
+  padding: 12rpx 24rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  text-align: center;
+  align-self: center;
+  margin: 10rpx 0;
+  max-width: 80%;
+}
+
+.msg-time {
+  font-size: 28rpx;
+  color: #9CA3AF;
+  margin-top: 6rpx;
+  padding: 0 6rpx;
+}
+
+/* ── 输入栏（微信聊天风格） ──────────────────────── */
+.input-bar {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 20rpx;
+  background: #F7F7F7;
+  border-top: 1rpx solid #E5E7EB;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+}
+
+.btn-image {
+  width: 64rpx;
+  height: 64rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E5E7EB;
+  border-radius: 12rpx;
+  margin-right: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btn-image-icon {
+  font-size: 32rpx;
+  line-height: 1;
+}
+
+.input-wrapper {
+  flex: 1;
+  background: #FFFFFF;
+  border: 1rpx solid #E5E7EB;
+  border-radius: 10rpx;
+  padding: 0 20rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  margin-right: 16rpx;
+}
+
+.input-field {
+  flex: 1;
+  background: transparent;
+  border: none;
+  font-size: 28rpx;
+  height: 100%;
+  padding: 0;
+  min-width: 0;
+}
+
+.btn-send {
+  background: #2985C1;
+  color: #FFFFFF;
+  font-size: 28rpx;
+  padding: 0 24rpx;
+  height: 64rpx;
+  line-height: 64rpx;
+  border-radius: 10rpx;
+  border: none;
+  flex-shrink: 0;
+  min-width: 100rpx;
+}
+
+.btn-send[disabled] {
+  background: #C8E6D4;
+  color: #FFFFFF;
+}
+
+/* ── 底部 AI 快捷 ───────────────────────────────── */
+.ai-shortcut {
+  text-align: center;
+  padding: 14rpx;
+  background: #FFFFFF;
+  border-top: 1rpx solid #E5E7EB;
+  color: #1769A6;
+  font-size: 28rpx;
+}
+
+/* Accessible booking state: service illustration plus a clear three-step path. */
+.container { background: #f5f8fb; }
+.container.booking-mode { display: block; height: auto; min-height: 100vh; padding-bottom: calc(112rpx + env(safe-area-inset-bottom)); }
+.booking-mode .booking-panel, .booking-mode .booking-help { flex-shrink: 0; }
+.booking-panel { margin: 28rpx; padding: 0 0 32rpx; overflow: hidden; background: #fff; border: 1rpx solid #dce6ed; box-shadow: 0 12rpx 32rpx rgba(30, 70, 96, .07); }
+  .booking-visual { position: relative; overflow: hidden; background: #d7eeeb; }
+  .booking-doctor-art { display: block; width: 100%; }
+.booking-kicker { margin: 30rpx 32rpx 0; font-size: 28rpx; font-weight: 600; color: #1769A6; }
+.booking-title { margin: 12rpx 32rpx 12rpx; font-size: 40rpx; line-height: 1.4; color: #173b50; }
+.booking-desc { margin: 0 32rpx 26rpx; font-size: 29rpx; line-height: 1.75; color: #3e5662; }
+.booking-steps { display: flex; align-items: center; justify-content: space-between; margin: 0 32rpx 28rpx; padding: 20rpx 12rpx; border-radius: 16rpx; background: #eef6fa; }
+.booking-step { display: flex; flex-direction: column; align-items: center; gap: 8rpx; font-size: 28rpx; font-weight: 600; color: #26485a; }
+.step-number { width: 48rpx; height: 48rpx; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #1769A6; color: #fff; font-size: 28rpx; }
+.step-line { color: #84aab9; font-size: 28rpx; }
+.booking-primary, .booking-panel > button { box-sizing: border-box; width: calc(100% - 64rpx); margin: 0 32rpx; min-height: 96rpx; line-height: 96rpx; border-radius: 15rpx; font-size: 32rpx; font-weight: 600; background: #1769A6; color: #fff; }
+.booking-panel > button::after { border: 0; }
+.booking-help { margin: 0 28rpx 28rpx; padding: 28rpx 30rpx; border: 1rpx solid #dce6ed; border-radius: 20rpx; background: #fff; }
+.booking-help-title { display: block; margin-bottom: 18rpx; font-size: 31rpx; color: #193f54; font-weight: 700; }
+.booking-help-row { display: flex; align-items: flex-start; gap: 14rpx; margin-top: 14rpx; color: #405a67; font-size: 28rpx; line-height: 1.6; }
+.help-dot { display: flex; align-items: center; justify-content: center; width: 38rpx; height: 38rpx; flex-shrink: 0; border-radius: 50%; background: #e5f2f8; color: #1769A6; font-size: 28rpx; font-weight: 700; }
+.booking-error { font-size: 28rpx; line-height: 1.6; }
+.doctor-header { background: #fff; border-bottom-color: #dce6ed; }
+.doctor-avatar, .doctor-avatar-small { background: linear-gradient(135deg, #1769A6, #2785B6); }
+.online-status { color: #1769A6; }
+.doctor-name { font-size: 34rpx; color: #173b50; }
+.doctor-title { font-size: 28rpx; color: #166688; background: #e9f4f9; }
+.online-status, .doctor-dept { font-size: 28rpx; line-height: 1.5; }
+.doctor-intro { font-size: 28rpx; }
+.chat-tip text { display: inline-block; padding: 12rpx 22rpx; font-size: 28rpx; line-height: 1.5; color: #455e6b; background: #e9f1f5; }
+.chat-empty { margin: 42rpx 14rpx; padding: 32rpx; border: 1rpx solid #d9e6ed; border-radius: 22rpx; background: linear-gradient(140deg, #fff 0%, #edf7f8 100%); box-shadow: 0 8rpx 24rpx rgba(32, 84, 108, .06); }
+.chat-empty-title { display: block; font-size: 33rpx; color: #173b50; font-weight: 700; margin-bottom: 14rpx; }
+.chat-empty-note, .chat-empty-line, .chat-empty-foot { display: block; font-size: 28rpx; line-height: 1.7; color: #3f5762; }
+.chat-empty-line { margin-top: 8rpx; }
+.chat-empty-foot { margin-top: 24rpx; padding-top: 18rpx; border-top: 1rpx solid #dce9ef; color: #5c7280; font-size: 28rpx; }
+.msg-bubble { font-size: 29rpx; line-height: 1.7; border-radius: 16rpx; }
+.msg-row.mine .msg-bubble { background: #d5ebf4; }
+.input-bar { background: #fff; border-top-color: #dce6ed; }
+.input-wrapper, .btn-image { min-height: 96rpx; border-color: #cbdbe4; border-radius: 12rpx; }
+.input-wrapper { height: 96rpx; }
+.btn-image { width: 96rpx; height: 96rpx; }
+.input-field { font-size: 29rpx; }
+.btn-send { min-height: 96rpx; line-height: 96rpx; font-size: 29rpx; background: #1769A6; }
+
+/* Keep booking, cancellation and chat controls visually distinct. */
+.container.booking-mode { padding-bottom: calc(160rpx + env(safe-area-inset-bottom)); }
+.booking-visual { background: #E8F4F9; }
+.booking-doctor-art { display: block; width: 100%; }
+.booking-kicker { color: #126090; }
+.booking-desc, .booking-help-row { font-size: 29rpx; line-height: 1.7; }
+.booking-primary:active, .btn-send:active { background: #0E4D7C; }
+.booking-panel > button.booking-cancel { background: #F4F8FB; border: 1rpx solid #B7CDDD; color: #31556C; }
+.booking-panel > button.booking-cancel:active { background: #E1EDF5; }
+.booking-error { display: flex; align-items: center; gap: 18rpx; font-size: 29rpx; line-height: 1.6; }
+.booking-error text { flex: 1; }
+.booking-error .booking-retry { box-sizing: border-box; flex: none; min-width: 128rpx; min-height: 88rpx; line-height: 88rpx; padding: 0 18rpx; margin: 0; border-radius: 12rpx; background: #FFF; border: 1rpx solid #D9AC90; color: #784221; font-size: 29rpx; }
+.booking-error .booking-retry::after { border: 0; }
+.chat-scroll { min-height: 0; }
+.doctor-intro { color: #506A80; }
+.msg-time { color: #506A80; }
+.input-field { font-size: 30rpx; }

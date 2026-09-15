@@ -1,0 +1,502 @@
+<view class="container">
+<!-- 顶部信息 -->
+  <view class="top-bar">
+    <view class="admin-info">
+      <view class="avatar"><ui-icon name="setting" size="42" tone="white" /></view>
+      <view class="info">
+        <text class="name">{{profile.nickname || profile.username || '管理员'}}</text>
+        <text class="meta">系统管理员</text>
+      </view>
+    </view>
+    <view class="account-actions">
+      <view class="account-password-btn" bindtap="openChangeAccount"><text>账号设置</text></view>
+      <view class="logout-btn" bindtap="logout"><text>退出</text></view>
+    </view>
+  </view>
+
+  <navigator class="dispatch-entry" url="/pages/dispatch/dispatch">预约调度台 · 在线医生 / 排队 / 改派 <ui-icon name="right" size="26" /></navigator>
+
+  <!-- Tab 切换 -->
+  <view class="tab-bar">
+    <view class="tab {{tab === 'dashboard' ? 'active' : ''}}" data-tab="dashboard" bindtap="switchTab">
+      <ui-icon name="chart" size="36" tone="{{tab === 'dashboard' ? 'active' : 'muted'}}" />
+      <text class="tab-label">仪表盘</text>
+    </view>
+    <view class="tab {{tab === 'doctors' ? 'active' : ''}}" data-tab="doctors" bindtap="switchTab">
+      <ui-icon name="doctor" size="36" tone="{{tab === 'doctors' ? 'active' : 'muted'}}" />
+      <text class="tab-label">医生</text>
+    </view>
+    <view class="tab {{tab === 'patients' ? 'active' : ''}}" data-tab="patients" bindtap="switchTab">
+      <ui-icon name="team" size="36" tone="{{tab === 'patients' ? 'active' : 'muted'}}" />
+      <text class="tab-label">患者</text>
+    </view>
+    <view class="tab {{tab === 'assignments' ? 'active' : ''}}" data-tab="assignments" bindtap="switchTab">
+      <ui-icon name="link" size="36" tone="{{tab === 'assignments' ? 'active' : 'muted'}}" />
+      <text class="tab-label">分配</text>
+    </view>
+    <view class="tab {{tab === 'survey' ? 'active' : ''}}" data-tab="survey" bindtap="switchTab">
+      <ui-icon name="survey" size="36" tone="{{tab === 'survey' ? 'active' : 'muted'}}" />
+      <text class="tab-label">问卷</text>
+    </view>
+    <view class="tab {{tab === 'chats' ? 'active' : ''}}" data-tab="chats" bindtap="switchTab">
+      <ui-icon name="chat" size="36" tone="{{tab === 'chats' ? 'active' : 'muted'}}" />
+      <text class="tab-label">聊天</text>
+    </view>
+  </view>
+
+  <!-- 内容区 -->
+  <scroll-view class="content" scroll-y>
+
+    <!-- 仪表盘 -->
+    <block wx:if="{{tab === 'dashboard'}}">
+      <view class="stats-grid">
+        <view class="stat-card stat-blue">
+          <text class="stat-num">{{stats.total_patients || 0}}</text>
+          <text class="stat-label">患者总数</text>
+        </view>
+        <view class="stat-card stat-green">
+          <text class="stat-num">{{stats.total_doctors || 0}}</text>
+          <text class="stat-label">医生总数</text>
+        </view>
+        <view class="stat-card stat-orange">
+          <text class="stat-num">{{stats.active_assignments || 0}}</text>
+          <text class="stat-label">活跃问诊</text>
+        </view>
+        <view class="stat-card stat-purple">
+          <text class="stat-num">{{stats.total_messages || 0}}</text>
+          <text class="stat-label">聊天消息</text>
+        </view>
+      </view>
+
+      <view class="info-card">
+        <view class="info-title"><ui-icon name="info" size="30" /> 系统说明</view>
+        <view class="info-text">
+          <text>· 医生账号由管理员统一分配，不能自助注册</text>
+          <text>· 患者首次咨询自动分配给患者最少的医生</text>
+          <text>· 医生可主动邀请其他医生进行会诊</text>
+          <text>· 管理员可手动调整医患分配关系</text>
+        </view>
+      </view>
+    </block>
+
+    <!-- 医生管理 -->
+    <block wx:elif="{{tab === 'doctors'}}">
+      <view class="toolbar">
+        <view class="search-input-wrap">
+          <input class="search-input" placeholder="搜索医生"
+                 value="{{doctorKeyword}}" bindinput="onDoctorKwInput" bindconfirm="reloadDoctors" />
+        </view>
+        <view class="btn-add" bindtap="openAddDoctor">
+          <ui-icon name="plus" size="26" tone="white" /><text>新增</text>
+        </view>
+      </view>
+
+      <view class="doctor-list">
+        <view wx:if="{{doctors.length === 0}}" class="empty">
+          <text>暂无医生账号，点击右上角新增</text>
+        </view>
+        <view wx:for="{{doctors}}" wx:key="id" class="doctor-card">
+          <view class="doctor-row">
+            <view class="doctor-avatar-mini">{{item.real_name[0]}}</view>
+            <view class="doctor-card-info">
+              <text class="doctor-card-name">{{item.real_name}}</text>
+              <text class="doctor-card-meta">{{item.department}} · {{item.title}}</text>
+              <text class="doctor-card-username">账号：{{item.username}}</text>
+            </view>
+          </view>
+          <view class="doctor-tags">
+            <text wx:if="{{item.is_available}}" class="tag tag-green">接诊中</text>
+            <text wx:else class="tag tag-gray">休息中</text>
+            <text wx:if="{{!item.is_active}}" class="tag tag-red">已禁用</text>
+          </view>
+          <view class="doctor-actions">
+            <view class="btn-mini" bindtap="toggleDoctorAvailable" data-id="{{item.id}}" data-current="{{item.is_available}}">
+              <text>{{item.is_available ? '暂停接诊' : '开始接诊'}}</text>
+            </view>
+            <view class="btn-mini" bindtap="openResetPassword" data-id="{{item.id}}" data-name="{{item.real_name}}">
+              <text>重置密码</text>
+            </view>
+            <view class="btn-mini btn-danger" bindtap="deleteDoctor" data-id="{{item.id}}" data-name="{{item.real_name}}">
+              <text>禁用</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 患者管理 -->
+    <block wx:elif="{{tab === 'patients'}}">
+      <view class="toolbar">
+        <view class="search-input-wrap">
+          <input class="search-input" placeholder="按 ID/姓名/手机号搜索"
+                 value="{{patientKeyword}}" bindinput="onPatientKwInput" bindconfirm="reloadPatients" />
+        </view>
+      </view>
+
+      <view class="patient-list">
+        <view wx:if="{{patients.length === 0}}" class="empty">
+          <text>暂无患者</text>
+        </view>
+        <view wx:for="{{patients}}" wx:key="id" class="patient-row">
+          <view class="patient-row-avatar">{{item.real_name ? item.real_name[0] : (item.nickname ? item.nickname[0] : '患')}}</view>
+          <view class="patient-row-info">
+            <view>
+              <text class="patient-row-name">{{item.real_name || item.nickname || '用户' + item.id}}</text>
+              <text class="patient-row-id">ID:{{item.id}}</text>
+            </view>
+            <view class="patient-row-meta">
+              <view wx:if="{{item.phone}}"><ui-icon name="mobile" size="24" /> {{item.phone}}</view>
+              <text wx:if="{{item.age}}">{{item.age}}岁</text>
+              <text wx:if="{{item.sex}}">{{item.sex}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 医患分配 -->
+    <block wx:elif="{{tab === 'assignments'}}">
+      <view class="info-card">
+        <view class="info-title"><ui-icon name="link" size="30" /> 手动分配医生</view>
+        <view class="assign-form">
+          <picker mode="selector" range="{{patientOptions}}" range-key="label" bindchange="onAssignPatient">
+            <view class="picker">
+              <text wx:if="{{!assignForm.patient_label}}">选择患者</text>
+              <text wx:else>{{assignForm.patient_label}}</text>
+              <text class="picker-arrow">▼</text>
+            </view>
+          </picker>
+          <picker mode="selector" range="{{doctorOptions}}" range-key="label" bindchange="onAssignDoctor">
+            <view class="picker">
+              <text wx:if="{{!assignForm.doctor_label}}">选择医生</text>
+              <text wx:else>{{assignForm.doctor_label}}</text>
+              <text class="picker-arrow">▼</text>
+            </view>
+          </picker>
+          <view class="btn-assign" bindtap="submitAssignment">
+            <text>确认分配</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="assignment-list">
+        <view class="list-title">当前分配（{{assignments.length}}）</view>
+        <view wx:if="{{assignments.length === 0}}" class="empty">
+          <text>暂无分配关系</text>
+        </view>
+        <view wx:for="{{assignments}}" wx:key="assignment_id" class="assignment-card">
+          <view class="assignment-row">
+            <view class="assignment-side">
+              <text class="side-label">患者</text>
+              <text class="side-name">{{item.patient_name}}</text>
+            </view>
+            <text class="assignment-arrow">→</text>
+            <view class="assignment-side">
+              <text class="side-label">医生</text>
+              <text class="side-name">{{item.doctor_name}}</text>
+              <text wx:if="{{item.department}}" class="side-meta">{{item.department}}</text>
+            </view>
+          </view>
+          <view wx:if="{{item.last_message_at}}" class="assignment-preview">
+            <text>{{item.last_message_preview}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 聊天记录 -->
+    <block wx:elif="{{tab === 'chats'}}">
+      <view class="info-card">
+        <view class="info-title"><ui-icon name="chat" size="30" /> 聊天记录查看</view>
+        <view class="info-text">
+          <text>查看所有患者与医生的聊天记录</text>
+        </view>
+      </view>
+
+      <view class="chat-list-admin">
+        <view wx:for="{{chats}}" wx:key="id" class="chat-row-admin">
+          <view class="chat-row-head">
+            <text class="chat-role chat-role-{{item.sender_role}}">
+              <text wx:if="{{item.sender_role === 'patient'}}">患者</text>
+              <text wx:elif="{{item.sender_role === 'doctor'}}">医生</text>
+              <text wx:else>系统</text>
+            </text>
+            <text class="chat-time">{{item.displayTime}}</text>
+          </view>
+          <view class="chat-body">
+            <text wx:if="{{item.msg_type === 'text'}}">{{item.content}}</text>
+            <view wx:elif="{{item.msg_type === 'image'}}"><ui-icon name="picture" size="26" /> [图片] {{item.image_url}}</view>
+            <view wx:elif="{{item.msg_type === 'consult_invite'}}"><ui-icon name="file" size="26" /> {{item.content}}</view>
+          </view>
+          <view class="chat-meta">
+            <text>患者ID: {{item.patient_id}} · 医生ID: {{item.doctor_id}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 问卷管理 -->
+    <block wx:elif="{{tab === 'survey'}}">
+      <!-- 子 Tab -->
+      <view class="survey-sub-tab-bar">
+        <view class="survey-sub-tab {{surveySub === 'templates' ? 'active' : ''}}"
+              data-sub="templates" bindtap="switchSurveySub">
+          <text>模板管理</text>
+        </view>
+        <view class="survey-sub-tab {{surveySub === 'responses' ? 'active' : ''}}"
+              data-sub="responses" bindtap="switchSurveySub">
+          <text>提交记录</text>
+        </view>
+      </view>
+
+      <!-- 模板管理 -->
+      <block wx:if="{{surveySub === 'templates'}}">
+        <view class="toolbar">
+          <view class="search-input-wrap" style="flex:1">
+            <input class="search-input" placeholder="搜索模板名称"
+                   value="{{surveyKw}}" bindinput="onSurveyKwInput" />
+          </view>
+          <view class="btn-add" bindtap="openAddTemplate">
+            <ui-icon name="plus" size="26" tone="white" /><text>新增模板</text>
+          </view>
+        </view>
+
+        <view wx:if="{{filteredTemplates.length === 0}}" class="empty">
+          <text>暂无问卷模板，点击右上角新增</text>
+        </view>
+        <view wx:for="{{filteredTemplates}}" wx:key="id" class="template-card">
+          <view class="template-header">
+            <view class="template-title-row">
+              <text class="template-name">{{item.name}}</text>
+              <text class="tag {{item.is_active ? 'tag-green' : 'tag-gray'}}">
+                {{item.is_active ? '已启用' : '已停用'}}
+              </text>
+            </view>
+            <text class="template-desc">{{item.description}}</text>
+            <text class="template-meta">分类：{{item.category}} · 题目：{{item.questions.length}} 道</text>
+          </view>
+          <view class="template-actions">
+            <view class="btn-mini" bindtap="viewTemplate" data-id="{{item.id}}">
+              <text>查看题目</text>
+            </view>
+            <view class="btn-mini" bindtap="toggleTemplateActive" data-id="{{item.id}}" data-current="{{item.is_active}}">
+              <text>{{item.is_active ? '停用' : '启用'}}</text>
+            </view>
+            <view class="btn-mini" bindtap="openEditTemplate" data-id="{{item.id}}">
+              <text>编辑</text>
+            </view>
+          </view>
+        </view>
+      </block>
+
+      <!-- 提交记录 -->
+      <block wx:if="{{surveySub === 'responses'}}">
+        <view class="toolbar">
+          <view class="filter-wrap">
+            <picker mode="selector" range="{{surveyTypeOptions}}" range-key="label"
+                    bindchange="onSurveyTypeChange">
+              <view class="picker">
+                <text>{{selectedSurveyTypeLabel || '全部类型'}}</text>
+                <text class="picker-arrow">▼</text>
+              </view>
+            </picker>
+          </view>
+          <view class="search-input-wrap" style="flex:1">
+            <input class="search-input" placeholder="搜索姓名/手机号"
+                   value="{{responseKw}}" bindinput="onResponseKwInput" />
+          </view>
+        </view>
+
+        <view wx:if="{{surveyResponses.length === 0}}" class="empty">
+          <text>暂无提交记录</text>
+        </view>
+        <view wx:for="{{surveyResponses}}" wx:key="id" class="response-card">
+          <view class="response-header">
+            <text class="response-name">{{item.user_name || '匿名'}}</text>
+            <text class="response-time">{{item.submitted_at || item.created_at}}</text>
+          </view>
+          <view class="response-meta">
+            <text>手机：{{item.user_phone || '-'}}</text>
+            <text>类型：{{item.template_type}}</text>
+          </view>
+          <view class="response-actions">
+            <view class="btn-mini" bindtap="viewResponseDetail" data-id="{{item.id}}">
+              <text>查看详情</text>
+            </view>
+          </view>
+        </view>
+      </block>
+    </block>
+
+  </scroll-view>
+
+  <!-- 管理员修改自己的登录账号或密码 -->
+  <view class="modal" wx:if="{{showChangeAccount}}" bindtap="closeChangeAccount">
+    <view class="modal-content" catchtap="">
+      <view class="modal-title"><ui-icon name="key" size="32" /> 修改账号密码</view>
+      <view class="account-name">当前账号：{{profile.username}}</view>
+      <view class="form-row">
+        <text class="form-label">登录账号</text>
+        <input class="form-input" placeholder="3至64位英文字母、数字或下划线" value="{{accountForm.username}}" bindinput="onAccountFieldInput" data-field="username" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">原密码 *</text>
+        <input class="form-input" password="true" placeholder="修改账号或密码都需验证" value="{{accountForm.current}}" bindinput="onAccountFieldInput" data-field="current" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">新密码（不修改可留空）</text>
+        <input class="form-input" password="true" placeholder="至少8位" value="{{accountForm.next}}" bindinput="onAccountFieldInput" data-field="next" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">确认新密码</text>
+        <input class="form-input" password="true" placeholder="再次输入新密码" value="{{accountForm.confirm}}" bindinput="onAccountFieldInput" data-field="confirm" />
+      </view>
+      <view class="modal-actions">
+        <view class="btn-cancel" bindtap="closeChangeAccount"><text>取消</text></view>
+        <view class="btn-confirm" bindtap="submitChangeAccount"><text>保存并重新登录</text></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 新增医生弹窗 -->
+  <view class="modal" wx:if="{{showAddDoctor}}" bindtap="closeAddDoctor">
+    <view class="modal-content" catchtap="">
+      <view class="modal-title"><ui-icon name="plus" size="32" /> 新增医生账号</view>
+      <view class="form-row">
+        <text class="form-label">姓名 *</text>
+        <input class="form-input" placeholder="真实姓名" value="{{newDoctor.real_name}}" bindinput="onNewDoctorField" data-field="real_name" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">账号 *</text>
+        <input class="form-input" placeholder="登录账号（英文/数字）" value="{{newDoctor.username}}" bindinput="onNewDoctorField" data-field="username" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">初始密码 *</text>
+        <input class="form-input" password placeholder="登录密码" value="{{newDoctor.password}}" bindinput="onNewDoctorField" data-field="password" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">科室</text>
+        <input class="form-input" placeholder="如：营养科" value="{{newDoctor.department}}" bindinput="onNewDoctorField" data-field="department" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">职称</text>
+        <input class="form-input" placeholder="如：主任医师" value="{{newDoctor.title}}" bindinput="onNewDoctorField" data-field="title" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">简介</text>
+        <textarea class="form-textarea" placeholder="专长介绍" value="{{newDoctor.intro}}" bindinput="onNewDoctorField" data-field="intro"></textarea>
+      </view>
+      <view class="modal-actions">
+        <view class="btn-cancel" bindtap="closeAddDoctor">
+          <text>取消</text>
+        </view>
+        <view class="btn-confirm" bindtap="submitAddDoctor">
+          <text>创建</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 重置密码弹窗 -->
+  <view class="modal" wx:if="{{showResetPassword}}" bindtap="closeResetPassword">
+    <view class="modal-content" catchtap="">
+      <view class="modal-title"><ui-icon name="key" size="32" /> 重置密码</view>
+      <view class="info-text">
+        <text>医生：{{resetTarget.name}}</text>
+      </view>
+      <view class="form-row">
+        <text class="form-label">新密码 *</text>
+        <input class="form-input" password placeholder="新密码" value="{{newPassword}}" bindinput="onNewPasswordInput" />
+      </view>
+      <view class="modal-actions">
+        <view class="btn-cancel" bindtap="closeResetPassword">
+          <text>取消</text>
+        </view>
+        <view class="btn-confirm" bindtap="submitResetPassword">
+          <text>保存</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 查看题目弹窗 -->
+  <view class="modal" wx:if="{{showTemplateDetail}}" bindtap="closeTemplateDetail">
+    <view class="modal-content modal-lg" catchtap="">
+      <view class="modal-title"><ui-icon name="survey" size="32" /> {{templateDetail.name}}</view>
+      <view class="info-text" style="margin-bottom:16rpx">
+        <text>{{templateDetail.description}}</text>
+      </view>
+      <view class="question-list-admin">
+        <view class="question-admin-item" wx:for="{{templateDetail.questions}}" wx:key="id">
+          <view class="q-admin-title">{{index + 1}}. {{item.title}}
+            <text class="q-type-tag">{{item.type === 'radio' ? '单选' : item.type === 'checkbox' ? '多选' : '输入'}}</text>
+          </view>
+          <view class="q-admin-options" wx:if="{{item.options && item.options.length > 0}}">
+            <text wx:for="{{item.options}}" wx:for-item="opt" wx:key="index">· {{opt}}\n</text>
+          </view>
+        </view>
+      </view>
+      <view class="modal-actions">
+        <view class="btn-cancel full" bindtap="closeTemplateDetail"><text>关闭</text></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 新增/编辑模板弹窗 -->
+  <view class="modal" wx:if="{{showTemplateEdit}}" bindtap="closeTemplateEdit">
+    <view class="modal-content modal-xl" catchtap="">
+      <view class="modal-title"><ui-icon name="edit" size="32" /> {{editTemplate.id ? '编辑' : '新增'}}问卷模板</view>
+      <view class="form-row">
+        <text class="form-label">模板名称 *</text>
+        <input class="form-input" placeholder="如：体重管理门诊首诊表"
+               value="{{editTemplate.name}}" bindinput="onEditTemplateField" data-field="name" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">类型标识（英文唯一）*</text>
+        <input class="form-input" placeholder="如：weight_clinic_first"
+               value="{{editTemplate.type}}" bindinput="onEditTemplateField" data-field="type" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">描述</text>
+        <textarea class="form-textarea" placeholder="简要描述问卷用途"
+                  value="{{editTemplate.description}}" bindinput="onEditTemplateField" data-field="description"></textarea>
+      </view>
+      <view class="form-row">
+        <text class="form-label">分类</text>
+        <input class="form-input" placeholder="如：体重管理"
+               value="{{editTemplate.category}}" bindinput="onEditTemplateField" data-field="category" />
+      </view>
+      <view class="modal-actions">
+        <view class="btn-cancel" bindtap="closeTemplateEdit"><text>取消</text></view>
+        <view class="btn-confirm" bindtap="submitTemplateEdit"><text>保存</text></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 问卷提交详情弹窗 -->
+  <view class="modal" wx:if="{{showResponseDetail}}" bindtap="closeResponseDetail">
+    <view class="modal-content modal-xl" catchtap="">
+      <view class="modal-title"><ui-icon name="chart" size="32" /> 问卷详情</view>
+      <view class="info-text" style="margin-bottom:16rpx">
+        <text>姓名：{{responseDetail.user_name || '-'}}</text>
+        <text>手机：{{responseDetail.user_phone || '-'}}</text>
+        <text>提交时间：{{responseDetail.submitted_at || responseDetail.created_at}}</text>
+        <text>类型：{{responseDetail.template_type}}</text>
+      </view>
+      <view class="answer-list-admin" wx:if="{{responseDetail.answers}}">
+        <view class="answer-item" wx:for="{{responseDetail.questions}}" wx:key="id">
+          <view class="answer-q">{{index + 1}}. {{item.title}}</view>
+          <view class="answer-a">{{responseDetail.answers[item.id] || '(未填)'}}</view>
+        </view>
+        <view class="analysis-box" wx:if="{{responseDetail.analysis}}">
+          <view class="analysis-title">AI 分析</view>
+          <view class="analysis-content">{{responseDetail.analysis}}</view>
+        </view>
+      </view>
+      <view class="modal-actions">
+        <view class="btn-cancel full" bindtap="closeResponseDetail"><text>关闭</text></view>
+      </view>
+    </view>
+  </view>
+
+</view>

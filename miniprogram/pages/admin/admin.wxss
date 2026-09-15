@@ -1,0 +1,821 @@
+/* pages/admin/admin.wxss */
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #F5F7FA;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+  padding: 24rpx 30rpx;
+  background: linear-gradient(135deg, #1F2937, #374151);
+  color: #FFFFFF;
+}
+
+.admin-info {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-info .info {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-info .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-actions {
+  display: flex;
+  gap: 10rpx;
+  flex-shrink: 0;
+}
+
+.account-password-btn {
+  padding: 12rpx 18rpx;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 24rpx;
+  font-size: 24rpx;
+}
+
+.account-name {
+  margin-bottom: 20rpx;
+  color: #6B7280;
+  font-size: 24rpx;
+}
+
+.avatar {
+  width: 80rpx;
+  height: 80rpx;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+}
+
+.info .name {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  margin-bottom: 4rpx;
+}
+
+.info .meta {
+  font-size: 22rpx;
+  opacity: 0.7;
+}
+
+.logout-btn {
+  padding: 12rpx 28rpx;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 24rpx;
+  font-size: 24rpx;
+}
+
+.tab-bar {
+  display: flex;
+  background: #FFFFFF;
+  border-bottom: 1rpx solid #E5E7EB;
+}
+
+.tab {
+  flex: 1;
+  padding: 20rpx 0;
+  text-align: center;
+  color: #6B7280;
+  border-bottom: 4rpx solid transparent;
+}
+
+.tab-icon {
+  display: block;
+  font-size: 36rpx;
+  margin-bottom: 4rpx;
+}
+
+.tab ui-icon { margin-bottom: 4rpx; }
+
+.tab-label {
+  font-size: 26rpx;
+}
+
+.tab.active {
+  color: #1F2937;
+  border-bottom-color: #1F2937;
+  font-weight: 700;
+}
+
+.content {
+  flex: 1;
+  padding: 20rpx 24rpx;
+}
+
+/* ── 仪表盘 ────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+  margin-bottom: 24rpx;
+}
+
+.stat-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 30rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.stat-num {
+  font-size: 48rpx;
+  font-weight: 800;
+  margin-bottom: 8rpx;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #6B7280;
+}
+
+.stat-blue .stat-num   { color: #1A6DD3; }
+.stat-green .stat-num  { color: #1769B2; }
+.stat-orange .stat-num { color: #F59E0B; }
+.stat-purple .stat-num { color: #7C3AED; }
+
+.info-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  margin-bottom: 24rpx;
+}
+
+.info-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  margin-bottom: 16rpx;
+}
+
+.info-text text {
+  display: block;
+  font-size: 26rpx;
+  color: #4B5563;
+  line-height: 1.9;
+}
+
+/* ── 通用工具栏 ───────────────────── */
+.toolbar {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.search-input-wrap {
+  flex: 1;
+  background: #FFFFFF;
+  border-radius: 12rpx;
+  padding: 0 20rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 26rpx;
+  height: 100%;
+}
+
+.btn-add {
+  background: #1769B2;
+  color: #FFFFFF;
+  padding: 0 32rpx;
+  height: 72rpx;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 26rpx;
+}
+
+/* ── 医生管理 ─────────────────────── */
+.doctor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.doctor-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+}
+
+.doctor-row {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  margin-bottom: 16rpx;
+}
+
+.doctor-avatar-mini {
+  width: 80rpx;
+  height: 80rpx;
+  background: linear-gradient(135deg, #1769B2, #2D83C9);
+  color: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.doctor-card-info {
+  flex: 1;
+}
+
+.doctor-card-name {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  margin-bottom: 4rpx;
+}
+
+.doctor-card-meta {
+  display: block;
+  font-size: 22rpx;
+  color: #6B7280;
+  margin-bottom: 4rpx;
+}
+
+.doctor-card-username {
+  display: block;
+  font-size: 22rpx;
+  color: #9CA3AF;
+}
+
+.doctor-tags {
+  display: flex;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.tag {
+  font-size: 22rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 8rpx;
+}
+
+.tag-green { background: #DCEBFA; color: #1769A6; }
+.tag-gray  { background: #F3F4F6; color: #6B7280; }
+.tag-red   { background: #FEE2E2; color: #DC2626; }
+
+.doctor-actions {
+  display: flex;
+  gap: 12rpx;
+  border-top: 1rpx solid #F3F4F6;
+  padding-top: 16rpx;
+}
+
+.btn-mini {
+  flex: 1;
+  padding: 14rpx 0;
+  background: #F3F4F6;
+  color: #374151;
+  border-radius: 8rpx;
+  text-align: center;
+  font-size: 24rpx;
+}
+
+.btn-mini.btn-danger {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.empty {
+  text-align: center;
+  padding: 60rpx 0;
+  color: #9CA3AF;
+  font-size: 26rpx;
+}
+
+/* ── 患者管理 ─────────────────────── */
+.patient-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.patient-row {
+  background: #FFFFFF;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.patient-row-avatar {
+  width: 72rpx;
+  height: 72rpx;
+  background: linear-gradient(135deg, #1A6DD3, #4F8FE5);
+  color: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.patient-row-info {
+  flex: 1;
+}
+
+.patient-row-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-right: 16rpx;
+}
+
+.patient-row-id {
+  font-size: 22rpx;
+  color: #9CA3AF;
+}
+
+.patient-row-meta {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: #6B7280;
+}
+
+/* ── 分配管理 ─────────────────────── */
+.assign-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.picker {
+  background: #F9FAFB;
+  padding: 24rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.picker-arrow {
+  color: #9CA3AF;
+  font-size: 24rpx;
+}
+
+.btn-assign {
+  background: #1769B2;
+  color: #FFFFFF;
+  text-align: center;
+  padding: 24rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.list-title {
+  font-size: 26rpx;
+  font-weight: 700;
+  margin: 24rpx 0 16rpx;
+  color: #1A1A1A;
+}
+
+.assignment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.assignment-card {
+  background: #FFFFFF;
+  border-radius: 12rpx;
+  padding: 24rpx;
+}
+
+.assignment-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.assignment-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.side-label {
+  font-size: 22rpx;
+  color: #9CA3AF;
+  margin-bottom: 4rpx;
+}
+
+.side-name {
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.side-meta {
+  font-size: 22rpx;
+  color: #6B7280;
+}
+
+.assignment-arrow {
+  font-size: 36rpx;
+  color: #1769B2;
+}
+
+.assignment-preview {
+  font-size: 24rpx;
+  color: #6B7280;
+  margin-top: 12rpx;
+  padding-top: 12rpx;
+  border-top: 1rpx solid #F3F4F6;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── 聊天记录 ─────────────────────── */
+.chat-list-admin {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.chat-row-admin {
+  background: #FFFFFF;
+  border-radius: 12rpx;
+  padding: 20rpx;
+}
+
+.chat-row-head {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 8rpx;
+}
+
+.chat-role {
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 6rpx;
+  font-weight: 600;
+}
+
+.chat-role-patient { background: #DBEAFE; color: #1A6DD3; }
+.chat-role-doctor { background: #DCEBFA; color: #1769A6; }
+.chat-role-system { background: #F3F4F6; color: #6B7280; }
+
+.chat-time {
+  font-size: 22rpx;
+  color: #9CA3AF;
+}
+
+.chat-body {
+  font-size: 26rpx;
+  color: #1A1A1A;
+  line-height: 1.6;
+  margin-bottom: 8rpx;
+  word-break: break-all;
+}
+
+.chat-meta {
+  font-size: 20rpx;
+  color: #9CA3AF;
+}
+
+/* ── 弹窗 ───────────────────────── */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 40rpx;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 640rpx;
+  max-height: 80vh;
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 32rpx;
+  overflow-y: auto;
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 24rpx;
+}
+
+.form-row {
+  margin-bottom: 20rpx;
+}
+
+.form-label {
+  display: block;
+  font-size: 24rpx;
+  color: #6B7280;
+  margin-bottom: 8rpx;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  background: #F9FAFB;
+  border: 1rpx solid #E5E7EB;
+  border-radius: 12rpx;
+  padding: 20rpx 24rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+}
+
+.form-textarea {
+  min-height: 140rpx;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+.btn-cancel,
+.btn-confirm {
+  flex: 1;
+  padding: 24rpx;
+  border-radius: 12rpx;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.btn-cancel {
+  background: #F3F4F6;
+  color: #6B7280;
+}
+
+.btn-confirm {
+  background: #1769B2;
+  color: #FFFFFF;
+}
+
+.btn-cancel.full,
+.btn-confirm.full {
+  flex: 1;
+}
+
+/* ── 问卷管理 ──────────────────────────── */
+.survey-sub-tab-bar {
+  display: flex;
+  background: #FFFFFF;
+  border-radius: 12rpx;
+  padding: 6rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.survey-sub-tab {
+  flex: 1;
+  text-align: center;
+  padding: 14rpx 0;
+  border-radius: 10rpx;
+  font-size: 26rpx;
+  color: #6B7280;
+  transition: all 0.2s;
+}
+
+.survey-sub-tab.active {
+  background: #1769B2;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.filter-wrap {
+  flex-shrink: 0;
+}
+
+.filter-wrap .picker {
+  padding: 0 20rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  white-space: nowrap;
+}
+
+/* 模板卡片 */
+.template-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.template-header {
+  margin-bottom: 16rpx;
+}
+
+.template-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 6rpx;
+}
+
+.template-name {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1A1A1A;
+}
+
+.template-desc {
+  display: block;
+  font-size: 24rpx;
+  color: #6B7280;
+  margin-bottom: 6rpx;
+}
+
+.template-meta {
+  display: block;
+  font-size: 22rpx;
+  color: #9CA3AF;
+}
+
+.template-actions {
+  display: flex;
+  gap: 12rpx;
+  border-top: 1rpx solid #F3F4F6;
+  padding-top: 16rpx;
+}
+
+/* 提交记录卡片 */
+.response-card {
+  background: #FFFFFF;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-bottom: 12rpx;
+}
+
+.response-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.response-name {
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.response-time {
+  font-size: 22rpx;
+  color: #9CA3AF;
+}
+
+.response-meta {
+  display: flex;
+  gap: 16rpx;
+  font-size: 22rpx;
+  color: #6B7280;
+  margin-bottom: 12rpx;
+}
+
+.response-actions {
+  border-top: 1rpx solid #F3F4F6;
+  padding-top: 12rpx;
+}
+
+/* 弹窗加大 */
+.modal-lg .modal-content,
+.modal-xl .modal-content {
+  max-height: 85vh;
+  max-width: 700rpx;
+}
+
+/* 题目列表 */
+.question-list-admin {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.question-admin-item {
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #F3F4F6;
+}
+
+.q-admin-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin-bottom: 6rpx;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.q-type-tag {
+  font-size: 20rpx;
+  background: #EAF3FD;
+  color: #1769B2;
+  padding: 2rpx 10rpx;
+  border-radius: 6rpx;
+  font-weight: 400;
+}
+
+.q-admin-options {
+  font-size: 24rpx;
+  color: #6B7280;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+
+/* 答案列表 */
+.answer-list-admin {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.answer-item {
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #F3F4F6;
+}
+
+.answer-q {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6rpx;
+}
+
+.answer-a {
+  font-size: 24rpx;
+  color: #1769B2;
+  white-space: pre-line;
+}
+
+.analysis-box {
+  background: #F2F8FF;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-top: 16rpx;
+}
+
+.analysis-title {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #1769B2;
+  margin-bottom: 8rpx;
+}
+
+.analysis-content {
+  font-size: 24rpx;
+  color: #374151;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+.dispatch-entry { display: block; margin: 24rpx 0; padding: 28rpx; border-radius: 18rpx; background: #EAF3FD; color: #0D4E89; font-size: 30rpx; font-weight: 600; }
+
+/* 后台表单和操作区域维持足够字级与触控高度。 */
+.search-input-wrap, .btn-add { height: 92rpx; }
+.search-input { font-size: 30rpx; }
+.btn-add, .btn-mini, .btn-confirm, .btn-cancel { font-size: 30rpx; }
+.info-text text, .doctor-card-meta, .patient-row-meta, .chat-preview { font-size: 28rpx; }
+.form-label, .form-input, .form-textarea { font-size: 30rpx; }
+.form-input { min-height: 88rpx; }
+.tab { min-height: 92rpx; box-sizing: border-box; }

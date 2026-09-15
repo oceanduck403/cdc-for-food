@@ -1,8 +1,8 @@
 // utils/qwen.js
 // 阿里云百炼（千问 VL）图像识别封装
 // 支持：菜品检测、食物分割、营养素估算
-// 依赖：config.js（已含 qwen.apiKey / qwen.baseUrl / qwen.model）
-const config = require('./config.js');
+// 第三方服务密钥只保存在服务端；客户端通过登录态调用自有后端。
+const { request } = require('./request.js');
 
 // ─── 营养素数据库（常见食材，每 100g）───────────────────────────────
 const NUTRI_DB = {
@@ -195,66 +195,12 @@ function readBase64(filePath) {
  * 调用千问 VL，返回原始 JSON（未加工）
  */
 function callQwenVL(imageBase64) {
-  const { apiKey, baseUrl, model } = config.qwen;
-
-  if (!apiKey) {
-    return Promise.reject(new Error('请先在 config.js 中配置 qwen.apiKey（阿里云百炼 API Key）'));
-  }
-
-  const prompt = `你是一名专业营养师。请分析这张膳食图片，检测出所有食物并估算每种食物的重量。
-
-请严格按以下 JSON 格式输出（只输出 JSON，不要任何解释，不要 markdown 代码块）：
-{
-  "foods": [
-    {"name": "食物名称", "grams": 估算重量(数字，单位g)},
-    ...
-  ]
-}
-
-规则：
-- name 必须是食物的中文标准名称（如"米饭"、"番茄炒蛋"、"炒青菜"）
-- grams 是你根据盘中食物份量估算的重量（单位g），数字类型
-- 如果图片不清晰或无法识别某食物，用"未知食物"命名
-- 输出所有能识别出的食物，尽量详细`;
-
-  return new Promise((resolve, reject) => {
-    wx.request({
-      url: `${baseUrl}/chat/completions`,
-      method: 'POST',
-      header: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      data: {
-        model,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'text', text: prompt },
-            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${imageBase64}` } }
-          ]
-        }],
-        // 强制模型输出纯 JSON（推荐，qwen-vl-plus 支持）
-        extra_body: { enable_search: false }
-      },
-      success: res => {
-        if (res.statusCode !== 200) {
-          return reject(new Error(`千问 API 错误 ${res.statusCode}: ${JSON.stringify(res.data)}`));
-        }
-        const msg = res.data.choices && res.data.choices[0] && res.data.choices[0].message;
-        if (!msg) return reject(new Error('千问返回格式异常'));
-
-        const raw = msg.content || '';
-        try {
-          resolve(parseFoodsFromText(raw));
-        } catch (e) {
-          reject(new Error(`解析千问返回失败: ${e.message}\n原始内容: ${raw.slice(0, 200)}`));
-        }
-      },
-      fail: err => {
-        reject(new Error(`千问请求失败: ${err.errMsg || '网络错误'}`));
-      }
-    });
+  return request({
+    url: '/ai/food-analysis',
+    method: 'POST',
+    data: { imageBase64 },
+    showLoading: false,
+    silent: true
   });
 }
 
@@ -312,22 +258,84 @@ function fuzzyMatch(name) {
 // ─── 统一导出（capture.js 只调用这一个）────────────────────────────
 
 /**
- * 主入口：输入图片路径 → 返回营养分析结果
- * 与原 mock.mealAnalyzeResult 格式完全兼容
+ * 主入口：输入图片路径 → 返回 AI 自然语言分析（识别+营养+建议）
  */
 async function analyzeFoodFromImage(imagePath) {
-  // 1. 读取并压缩图片
-  const fs = wx.getFileSystemManager();
-
-  // 2. 调用千问
+  // 1. 调用千问识别图片中的食物
   const qwenResult = await analyzeMeal(imagePath);
+  const foods = qwenResult.foods || [];
 
-  // 3. 营养素估算
-  const foods = enrichNutrition(qwenResult.foods || []);
+  if (foods.length === 0) {
+    return {
+      description: '未识别到食物，请尝试更清晰的图片。'
+    };
+  }
+
+  // 2. 估算营养
+  const items = enrichNutrition(foods);
+
+  // 3. 生成自然语言描述：识别 + 营养 + 建议
+  const names = items.map(item => item.name).join('、');
+  let description = `🍱 识别食物：${names}\n\n`;
+
+  // 主要营养（按食物给出，不显示具体重量热量）
+  description += `🥗 主要营养：\n`;
+  const nutritionMap = {};
+  items.forEach(item => {
+    // 简化标签，不显示重量和热量
+    if (item.protein > 5) nutritionMap['蛋白质'] = true;
+    if (item.carbs > 10) nutritionMap['碳水化合物'] = true;
+    if (item.fat > 5) nutritionMap['脂肪'] = true;
+    if (item.kcal < 50) nutritionMap['膳食纤维'] = true;
+    if (item.kcal < 30 && item.protein < 3) nutritionMap['维生素/矿物质'] = true;
+  });
+
+  // 兜底
+  if (Object.keys(nutritionMap).length === 0) {
+    nutritionMap['综合营养'] = true;
+  }
+  description += Object.keys(nutritionMap).join('、') + '\n\n';
+
+  // 营养评价 + 建议
+  const hasVeggie = items.some(i =>
+    ['青菜','小白菜','菠菜','生菜','菜心','油菜','大白菜','卷心菜','娃娃菜',
+     '莴笋','苦瓜','黄瓜','西红柿','番茄','土豆','茄子','豆角','四季豆',
+     '莲藕','木耳','香菇','蘑菇','金针菇','南瓜','玉米','红薯','凉拌黄瓜',
+     '凉拌木耳','凉拌豆腐','拍黄瓜','果蔬沙拉'].includes(i.name)
+  );
+  const hasMeat = items.some(i =>
+    ['鸡肉','鸡腿','鸡翅','炸鸡','猪肉','瘦肉','五花肉','排骨','红烧肉',
+     '牛肉','牛排','羊肉','鱼肉','清蒸鱼','红烧鱼','虾','白灼虾','虾仁','蟹',
+     '麻婆豆腐','红烧茄子','炒时蔬','炒青菜','炒蔬菜','烤麸','丸子','肉丸',
+     '鱼丸','豆腐'].includes(i.name)
+  );
+  const hasStaple = items.some(i =>
+    ['米饭','白米饭','面条','馒头','包子','饺子','煎饼','面包','粥','小米粥',
+     '炒饭','蛋炒饭','炒面','凉面','凉皮','馄饨','烧麦','汤圆','卤肉饭','盖浇饭',
+     '咖喱饭','炒河粉','煎饼果子','手抓饼','肉夹馍','鸡蛋灌饼'].includes(i.name)
+  );
+  const hasFried = items.some(i =>
+    ['炸鸡','薯条','炸薯条','炸鸡腿','薯片','油条','春卷','蛋糕','饼干'].includes(i.name)
+  );
+
+  description += `💡 营养评价与建议：\n`;
+
+  if (hasFried && !hasVeggie) {
+    description += `这餐以油炸食品为主，建议搭配新鲜蔬菜水果一起食用，减少油炸摄入，多喝水。`;
+  } else if (hasStaple && hasMeat && !hasVeggie) {
+    description += `营养较丰富，但缺少蔬菜，建议增加一份青菜或水果，保持膳食均衡。`;
+  } else if (hasMeat && hasVeggie) {
+    description += `荤素搭配合理，蛋白质和膳食纤维都充足。继续保持均衡饮食的好习惯！`;
+  } else if (hasVeggie && !hasMeat) {
+    description += `蔬菜摄入充足，建议搭配优质蛋白（如鸡蛋、鱼肉、豆腐）一起食用。`;
+  } else if (items.length === 1) {
+    description += `这一餐较为单一，建议增加食物种类，搭配主食、蛋白质和蔬菜水果。`;
+  } else {
+    description += `整体搭配不错，建议细嚼慢咽，控制食量，搭配适量运动效果更好。`;
+  }
 
   return {
-    mealId: 'qwen-' + Date.now(),
-    items: foods
+    description
   };
 }
 

@@ -1,11 +1,39 @@
-/* pages/knowledge-detail/knowledge-detail.wxss */
-.content {
-  line-height: 1.8;
-  font-size: 29rpx;
-  color: var(--text-primary, #111827);
-}
-.footnote {
-  color: var(--text-muted, #9CA3AF);
-  font-size: 24rpx;
-  line-height: 1.7;
-}
+.article-page { min-height: 100vh; padding: 28rpx 28rpx calc(90rpx + env(safe-area-inset-bottom)); background: #F3F7F9; color: #263E48; }
+.status-card, .article-head, .content-card, .comments-card { background: #fff; border: 1rpx solid #DFE9EF; border-radius: 20rpx; padding: 32rpx; margin-bottom: 22rpx; box-shadow: 0 4rpx 14rpx rgba(26,77,104,.04); }
+.status-card { font-size: 31rpx; text-align: center; padding: 72rpx 28rpx; }
+.error-card { color: #9B3D32; }
+.inline-error { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; margin-bottom: 20rpx; padding: 16rpx 24rpx; background: #FFF3ED; color: #934638; border-radius: 12rpx; font-size: 28rpx; }
+.inline-error button { color: #934638; font-size: 28rpx; min-height: 88rpx; padding: 0 12rpx; }
+.error-card button, .comment-status button { color: #126490; font-size: 30rpx; margin-top: 20rpx; }
+.article-head { border-top: 6rpx solid #237BA8; }
+.article-kicker { display: block; color: #126490; font-size: 28rpx; font-weight: 600; margin-bottom: 18rpx; }
+.article-title { display: block; color: #173B50; font-size: 42rpx; font-weight: 700; line-height: 1.35; }
+.article-meta { display: block; color: #657783; font-size: 28rpx; margin-top: 20rpx; }
+.article-summary { display: block; margin-top: 26rpx; padding: 20rpx 22rpx; background: #F0F7FA; color: #465D68; font-size: 29rpx; line-height: 1.7; border-radius: 12rpx; }
+.content-card { font-size: 32rpx; line-height: 1.9; word-break: break-word; }
+.footnote { padding: 4rpx 16rpx 22rpx; color: #687B85; font-size: 28rpx; line-height: 1.65; }
+.reaction-panel { display: flex; gap: 12rpx; margin-bottom: 22rpx; }
+.reaction { flex: 1; min-height: 94rpx; display: flex; align-items: center; justify-content: center; gap: 8rpx; border: 1rpx solid #C7DDE8; border-radius: 14rpx; background: #fff; color: #425966; font-size: 28rpx; }
+.reaction.selected { color: #1769A6; border-color: #A9CFE6; background: #EAF4FB; }
+.reaction:active, .comment-action:active, .submit-comment:active { opacity: .78; }
+.comments-heading { display: flex; align-items: baseline; gap: 16rpx; font-size: 36rpx; color: #173B50; font-weight: 700; padding-bottom: 24rpx; border-bottom: 1rpx solid #E7EEF1; }
+.comments-count { color: #647B89; font-weight: 400; font-size: 28rpx; }
+.reply-banner { display: flex; align-items: center; justify-content: space-between; background: #EDF6FA; color: #126490; font-size: 28rpx; padding: 10rpx 16rpx; border-radius: 10rpx; margin-top: 24rpx; }
+.reply-banner button { color: #126490; font-size: 28rpx; padding: 8rpx 10rpx; }
+.comment-input { width: 100%; min-height: 132rpx; box-sizing: border-box; margin-top: 24rpx; padding: 20rpx; background: #F8FBFC; border: 1rpx solid #C9DBE4; border-radius: 12rpx; font-size: 30rpx; line-height: 1.6; }
+.composer-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 12rpx; color: #70828B; font-size: 28rpx; }
+.submit-comment { background: #237BA8; color: #fff; border-radius: 12rpx; padding: 0 28rpx; min-height: 88rpx; display: flex; align-items: center; justify-content: center; font-size: 29rpx; font-weight: 600; }
+.submit-comment[disabled] { background: #A6C4D2; }
+.comment { border-top: 1rpx solid #E7EEF1; padding: 28rpx 0 24rpx; }
+.comment-list { margin-top: 28rpx; }
+.comment-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12rpx; }
+.comment-author { color: #173B50; font-size: 30rpx; font-weight: 600; }
+.comment-date { color: #526B78; font-size: 28rpx; }
+.parent-preview { margin-top: 16rpx; padding: 14rpx 18rpx; background: #F3F7F9; color: #627783; border-left: 4rpx solid #B4D6E8; border-radius: 6rpx; font-size: 28rpx; line-height: 1.5; }
+.comment-body { display: block; margin-top: 12rpx; color: #334D58; font-size: 30rpx; line-height: 1.65; white-space: pre-wrap; }
+.comment-actions { display: flex; gap: 16rpx; margin-top: 12rpx; }
+.comment-action { min-height: 88rpx; display: flex; align-items: center; gap: 6rpx; padding: 0 16rpx; color: #526B78; font-size: 28rpx; }
+.comment-action.selected { color: #1769A6; }
+.delete-action { color: #A45247; }
+.comment-status { display: block; text-align: center; color: #718590; padding: 38rpx 4rpx; font-size: 28rpx; }
+.load-more { margin: 20rpx auto 0; min-height: 88rpx; padding: 0 24rpx; color: #126490; font-size: 29rpx; }

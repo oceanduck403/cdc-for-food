@@ -1,0 +1,8 @@
+**
+!server/
+!server/requirements.txt
+!server/alembic.ini
+!server/alembic/
+!server/alembic/**
+!server/app/
+!server/app/**

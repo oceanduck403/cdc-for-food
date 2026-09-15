@@ -4,7 +4,7 @@
   <view class="toolbar">
     <!-- 离线模式提示 -->
     <view class="offline-tip" wx:if="{{offlineMode}}">
-      <text>📴 离线模式</text>
+      <ui-icon name="info" size="28" /> <text>离线模式</text>
     </view>
 
     <!-- 区域选择 -->
@@ -20,10 +20,10 @@
     <!-- 工具按钮 -->
     <view class="tool-buttons">
       <view class="tool-btn {{markMode ? 'active' : ''}}" bindtap="toggleMarkMode">
-        <text>{{markMode ? '✓ 标记中' : '📍 标记'}}</text>
+        <ui-icon name="{{markMode ? 'check' : 'plus'}}" size="28" tone="{{markMode ? 'white' : 'normal'}}" /> <text>{{markMode ? '标记中' : '标记'}}</text>
       </view>
       <view class="tool-btn" bindtap="locateToCurrent">
-        <text>📍 定位</text>
+        <ui-icon name="search" size="28" /> <text>定位</text>
       </view>
     </view>
   </view>
@@ -62,7 +62,7 @@
       <text class="info-num {{showUserMarkers ? '' : 'muted'}}">{{showUserMarkers ? '显示' : '隐藏'}}</text>
       <text class="info-label" bindtap="toggleUserMarkers">我的标记</text>
     </view>
-    <view class="info-action" bindtap="openAddForm">+ 添加</view>
+    <view class="info-action" bindtap="openAddForm"><ui-icon name="plus" size="26" /> 添加</view>
   </view>
 
   <!-- 详情弹窗 -->
@@ -75,7 +75,7 @@
             {{selected.level}}
           </view>
         </view>
-        <view class="close-btn" bindtap="closeDetail">×</view>
+        <view class="close-btn" bindtap="closeDetail"><ui-icon name="close" size="30" /></view>
       </view>
 
       <view class="detail-body">
@@ -99,7 +99,7 @@
           {{selected.description}}
         </view>
         <view class="detail-warning" wx:if="{{selected.level === '高风险'}}">
-          ⚠️ 高风险区域，请勿采摘任何野生菌！
+          <ui-icon name="info" size="26" /> 高风险区域，请勿采摘任何野生菌！
         </view>
       </view>
 
@@ -119,13 +119,13 @@
     <view class="add-form card" catchtap="preventBubble">
       <view class="form-header">
         <text class="form-title">添加标记点</text>
-        <view class="close-btn" bindtap="closeAddForm">×</view>
+        <view class="close-btn" bindtap="closeAddForm"><ui-icon name="close" size="30" /></view>
       </view>
 
       <view class="form-body">
         <!-- 位置信息 -->
         <view class="form-hint" wx:if="{{newMarker.lat}}">
-          📍 位置: {{newMarker.lat.toFixed(4)}}, {{newMarker.lng.toFixed(4)}}
+          <ui-icon name="search" size="26" /> 位置: {{newMarker.lat.toFixed(4)}}, {{newMarker.lng.toFixed(4)}}
         </view>
 
         <!-- 名称 -->
@@ -178,10 +178,10 @@
   <!-- 更多操作菜单 -->
   <view class="more-menu card" wx:if="{{userMarkers.length > 0}}">
     <view class="menu-item" bindtap="exportMarkers">
-      <text>📤 导出数据</text>
+      <ui-icon name="upload" size="28" /> <text>导出数据</text>
     </view>
     <view class="menu-item danger" bindtap="clearAllMarkers">
-      <text>🗑 清空标记</text>
+      <ui-icon name="delete" size="28" /> <text>清空标记</text>
     </view>
   </view>
 

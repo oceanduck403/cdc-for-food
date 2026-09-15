@@ -2,7 +2,7 @@
 
 .hero-card {
   padding: 32rpx;
-  background: linear-gradient(135deg, #0F8A65 0%, #10B981 100%);
+  background: linear-gradient(135deg, #1769A6 0%, #2985C1 100%);
   border: none;
   box-shadow: 0 8rpx 32rpx rgba(15, 138, 101, 0.30);
   margin-bottom: 28rpx;

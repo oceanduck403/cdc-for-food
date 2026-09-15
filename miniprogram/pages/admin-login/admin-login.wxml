@@ -1,0 +1,75 @@
+<view class="page">
+
+  <!-- 顶部品牌区 -->
+  <view class="brand-section">
+    <view class="brand-logo">
+      <ui-icon name="setting" size="60" />
+    </view>
+    <text class="brand-title">管理员后台</text>
+    <text class="brand-subtitle">成都市疾病预防控制中心</text>
+  </view>
+
+  <!-- 功能介绍（横排三列） -->
+  <view class="feature-list">
+    <view class="feature-item">
+      <ui-icon name="doctor" size="42" />
+      <text class="feature-name">医生账号</text>
+      <text class="feature-desc">增删改查</text>
+    </view>
+    <view class="feature-item">
+      <ui-icon name="chart" size="42" />
+      <text class="feature-name">数据总览</text>
+      <text class="feature-desc">患者统计</text>
+    </view>
+    <view class="feature-item">
+      <ui-icon name="link" size="42" />
+      <text class="feature-name">医患分配</text>
+      <text class="feature-desc">手动调整</text>
+    </view>
+  </view>
+
+  <!-- 登录表单 -->
+  <view class="login-form">
+    <view class="form-card">
+      <view class="form-title">账号登录</view>
+
+      <view class="form-row">
+        <view class="form-label">管理员账号</view>
+        <input
+          class="form-input"
+          type="text"
+          placeholder="请输入管理员账号"
+          value="{{username}}"
+          bindinput="onUsernameInput"
+        />
+      </view>
+
+      <view class="form-row">
+        <view class="form-label">密码</view>
+        <input
+          class="form-input"
+          password
+          placeholder="请输入密码"
+          value="{{password}}"
+          bindinput="onPasswordInput"
+        />
+      </view>
+
+      <button
+        class="btn-login"
+        bindtap="onLogin"
+        disabled="{{!username || !password}}"
+      >
+        管理员登录
+      </button>
+
+    </view>
+  </view>
+
+  <!-- 返回入口 -->
+  <view class="back-row" bindtap="goBack">
+    <text class="back-icon">←</text>
+    <text class="back-text">返回用户登录</text>
+  </view>
+
+</view>

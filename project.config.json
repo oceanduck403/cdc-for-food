@@ -1,4 +1,6 @@
 {
+  "description": "营养与食品安全 AI 小助手",
+  "miniprogramRoot": "miniprogram/",
   "setting": {
     "es6": true,
     "postcss": true,
@@ -14,7 +16,8 @@
     "useCompilerPlugins": false,
     "minifyWXML": true,
     "compileWorklet": false,
-    "uploadWithSourceMap": true,
+    "uploadWithSourceMap": false,
+    "urlCheck": true,
     "packNpmManually": false,
     "minifyWXSS": true,
     "localPlugins": false,
@@ -29,7 +32,7 @@
     "ignore": [],
     "include": []
   },
-  "appid": "touristappid",
+  "appid": "wxa770c383d40bd506",
   "editorSetting": {},
   "libVersion": "3.17.0"
 }

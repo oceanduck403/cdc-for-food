@@ -1,7 +1,6 @@
+const navigation = require('../../utils/navigation.js');
 // pages/capture/capture.js
-const { request } = require('../../utils/request.js');
 const config = require('../../utils/config.js');
-const mock = require('../../utils/mock.js');
 const qwen = require('../../utils/qwen.js');
 
 Page({
@@ -11,8 +10,7 @@ Page({
     result: null,
     errorMsg: '',
     remaining: 20,
-    dailyLimit: 20,
-    showLimitTip: false
+    dailyLimit: 20
   },
 
   onShow() {
@@ -47,26 +45,8 @@ Page({
     }
     this.setData({ analyzing: true, errorMsg: '', result: null });
 
-    // ── 判断走千问还是走 mock ────────────────────────────────────
-    const useQwen = !!config.qwen && !!config.qwen.apiKey;
-
     try {
-      let data;
-
-      if (useQwen) {
-        // ── 模式 A：调用千问 VL（真实识别）────────────────────────
-        data = await qwen.analyzeFoodFromImage(this.data.imagePath);
-        console.log('[capture] 千问识别结果:', data);
-
-      } else {
-        // ── 模式 B：走 mock（无 API Key 时降级）───────────────────
-        data = await request({
-          url: '/meals/analyze',
-          method: 'POST',
-          data: { imageBase64: 'demo-base64' },
-          silent: true
-        }) || mock.mealAnalyzeResult;
-      }
+      const data = await qwen.analyzeFoodFromImage(this.data.imagePath);
 
       const app = getApp();
       app.globalData.dailyAnalysisCount = (app.globalData.dailyAnalysisCount || 0) + 1;
@@ -92,10 +72,9 @@ Page({
       });
     } catch (err) {
       console.error('[capture] 分析异常', err);
-      // 失败后降级到 mock，保证界面有东西看
       this.setData({
-        result: mock.mealAnalyzeResult,
-        errorMsg: '千问识别失败，已使用演示数据'
+        result: null,
+        errorMsg: '识别服务暂时不可用，请稍后重试'
       });
     } finally {
       this.setData({ analyzing: false });
@@ -104,16 +83,9 @@ Page({
 
   viewReport() {
     if (!this.data.result) return;
-    wx.navigateTo({
+    navigation.open({
       url: `/pages/report/report?id=${this.data.result.mealId || ''}`
     });
   },
 
-  goPayment() {
-    wx.navigateTo({ url: '/pages/payment/payment' });
-  },
-
-  dismissLimitTip() {
-    this.setData({ showLimitTip: false });
-  }
 });

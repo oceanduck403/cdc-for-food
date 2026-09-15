@@ -147,7 +147,7 @@
 /* ── 结果摘要 ─────────────────────────────────────────────────────── */
 
 .result-summary {
-  border-top: 6rpx solid var(--brand, #0F8A65);
+  border-top: 6rpx solid var(--brand, #1769B2);
   padding-top: 24rpx;
 }
 
@@ -159,8 +159,8 @@
 }
 
 .result-badge {
-  background: var(--brand-light, #E8F5F0);
-  color: var(--brand, #0F8A65);
+  background: var(--brand-light, #EAF3FD);
+  color: var(--brand, #1769B2);
   font-size: 24rpx;
   font-weight: 600;
   padding: 6rpx 18rpx;
@@ -182,7 +182,7 @@
 .total-kcal {
   font-size: 72rpx;
   font-weight: 800;
-  color: var(--brand, #0F8A65);
+  color: var(--brand, #1769B2);
   line-height: 1;
 }
 
@@ -254,7 +254,7 @@
 .item-kcal {
   font-size: 28rpx;
   font-weight: 700;
-  color: var(--brand, #0F8A65);
+  color: var(--brand, #1769B2);
 }
 
 .item-meta {
@@ -263,72 +263,4 @@
   margin-top: 10rpx;
   font-size: 24rpx;
   color: var(--text-secondary, #4B5563);
-}
-
-/* ── 次数用完提示 ──────────────────────────────────────────────────── */
-
-.limit-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 40rpx;
-}
-
-.limit-card {
-  width: 100%;
-  max-width: 560rpx;
-  padding: 48rpx;
-  text-align: center;
-  margin: 0;
-}
-
-.limit-icon {
-  font-size: 80rpx;
-  margin-bottom: 24rpx;
-}
-
-.limit-title {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: var(--text-primary, #111827);
-  margin-bottom: 12rpx;
-}
-
-.limit-desc {
-  font-size: 28rpx;
-  color: var(--text-muted, #9CA3AF);
-  margin-bottom: 32rpx;
-}
-
-.limit-actions {
-  display: flex;
-  gap: 20rpx;
-}
-
-.btn-outline {
-  flex: 1;
-  padding: 24rpx;
-  border: 2rpx solid var(--border, #E5E7EB);
-  border-radius: 999rpx;
-  font-size: 28rpx;
-  color: var(--text-secondary, #4B5563);
-  text-align: center;
-}
-
-.btn-primary {
-  flex: 1;
-  padding: 24rpx;
-  background: var(--brand, #0F8A65);
-  color: #fff;
-  border-radius: 999rpx;
-  font-size: 28rpx;
-  font-weight: 600;
-  text-align: center;
 }

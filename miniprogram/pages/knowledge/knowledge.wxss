@@ -67,9 +67,9 @@
 }
 
 .tab-item.active {
-  background: var(--brand, #0F8A65);
+  background: var(--brand, #1769B2);
   color: #FFFFFF;
-  border-color: var(--brand, #0F8A65);
+  border-color: var(--brand, #1769B2);
   box-shadow: 0 4rpx 12rpx rgba(15, 138, 101, 0.3);
 }
 
@@ -110,8 +110,8 @@
   border-radius: 999rpx;
   font-size: 22rpx;
   font-weight: 600;
-  background: var(--brand-light, #E8F5F0);
-  color: var(--brand, #0F8A65);
+  background: var(--brand-light, #EAF3FD);
+  color: var(--brand, #1769B2);
 }
 
 .article-date {
@@ -170,7 +170,7 @@
 .loading-dot {
   width: 16rpx;
   height: 16rpx;
-  background: var(--brand, #0F8A65);
+  background: var(--brand, #1769B2);
   border-radius: 50%;
   animation: bounce 1.2s ease-in-out infinite;
 }

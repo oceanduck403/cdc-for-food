@@ -1,0 +1,115 @@
+<view class="container {{assignmentId ? 'chat-mode' : 'booking-mode'}}">
+
+  <view class="booking-panel" wx:if="{{!assignmentId && !loading}}">
+    <view class="booking-visual">
+      <image class="booking-doctor-art" src="/images/consult-online-doctor.jpg" mode="widthFix" aria-label="医生与长者在线沟通"/>
+    </view>
+    <text class="booking-kicker">公益健康服务 · 全程免费</text>
+    <text class="booking-title">{{bookingStatus === 'waiting' ? '预约已登记，等待医生接诊' : '预约医生在线指导'}}</text>
+    <text class="booking-desc">{{bookingStatus === 'waiting' ? '暂时没有在线接诊医生。医生上线后将自动匹配，您也可以稍后回来查看。' : '提交预约后，系统将为您匹配在线且接诊人数较少的医生。'}}</text>
+    <view class="booking-steps" wx:if="{{bookingStatus !== 'waiting'}}">
+      <view class="booking-step"><text class="step-number">1</text><text>提交预约</text></view>
+      <text class="step-line">—</text>
+      <view class="booking-step"><text class="step-number">2</text><text>匹配医生</text></view>
+      <text class="step-line">—</text>
+      <view class="booking-step"><text class="step-number">3</text><text>在线沟通</text></view>
+    </view>
+    <button wx:if="{{!loggedIn}}" class="booking-primary" bindtap="goLogin">登录后免费预约</button>
+    <button wx:elif="{{bookingStatus !== 'waiting'}}" class="booking-primary" bindtap="bookAppointment" loading="{{bookingBusy}}" disabled="{{bookingBusy}}">免费预约</button>
+    <button wx:else class="booking-cancel" bindtap="cancelAppointment" disabled="{{bookingBusy}}">取消排队</button>
+  </view>
+  <view class="booking-help" wx:if="{{!assignmentId && !loading}}">
+    <text class="booking-help-title">咨询前，准备这些信息更方便</text>
+    <view class="booking-help-row"><text class="help-dot">1</text><text>想了解的饮食、体重或健康问题</text></view>
+    <view class="booking-help-row"><text class="help-dot">2</text><text>问题出现的时间和目前情况</text></view>
+    <view class="booking-help-row"><text class="help-dot">3</text><text>近期的评估结果或打卡记录</text></view>
+  </view>
+  <view class="booking-error" wx:if="{{loadError}}"><text>{{loadError}}</text><button class="booking-retry" bindtap="_init">重试</button></view>
+  <!-- 顶部医生信息 -->
+  <view class="doctor-header" wx:if="{{doctor}}">
+    <view class="doctor-avatar">{{doctor.name[0] || '医'}}</view>
+    <view class="doctor-info">
+      <view class="doctor-name-line">
+        <text class="doctor-name">{{doctor.name}}</text>
+        <text class="doctor-title" wx:if="{{doctor.title}}">{{doctor.title}}</text>
+      </view>
+      <text class="online-status">{{doctor.online ? "在线接诊中 · 免费" : "医生暂时离线，可留言"}}</text>
+      <text class="doctor-dept" wx:if="{{doctor.department}}">{{doctor.department}}</text>
+      <text class="doctor-intro" wx:if="{{doctor.intro}}">{{doctor.intro}}</text>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <text>正在加载预约状态...</text>
+  </view>
+
+  <!-- 聊天记录 -->
+  <scroll-view wx:if="{{assignmentId}}" class="chat-scroll" scroll-y scroll-into-view="{{scrollIntoView}}" scroll-with-animation>
+    <view class="chat-list">
+      <view class="chat-tip">
+        <text>可描述您的问题或上传图片，医生会尽快回复</text>
+      </view>
+
+      <view class="chat-empty" wx:if="{{!messages.length}}">
+        <text class="chat-empty-title">开始与医生沟通</text>
+        <text class="chat-empty-note">为方便医生了解情况，您可以先说说：</text>
+        <text class="chat-empty-line">· 想咨询的健康问题</text>
+        <text class="chat-empty-line">· 问题出现的时间及变化</text>
+        <text class="chat-empty-line">· 目前的饮食、运动和身体情况</text>
+        <text class="chat-empty-foot">医生回复可能需要一些时间，请留意消息。</text>
+      </view>
+
+      <view wx:for="{{messages}}" wx:key="id" id="msg-{{index}}"
+            class="msg-row {{item.sender_role === 'patient' ? 'mine' : 'other'}}">
+        <!-- 头像 -->
+        <view wx:if="{{item.sender_role === 'doctor'}}" class="avatar doctor-avatar-small">
+          {{doctor.name[0] || '医'}}
+        </view>
+
+        <view class="msg-bubble-wrap">
+          <!-- 文字 -->
+          <view wx:if="{{item.msg_type === 'text'}}" class="msg-bubble">
+            <text>{{item.content}}</text>
+          </view>
+          <!-- 图片 -->
+          <view wx:elif="{{item.msg_type === 'image'}}" class="msg-bubble msg-image"
+                data-url="{{item.image_url_full}}" bindtap="previewImage">
+            <image src="{{item.image_url_full}}" mode="widthFix" class="msg-image-img"></image>
+          </view>
+          <!-- 系统消息（会诊邀请等） -->
+          <view wx:elif="{{item.sender_role === 'system'}}" class="msg-system">
+            <text>{{item.content}}</text>
+          </view>
+
+          <view class="msg-time">
+            <text wx:if="{{item._pending}}">发送中...</text>
+            <text wx:else>{{item.time_str}}</text>
+          </view>
+        </view>
+
+        <view wx:if="{{item.sender_role === 'patient'}}" class="avatar my-avatar-small">我</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 输入区域（微信聊天风格） -->
+  <view class="input-bar" wx:if="{{assignmentId}}">
+    <view class="btn-image" bindtap="chooseImage">
+      <ui-icon name="camera" size="40"/>
+    </view>
+    <view class="input-wrapper">
+      <input
+        class="input-field"
+        placeholder="输入您的问题..."
+        value="{{userInput}}"
+        bindinput="onInputChange"
+        confirm-type="send"
+        bindconfirm="sendMessage"
+      />
+    </view>
+    <button class="btn-send" bindtap="sendMessage" disabled="{{sending || !userInput}}">发送</button>
+  </view>
+
+</view>
+<view wx:if="{{!assignmentId}}"><ai-float /></view>

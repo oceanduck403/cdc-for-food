@@ -1,15 +1,15 @@
-<view class="container">
+<view class="container service-page">
 
   <!-- 用户信息卡 -->
   <view class="user-card card">
     <view class="user-bg-decoration"/>
     <block wx:if="{{isLogin && profile}}">
       <view class="user-info">
-        <view class="avatar-wrap">
-          <image class="avatar" src="{{profile.avatar || '/images/default-avatar.png'}}"
+        <view class="avatar-wrap" bindtap="goProfile" hover-class="mine-pressed" aria-label="更换头像">
+          <image class="avatar" src="{{profile.avatarDisplayUrl || '/images/ui/user.png'}}"
                  mode="aspectFill" binderror="onAvatarError"/>
           <view class="login-badge">
-            <text wx:if="{{profile.isVip}}" class="vip-star">⭐</text>
+            <ui-icon name="edit" tone="white" size="22" />
           </view>
         </view>
         <view class="user-meta">
@@ -17,8 +17,8 @@
           <text class="user-sub" wx:if="{{profile.age}}">{{profile.age}}岁 · {{profile.sexLabel || ''}}</text>
           <text class="user-sub" wx:else>已登录</text>
         </view>
-        <view class="user-edit-btn" bindtap="goProfile">
-          <text>编辑档案</text>
+        <view class="user-edit-btn" bindtap="goProfile" hover-class="mine-pressed">
+          <text>编辑头像昵称</text>
         </view>
       </view>
 
@@ -45,13 +45,13 @@
     <block wx:else>
       <view class="guest-info">
         <view class="avatar-wrap avatar-guest">
-          <text class="guest-emoji">👤</text>
+          <image class="profile-line-icon" src="/images/ui/user.png" mode="aspectFit"/>
         </view>
         <view class="user-meta">
           <text class="user-name">游客</text>
           <text class="user-sub">登录后享受完整功能</text>
         </view>
-        <view class="btn-primary login-btn" bindtap="goLogin">
+        <view class="btn-primary login-btn" bindtap="goLogin" hover-class="mine-pressed">
           立即登录
         </view>
       </view>
@@ -60,50 +60,38 @@
 
   <!-- 快捷入口 -->
   <view class="quick-links">
-    <view class="quick-link card" bindtap="goProfile">
-      <text class="ql-icon">📋</text>
+    <view class="quick-link card" bindtap="goProfile" hover-class="mine-pressed">
+      <ui-icon class="ql-icon" name="file" size="42" />
       <text class="ql-text">健康档案</text>
-      <text class="ql-arrow">›</text>
+      <ui-icon name="right" tone="muted" size="26" />
     </view>
-    <view class="quick-link card" bindtap="goPayment">
-      <text class="ql-icon">👑</text>
-      <text class="ql-text">开通会员</text>
-      <text class="ql-sub" wx:if="{{isVip}}">⭐ 会员中</text>
-      <text class="ql-sub" wx:elif="{{remaining > 0}}">剩余{{remaining}}次</text>
-      <text class="ql-sub" wx:else>次数已用完</text>
-      <text class="ql-arrow">›</text>
-    </view>
-    <view class="quick-link card" bindtap="callSupport">
-      <text class="ql-icon">📞</text>
+    <view class="quick-link card" bindtap="callSupport" hover-class="mine-pressed">
+      <ui-icon class="ql-icon" name="phone" size="42" />
       <text class="ql-text">联系客服</text>
       <text class="ql-sub">87033314</text>
-      <text class="ql-arrow">›</text>
+      <ui-icon name="right" tone="muted" size="26" />
     </view>
   </view>
 
   <!-- 设置列表 -->
-  <view class="settings-section card">
-    <view class="settings-row" bindtap="openPrivacy">
-      <text class="sr-icon">📜</text>
+<view class="settings-section card">
+    <view class="settings-row" bindtap="openPrivacy" hover-class="mine-pressed">
+      <ui-icon class="sr-icon" name="file" size="38" />
       <text class="sr-text">隐私协议</text>
-      <text class="sr-arrow">›</text>
+      <ui-icon name="right" tone="muted" size="26" />
     </view>
-    <view class="settings-row" bindtap="openAbout">
-      <text class="sr-icon">ℹ️</text>
+    <view class="settings-row" bindtap="openAbout" hover-class="mine-pressed">
+      <ui-icon class="sr-icon" name="info" size="38" />
       <text class="sr-text">关于我们</text>
       <text class="sr-ver">v1.0.0</text>
-      <text class="sr-arrow">›</text>
+      <ui-icon name="right" tone="muted" size="26" />
     </view>
   </view>
 
   <!-- 退出登录 -->
   <view class="logout-section" wx:if="{{isLogin}}">
-    <view class="btn-danger" bindtap="onLogout">退出登录</view>
-  </view>
-
-  <!-- 免责声明 -->
-  <view class="disclaimer">
-    <text>本应用由成都市疾病预防控制中心提供\n仅供营养与食品安全科普使用，不作为诊疗依据</text>
+    <view class="btn-danger" bindtap="onLogout" hover-class="mine-pressed">退出登录</view>
   </view>
 
 </view>
+<ai-float />

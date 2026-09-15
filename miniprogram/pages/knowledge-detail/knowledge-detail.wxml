@@ -1,15 +1,67 @@
-<view class="container">
-  <view class="card" wx:if="{{loading}}">加载中…</view>
+<view class="article-page">
+  <view class="status-card" wx:if="{{loading && !article}}">文章加载中…</view>
+  <view class="status-card error-card" wx:elif="{{error && !article}}">
+    <text>{{error}}</text>
+    <button bindtap="refresh">重新加载</button>
+  </view>
   <block wx:elif="{{article}}">
-    <view class="card">
-      <view class="title">{{article.title}}</view>
-      <view class="subtitle">{{article.source}} · {{article.updatedAt}}</view>
+    <view class="inline-error" wx:if="{{error}}"><text>{{error}}</text><button bindtap="refresh">重试</button></view>
+    <view class="article-head">
+      <text class="article-kicker">健康科普 · {{article.categoryName || '知识分享'}}</text>
+      <text class="article-title">{{article.title}}</text>
+      <text class="article-meta">{{article.source || '健康科普'}} · {{article.date}}</text>
+      <text class="article-summary" wx:if="{{article.summary}}">{{article.summary}}</text>
     </view>
-    <view class="card content">
-      <rich-text nodes="{{article.contentHtml}}"/>
+
+    <view class="content-card"><rich-text nodes="{{article.contentHtml}}" /></view>
+    <view class="footnote">内容仅供健康科普参考，不作为诊疗依据。如有不适，请及时就医。</view>
+
+    <view class="reaction-panel">
+      <button class="reaction {{article.liked ? 'selected' : ''}}" data-kind="like" bindtap="toggleArticleReaction" disabled="{{actionBusy}}">
+        <ui-icon name="like" tone="{{article.liked ? 'active' : 'muted'}}" size="38" />
+        <text>{{article.liked ? '已点赞' : '点赞'}} {{article.likeCount || 0}}</text>
+      </button>
+      <button class="reaction {{article.favorited ? 'selected' : ''}}" data-kind="favorite" bindtap="toggleArticleReaction" disabled="{{actionBusy}}">
+        <ui-icon name="star" tone="{{article.favorited ? 'active' : 'muted'}}" size="38" />
+        <text>{{article.favorited ? '已收藏' : '收藏'}}</text>
+      </button>
+      <button class="reaction" open-type="share">
+        <ui-icon name="share" tone="muted" size="38" /><text>分享</text>
+      </button>
     </view>
-    <view class="card footnote">
-      <view>免责声明：本文仅作科普参考，不作为诊疗或具体监管依据。</view>
+
+    <view class="comments-card" id="comments">
+      <view class="comments-heading">
+        <text>评论交流</text><text class="comments-count">{{article.commentCount || 0}} 条</text>
+      </view>
+      <view class="reply-banner" wx:if="{{replyId}}">
+        <text>回复 {{replyAuthor}}</text>
+        <button bindtap="cancelReply">取消回复</button>
+      </view>
+      <textarea class="comment-input" value="{{commentText}}" maxlength="500" auto-height
+        placeholder="分享你的想法，文明交流…" bindinput="onCommentInput" />
+      <view class="composer-actions">
+        <text>{{commentText.length}}/500</text>
+        <button class="submit-comment" bindtap="submitComment" disabled="{{submitting}}">{{submitting ? '发布中…' : '发表评论'}}</button>
+      </view>
+
+      <view class="comment-list">
+        <view class="comment" wx:for="{{comments}}" wx:key="id">
+          <view class="comment-top"><text class="comment-author">{{item.author}}</text><text class="comment-date">{{item.date}}</text></view>
+          <view class="parent-preview" wx:if="{{item.replyTo}}">回复 {{item.replyTo}}：{{item.parentContent}}</view>
+          <text class="comment-body">{{item.content}}</text>
+          <view class="comment-actions">
+            <button class="comment-action {{item.liked ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="toggleCommentLike"><ui-icon name="like" tone="{{item.liked ? 'active' : 'muted'}}" size="28" />{{item.likeCount || 0}}</button>
+            <button class="comment-action" data-id="{{item.id}}" data-author="{{item.author}}" bindtap="replyComment">回复</button>
+            <button class="comment-action delete-action" wx:if="{{item.mine}}" data-id="{{item.id}}" bindtap="deleteComment">删除</button>
+            <button class="comment-action" wx:else data-id="{{item.id}}" bindtap="reportComment">举报</button>
+          </view>
+        </view>
+      </view>
+      <text class="comment-status" wx:if="{{commentsLoading}}">评论加载中…</text>
+      <view class="comment-status" wx:elif="{{commentsError}}"><text>{{commentsError}}</text><button bindtap="retryComments">重试</button></view>
+      <text class="comment-status" wx:elif="{{comments.length === 0}}">还没有评论，欢迎留下第一条想法</text>
+      <button class="load-more" wx:if="{{hasMore && !commentsLoading}}" bindtap="loadMoreComments">查看更多评论</button>
     </view>
   </block>
 </view>

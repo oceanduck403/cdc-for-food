@@ -13,6 +13,6 @@ module.exports = {
     try { wx.removeStorageSync(key); } catch (e) {}
   },
   clearUserData() {
-    ['token', 'profile', 'history'].forEach((k) => this.remove(k));
+    ['token', 'role', 'profile', 'userInfo', 'history', 'start_free_appointment'].forEach((k) => this.remove(k));
   }
 };

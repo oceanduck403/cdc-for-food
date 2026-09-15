@@ -1,0 +1,15 @@
+<view class="container">
+  <view class="profile-card">
+    <view class="avatar">{{profile.real_name ? profile.real_name[0] : '医'}}</view>
+    <text class="name">{{profile.real_name || profile.nickname}}</text>
+    <text class="meta">{{profile.department}} · {{profile.title}}</text>
+    <text wx:if="{{profile.intro}}" class="intro">{{profile.intro}}</text>
+  </view>
+
+  <view class="action-list">
+    <view class="action-item" bindtap="logout">
+      <text>退出登录</text>
+      <ui-icon name="right" size="26" tone="muted" />
+    </view>
+  </view>
+</view>

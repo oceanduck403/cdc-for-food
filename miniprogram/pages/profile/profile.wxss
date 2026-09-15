@@ -1,3 +1,96 @@
+/* ── 基本资料：清晰的大触控区 ─────────────────────────────────────── */
+.identity-card {
+  padding: 28rpx;
+  border: 1rpx solid #d8e6ee;
+  background: linear-gradient(135deg, #ffffff 60%, #eef7fb);
+}
+.identity-heading {
+  font-size: 34rpx;
+  line-height: 1.4;
+  font-weight: 700;
+  color: #193f54;
+  margin-bottom: 12rpx;
+}
+.identity-row {
+  min-height: 96rpx;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+.identity-label {
+  min-width: 94rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1c4052;
+}
+.avatar-picker {
+  position: relative;
+  width: 120rpx;
+  height: 120rpx;
+  flex-shrink: 0;
+  border-radius: 60rpx;
+}
+.profile-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 60rpx;
+  background: #e8f3f9;
+  box-shadow: 0 4rpx 14rpx rgba(17, 75, 113, .14);
+}
+.avatar-camera {
+  position: absolute;
+  right: -6rpx;
+  bottom: -4rpx;
+  width: 42rpx;
+  height: 42rpx;
+  border: 3rpx solid #fff;
+  border-radius: 50%;
+  background: #1769a6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-action {
+  margin-left: auto;
+  min-height: 88rpx;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  padding: 12rpx 4rpx 12rpx 20rpx;
+  font-size: 29rpx;
+  font-weight: 600;
+  color: #1769a6;
+}
+.identity-divider { height: 1rpx; background: #d8e6ee; margin: 20rpx 0 6rpx; }
+.nickname-row { min-height: 92rpx; }
+.nickname-input {
+  flex: 1;
+  height: 84rpx;
+  text-align: right;
+  font-size: 30rpx;
+  color: #193f54;
+}
+.identity-hint {
+  font-size: 25rpx;
+  line-height: 1.6;
+  color: #566f7b;
+  margin-top: 12rpx;
+}
+.nickname-save {
+  height: 96rpx;
+  line-height: 96rpx;
+  margin: 22rpx 0 0;
+  border: 1rpx solid #b9d4e4;
+  border-radius: 16rpx;
+  background: #e8f3f9;
+  color: #1769a6;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+.nickname-save::after { border: 0; }
+.nickname-save[disabled] { opacity: .65; }
+.nickname-save-pressed { background: #d6ebf8; transform: scale(.985); }
+
 /* ── 头部说明 ─────────────────────────────────────────────────────── */
 
 .intro-card {
@@ -5,7 +98,7 @@
   align-items: flex-start;
   gap: 20rpx;
   padding: 24rpx 28rpx;
-  border-left: 6rpx solid var(--brand, #0F8A65);
+  border-left: 6rpx solid var(--brand, #1769B2);
 }
 
 .intro-icon {
@@ -163,7 +256,7 @@
 }
 
 .bmi-badge.under   { background: #EFF6FF; color: #3B82F6; }
-.bmi-badge.normal  { background: #E8F5F0; color: #0F8A65; }
+.bmi-badge.normal  { background: #EAF3FD; color: #1769B2; }
 .bmi-badge.over    { background: #FEF3C7; color: #B45309; }
 .bmi-badge.obese   { background: #FEE2E2; color: #EF4444; }
 
@@ -201,7 +294,7 @@
 }
 
 .scale-val.under   { color: #3B82F6; }
-.scale-val.normal  { color: #0F8A65; }
+.scale-val.normal  { color: #1769B2; }
 .scale-val.over    { color: #B45309; }
 .scale-val.obese   { color: #EF4444; }
 
@@ -272,3 +365,17 @@
   color: var(--text-muted, #9CA3AF);
   margin-top: 16rpx;
 }
+
+.intro-card { border-left-color: #1769A6; background: #eef7fa; }
+.intro-title { font-size: 34rpx; color: #193f54; }
+.intro-sub { font-size: 27rpx; color: #4e6673; }
+.form-row { min-height: 100rpx; box-sizing: border-box; }
+.form-label { font-size: 31rpx; color: #1c4052; }
+.form-input { min-height: 78rpx; font-size: 31rpx; }
+.picker-value { min-height: 78rpx; line-height: 78rpx; font-size: 30rpx; }
+.form-optional, .input-unit { font-size: 26rpx; color: #566f7b; }
+.form-textarea { font-size: 29rpx; }
+.bmi-label { font-size: 30rpx; }
+.scale-val, .scale-name { font-size: 23rpx; }
+.tdee-title { font-size: 29rpx; }
+.tdee-hint, .save-hint { font-size: 25rpx; line-height: 1.7; }

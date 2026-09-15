@@ -1,0 +1,72 @@
+<view class="container service-page">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <view class="hero-emblem"><ui-icon name="survey" tone="white" size="68" /></view>
+    <text class="hero-eyebrow">营养健康 · 体重管理</text>
+    <text class="page-title">健康评估</text>
+    <text class="page-desc">从了解自己开始，记录每一次健康改变</text>
+  </view>
+
+  <view class="section-heading-row"><text class="section-title">选择问卷</text><text class="section-count" wx:if="{{surveyTypes.length}}">{{surveyTypes.length}} 份健康评估</text></view>
+  <view class="state-card" wx:if="{{loading}}">正在加载问卷…</view>
+  <view class="state-card" wx:elif="{{loadError}}"><text>{{loadError}}</text><button bindtap="loadTemplates">重新加载</button></view>
+  <view class="state-card" wx:elif="{{!surveyTypes.length}}">
+    <view class="empty-visual"><ui-icon name="survey" size="76" /></view>
+    <text>暂无开放的问卷，请稍后再来</text>
+    <text class="empty-hint">等待期间，可以先了解适合自己的健康知识。</text>
+    <button bindtap="loadTemplates">刷新问卷</button>
+    <button class="secondary-action" bindtap="goScience">浏览健康科普</button>
+  </view>
+  <view class="survey-list">
+    <navigator
+      class="survey-card card"
+      wx:for="{{surveyTypes}}"
+      wx:key="id"
+      url="{{item.url}}"
+      open-type="navigate"
+      hover-class="survey-card-pressed"
+    >
+      <view class="survey-icon" style="background: {{item.bgColor}}">
+        <image class="survey-line-icon" src="{{item.iconPath}}" mode="aspectFit"/>
+      </view>
+      <view class="survey-info">
+        <text class="survey-title">{{item.title}}</text>
+        <text class="survey-desc">{{item.desc}}</text>
+        <view class="survey-meta">
+          <text class="meta-item">{{item.questionsCount}}题</text>
+          <text class="meta-divider">|</text>
+          <text class="meta-item">{{item.estimatedTime}}</text>
+        </view>
+      </view>
+      <view class="survey-status">
+        <text class="status-tag {{item.status === '已完成' ? 'completed' : ''}}">{{item.status}}</text>
+        <ui-icon name="right" size="30" />
+      </view>
+    </navigator>
+  </view>
+
+  <!-- 历史记录 -->
+  <view class="section-title" wx:if="{{historyList.length > 0}}">填写记录</view>
+  <view class="history-list" wx:if="{{historyList.length > 0}}">
+    <view
+      class="history-card"
+      wx:for="{{historyList}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="viewHistory"
+    >
+      <view class="history-info">
+        <text class="history-title">{{item.title}}</text>
+        <text class="history-date">{{item.date}}</text>
+      </view>
+      <ui-icon name="right" size="30" />
+    </view>
+  </view>
+
+  <!-- 底部说明 -->
+  <view class="info-footer">
+    <text>问卷结果仅供健康参考，不作为诊疗依据</text>
+    <text>请如实填写，方便医生了解您的健康情况</text>
+  </view>
+</view>
+<ai-float />

@@ -1,4 +1,6 @@
 """JWT / 密码哈希 / 依赖"""
+import hashlib
+import hmac
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -7,8 +9,11 @@ from fastapi.security import OAuth2PasswordBearer
 import jwt
 from jwt.exceptions import PyJWTError as JWTError
 import bcrypt
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
+from app.db.session import get_db
+from app.models.user import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/wechat", auto_error=False)
 
@@ -19,6 +24,21 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain: str, hashed: str) -> bool:
     return bcrypt.checkpw(plain.encode('utf-8'), hashed.encode('utf-8'))
+
+
+def admin_auth_fingerprint(user: User) -> str:
+    """JWT 中的管理员凭证标记；不向客户端泄露密码哈希。"""
+    material = f"{user.id}:{user.token_version}:{user.username}:{user.password_hash}".encode("utf-8")
+    return hmac.new(settings.jwt_secret.encode("utf-8"), material, hashlib.sha256).hexdigest()
+
+
+def verify_admin_session(payload: dict, user: User) -> None:
+    """账号或密码一旦变更，旧 JWT 的凭证标记立即失配。"""
+    marker = payload.get("admin_auth")
+    if not user.password_hash or not isinstance(marker, str) or not hmac.compare_digest(
+        marker, admin_auth_fingerprint(user)
+    ):
+        raise HTTPException(status_code=401, detail="账号信息已变更，请重新登录")
 
 
 def create_access_token(subject: str, extra: Optional[dict] = None, expires_minutes: Optional[int] = None) -> str:
@@ -42,7 +62,10 @@ def decode_token(token: str) -> dict:
         ) from exc
 
 
-def get_current_subject(token: Optional[str] = Depends(oauth2_scheme)) -> str:
+async def get_current_subject(
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: AsyncSession = Depends(get_db),
+) -> str:
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -53,4 +76,11 @@ def get_current_subject(token: Optional[str] = Depends(oauth2_scheme)) -> str:
     sub = payload.get("sub")
     if not sub:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid token payload")
+    try:
+        uid = int(sub)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=401, detail="invalid token payload")
+    user = await db.get(User, uid)
+    if user and user.role == "admin":
+        verify_admin_session(payload, user)
     return sub

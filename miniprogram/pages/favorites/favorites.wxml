@@ -1,0 +1,16 @@
+<view class="favorites-page">
+  <view class="hero"><view><text class="eyebrow">阅读清单</text><text class="title">我的收藏</text><text class="hint">把值得再看的健康知识放在这里</text></view><ui-icon name="star" tone="active" size="58" /></view>
+  <view class="state-card" wx:if="{{!loggedIn}}"><text>登录后查看收藏的文章</text><button bindtap="goLogin">去登录</button></view>
+  <block wx:else>
+    <view class="article-list">
+      <view class="article" wx:for="{{items}}" wx:key="id">
+        <view class="article-body" data-id="{{item.id}}" bindtap="openArticle"><text class="article-title">{{item.title}}</text><text class="summary">{{item.summary}}</text><text class="meta">{{item.source || '健康科普'}} · {{item.date}}</text></view>
+        <view class="actions"><button data-id="{{item.id}}" bindtap="openArticle">阅读原文 <ui-icon name="right" size="25" /></button><button class="remove" data-id="{{item.id}}" bindtap="removeFavorite" disabled="{{busy[item.id]}}">取消收藏</button></view>
+      </view>
+    </view>
+    <view class="state-card" wx:if="{{!loading && error}}"><text>{{error}}</text><button bindtap="refresh">重新加载</button></view>
+    <view class="state-card" wx:elif="{{!loading && !items.length}}"><ui-icon name="star" tone="muted" size="68" /><text>还没有收藏的文章</text><button bindtap="goScience">去看看健康科普</button></view>
+    <view class="list-bottom" wx:if="{{loading}}">加载中…</view>
+    <button class="list-bottom load-more" wx:if="{{hasMore && !loading}}" bindtap="loadMore">查看更多收藏</button>
+  </block>
+</view>

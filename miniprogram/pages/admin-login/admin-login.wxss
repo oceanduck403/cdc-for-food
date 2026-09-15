@@ -1,0 +1,200 @@
+/* pages/admin-login/admin-login.wxss */
+
+page {
+  background: linear-gradient(180deg, #F2F8FF 0%, #FFFFFF 60%);
+  min-height: 100vh;
+}
+
+.page {
+  padding: 0 0 60rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* ── 品牌区 ─────────────────────────────────── */
+.brand-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60rpx 0 32rpx;
+}
+
+.brand-logo {
+  width: 120rpx;
+  height: 120rpx;
+  background: linear-gradient(135deg, #EAF3FD, #DCEBFA);
+  border-radius: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(15, 138, 101, 0.20);
+  margin-bottom: 20rpx;
+}
+
+.brand-emoji { font-size: 60rpx; }
+
+.brand-title {
+  font-size: 38rpx;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 8rpx;
+}
+
+.brand-subtitle {
+  font-size: 24rpx;
+  color: #9CA3AF;
+}
+
+/* ── 功能介绍（横排三列） ─────────────────── */
+.feature-list {
+  display: flex;
+  gap: 16rpx;
+  padding: 24rpx;
+  margin: 0 24rpx 28rpx;
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
+}
+
+.feature-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 8rpx 4rpx;
+}
+
+.feature-icon {
+  font-size: 40rpx;
+  margin-bottom: 8rpx;
+}
+
+.feature-name {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.3;
+}
+
+.feature-desc {
+  font-size: 20rpx;
+  color: #6B7280;
+  margin-top: 4rpx;
+  line-height: 1.4;
+}
+
+/* ── 登录表单卡片 ─────────────────────────── */
+.login-form {
+  padding: 0 24rpx;
+  margin-bottom: 32rpx;
+}
+
+.form-card {
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 36rpx 32rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.07);
+}
+
+.form-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 28rpx;
+  text-align: center;
+}
+
+.form-row {
+  margin-bottom: 24rpx;
+}
+
+.form-label {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 10rpx;
+}
+
+.form-input {
+  background: #F9FAFB;
+  border: 1rpx solid #E5E7EB;
+  border-radius: 16rpx;
+  padding: 0 28rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  font-size: 28rpx;
+  color: #111827;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  border-color: #1769B2;
+  background: #FFFFFF;
+}
+
+.btn-login {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: linear-gradient(135deg, #1769B2, #2D83C9);
+  color: #FFFFFF;
+  font-size: 30rpx;
+  font-weight: 600;
+  border-radius: 20rpx;
+  border: none;
+  margin-top: 8rpx;
+  box-shadow: 0 6rpx 20rpx rgba(15, 138, 101, 0.30);
+}
+
+.btn-login::after {
+  border: none;
+}
+
+.btn-login[disabled] {
+  background: #D1D5DB;
+  box-shadow: none;
+  color: #9CA3AF;
+}
+
+.hint {
+  text-align: center;
+  font-size: 22rpx;
+  color: #9CA3AF;
+  margin-top: 16rpx;
+  line-height: 1.6;
+}
+
+/* ── 返回入口 ───────────────────────────────── */
+.back-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  padding: 16rpx;
+}
+
+.back-icon {
+  font-size: 28rpx;
+  color: #1769B2;
+}
+
+.back-text {
+  font-size: 26rpx;
+  color: #1769B2;
+}
+
+.feature-item ui-icon { margin-bottom: 8rpx; }
+
+/* 适老阅读与统一蓝白服务色。 */
+.brand-title { font-size: 42rpx; }
+.brand-subtitle { font-size: 28rpx; color: #4B5D70; }
+.feature-name { font-size: 30rpx; }
+.feature-desc { font-size: 26rpx; color: #4B5D70; }
+.form-label, .form-title { font-size: 32rpx; }
+.form-input { height: 100rpx; line-height: 100rpx; font-size: 32rpx; }
+.btn-login { height: 104rpx; line-height: 104rpx; font-size: 34rpx; }
+.hint { font-size: 26rpx; color: #4B5D70; }
+.back-row { min-height: 88rpx; box-sizing: border-box; }
+.back-text { font-size: 30rpx; }

@@ -3,13 +3,13 @@
   <!-- 搜索框 -->
   <view class="search-wrap">
     <view class="search-box">
-      <text class="search-icon">🔍</text>
+      <ui-icon name="search" size="30" tone="muted" />
       <input class="search-input"
              placeholder="搜索知识文章"
              value="{{keyword}}"
              bindinput="onSearch"
              bindconfirm="onSearch"/>
-      <text class="search-clear" wx:if="{{keyword}}" catchtap="clearSearch">✕</text>
+      <view class="search-clear" wx:if="{{keyword}}" catchtap="clearSearch"><ui-icon name="close" size="26" tone="muted" /></view>
     </view>
   </view>
 
@@ -19,7 +19,7 @@
       <view wx:for="{{categories}}" wx:key="id"
             class="tab-item {{active === item.id ? 'active' : ''}}"
             data-id="{{item.id}}" bindtap="switchCategory">
-        <text>{{item.icon}}</text>
+        <ui-icon name="{{item.icon}}" size="28" tone="{{active === item.id ? 'white' : 'normal'}}" />
         <text>{{item.name}}</text>
       </view>
     </view>
@@ -32,7 +32,7 @@
             wx:for="{{list}}" wx:key="id"
             data-id="{{item.id}}" bindtap="openArticle">
         <view class="article-top">
-          <view class="article-tag" style="background: {{item.tagColor || '#E8F5F0'}}; color: {{item.tagColor ? '#fff' : '#0F8A65'}}">
+          <view class="article-tag" style="background: {{item.tagColor || '#EAF3FD'}}; color: {{item.tagTextColor || '#0D4E89'}}">
             {{item.category || '知识'}}
           </view>
           <text class="article-date">{{item.updatedAt}}</text>
@@ -41,14 +41,14 @@
         <view class="article-summary">{{item.summary}}</view>
         <view class="article-footer">
           <text class="article-source">{{item.source}}</text>
-          <text class="article-arrow">›</text>
+          <ui-icon name="right" size="26" tone="muted" />
         </view>
       </view>
     </block>
 
     <!-- 空状态 -->
     <view class="empty-state" wx:else>
-      <text class="empty-state__icon">📭</text>
+      <ui-icon name="inbox" size="70" tone="muted" />
       <text class="empty-state__text">暂无相关文章</text>
     </view>
   </view>

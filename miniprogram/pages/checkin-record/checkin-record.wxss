@@ -1,0 +1,137 @@
+/* pages/checkin-record/checkin-record.wxss */
+
+.container {
+  box-sizing: border-box;
+  padding: 30rpx 28rpx calc(56rpx + env(safe-area-inset-bottom));
+  background: #F3F7F9;
+  min-height: 100vh;
+  color: #173B50;
+}
+
+.stats-header {
+  background: linear-gradient(125deg, #145B94, #2785B6);
+  border-radius: 20rpx;
+  padding: 34rpx 28rpx;
+  margin-bottom: 34rpx;
+  color: #fff;
+}
+
+.stats-title {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 700;
+  margin-bottom: 30rpx;
+  text-align: left;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12rpx;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-num {
+  display: block;
+  font-size: 46rpx;
+  font-weight: 700;
+  margin-bottom: 8rpx;
+}
+
+.stat-label { font-size: 28rpx; color: #eff8ff; }
+
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; margin-bottom: 20rpx; }
+
+.section-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #173B50;
+}
+
+.section-hint { flex-shrink: 0; color: #526B78; font-size: 26rpx; }
+
+.record-list {
+  margin-bottom: 30rpx;
+}
+
+.record-card {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 16rpx;
+  min-height: 112rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  border: 1rpx solid #DFE9EF;
+  box-shadow: 0 4rpx 14rpx rgba(26, 77, 104, 0.04);
+}
+
+.record-icon {
+  width: 76rpx;
+  height: 76rpx;
+  flex-shrink: 0;
+  background: #EAF5FA;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+}
+
+.record-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.record-type {
+  display: block;
+  font-size: 31rpx;
+  font-weight: 700;
+  color: #173B50;
+  margin-bottom: 6rpx;
+}
+
+.record-time {
+  font-size: 28rpx;
+  color: #526B78;
+}
+
+.record-status {
+  flex-shrink: 0;
+  font-size: 27rpx;
+  color: #145B94;
+  background: #E7F3FA;
+  padding: 8rpx 14rpx;
+  border-radius: 20rpx;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 88rpx 28rpx;
+  border: 1rpx solid #DFE9EF;
+  border-radius: 18rpx;
+  background: #fff;
+}
+
+.empty-icon {
+  font-size: 100rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #173B50;
+  margin-bottom: 10rpx;
+}
+
+.empty-hint {
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: #526B78;
+  text-align: center;
+}

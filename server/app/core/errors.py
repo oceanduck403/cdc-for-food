@@ -30,7 +30,10 @@ def register_exception_handlers(app: FastAPI) -> None:
             content={
                 "code": "VALIDATION_ERROR",
                 "message": "请求参数校验失败",
-                "data": exc.errors(),
+                # Pydantic includes raw exception objects in ctx for custom
+                # validators; JSONResponse cannot serialize those objects.
+                "data": [{key: value for key, value in item.items() if key != "ctx"}
+                         for item in exc.errors()],
             },
         )
 

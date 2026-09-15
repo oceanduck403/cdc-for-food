@@ -11,6 +11,7 @@ services:
     volumes:
       - ./data:/app/data
       - ./storage:/app/storage
+      - ./uploads:/app/uploads
     depends_on:
       - redis
       - postgres

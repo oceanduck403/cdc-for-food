@@ -1,0 +1,133 @@
+<view class="container">
+
+  <!-- 顶部患者信息 -->
+  <view class="patient-header" wx:if="{{patientInfo}}">
+    <view class="patient-detail-row">
+      <text class="patient-name">{{patientInfo.name}}</text>
+      <text class="patient-tags">
+        <text wx:if="{{patientInfo.sex}}">{{patientInfo.sex}}</text>
+        <text wx:if="{{patientInfo.age}}">{{patientInfo.age}}岁</text>
+      </text>
+    </view>
+    <view wx:if="{{patientInfo.phone}}" class="patient-extra">
+      <view><ui-icon name="mobile" size="26" /> {{patientInfo.phone}}</view>
+    </view>
+    <view wx:if="{{patientInfo.health_notes}}" class="patient-extra notes">
+      <view><ui-icon name="edit" size="26" /> {{patientInfo.health_notes}}</view>
+    </view>
+  </view>
+
+  <!-- 聊天区 -->
+  <scroll-view class="chat-scroll" scroll-y scroll-into-view="{{scrollIntoView}}" scroll-with-animation>
+    <view class="chat-list">
+      <view wx:if="{{loading}}" class="loading-state">
+        <text>加载中...</text>
+      </view>
+
+      <view wx:for="{{messages}}" wx:key="id" id="msg-{{index}}"
+            class="msg-row {{item.sender_role === 'doctor' ? 'mine' : (item.sender_role === 'system' ? 'system' : 'other')}}">
+        <!-- 患者头像 -->
+        <view wx:if="{{item.sender_role === 'patient'}}" class="avatar patient-avatar-small">
+          {{patientName[0] || '患'}}
+        </view>
+
+        <view class="msg-content-wrap">
+          <!-- 系统消息：会诊邀请 -->
+          <view wx:if="{{item.sender_role === 'system' && item.msg_type === 'consult_invite' && item.consult_status === 'pending'}}"
+                class="consult-card">
+            <view class="consult-title"><ui-icon name="file" size="30" /> 会诊邀请</view>
+            <view class="consult-body">
+              <text>邀请 {{item.consult_target_doctor_name}} 加入会诊</text>
+              <text wx:if="{{item.consult_note}}" class="consult-note">{{item.consult_note}}</text>
+            </view>
+            <!-- 仅目标医生本人可见操作按钮（可简化：始终显示） -->
+            <view class="consult-actions">
+              <view class="btn-refuse" data-messageid="{{item.id}}" data-action="refuse" bindtap="handleConsult">
+                <text>婉拒</text>
+              </view>
+              <view class="btn-accept" data-messageid="{{item.id}}" data-action="accept" bindtap="handleConsult">
+                <text>接受</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 普通文字/图片消息 -->
+          <block wx:elif="{{item.sender_role !== 'system'}}">
+            <view wx:if="{{item.msg_type === 'text'}}" class="msg-bubble">
+              <text>{{item.content}}</text>
+            </view>
+            <view wx:elif="{{item.msg_type === 'image'}}" class="msg-bubble msg-image"
+                  data-url="{{item.image_url_full}}" bindtap="previewImage">
+              <image src="{{item.image_url_full}}" mode="widthFix" class="msg-image-img"></image>
+            </view>
+          </block>
+
+          <!-- 系统已处理 -->
+          <view wx:elif="{{item.sender_role === 'system' && item.msg_type === 'consult_invite'}}" class="msg-system">
+            <text>{{item.content}}</text>
+          </view>
+
+          <view class="msg-time">
+            <text wx:if="{{item._pending}}">发送中...</text>
+            <text wx:else>{{item.time_str}}</text>
+          </view>
+        </view>
+
+        <view wx:if="{{item.sender_role === 'doctor'}}" class="avatar doctor-avatar-small">医</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 输入栏 -->
+  <view class="input-bar">
+    <view class="btn-image" bindtap="chooseImage">
+      <ui-icon name="camera" size="36" />
+    </view>
+    <view class="btn-consult" bindtap="openConsultPanel">
+      <ui-icon name="group" size="36" />
+    </view>
+    <view class="input-wrapper">
+      <input
+        class="input-field"
+        placeholder="回复患者..."
+        value="{{userInput}}"
+        bindinput="onInputChange"
+        confirm-type="send"
+        bindconfirm="sendMessage"
+      />
+    </view>
+    <button class="btn-send" bindtap="sendMessage" disabled="{{sending || !userInput}}">发送</button>
+  </view>
+
+  <!-- 会诊邀请面板 -->
+  <view class="modal" wx:if="{{showConsultPanel}}" bindtap="closeConsultPanel">
+    <view class="modal-content" catchtap="">
+      <view class="modal-header">
+        <view class="modal-title"><ui-icon name="group" size="32" /> 邀请会诊</view>
+        <view class="modal-close" bindtap="closeConsultPanel">
+          <ui-icon name="close" size="28" />
+        </view>
+      </view>
+      <text class="modal-hint">选择一位医生，邀请他加入此患者的会诊</text>
+      <scroll-view class="doctor-list" scroll-y>
+        <view wx:if="{{availableDoctors.length === 0}}" class="empty-doctors">
+          <text>暂无可邀请的医生</text>
+        </view>
+        <view wx:for="{{availableDoctors}}" wx:key="id"
+              class="doctor-card"
+              data-doctorid="{{item.id}}"
+              data-doctorname="{{item.name}}"
+              bindtap="sendConsultInvite">
+          <view class="doctor-avatar-mini">{{item.name[0]}}</view>
+          <view class="doctor-card-info">
+            <text class="doctor-card-name">{{item.name}}</text>
+            <text class="doctor-card-meta">{{item.department}} · {{item.title}}</text>
+            <text wx:if="{{item.intro}}" class="doctor-card-intro">{{item.intro}}</text>
+          </view>
+          <ui-icon name="right" size="26" tone="muted" />
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+</view>
