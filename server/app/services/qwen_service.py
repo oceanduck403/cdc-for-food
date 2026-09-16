@@ -6,12 +6,16 @@ shape needed by the client.
 """
 from __future__ import annotations
 
+import base64
+import binascii
+from io import BytesIO
 import json
 import re
 from typing import Any, Iterable
 
 import httpx
 from loguru import logger
+from PIL import Image, ImageOps, UnidentifiedImageError
 
 from app.config import settings
 from app.core.errors import BusinessError
@@ -25,8 +29,9 @@ SYSTEM_PROMPTS = {
 }
 
 FOOD_PROMPT = """你是营养与食品安全科普助手。分析图片中可见的食物，只输出 JSON：
-{"foods":[{"name":"中文食物名","grams":100}]}
-grams 为大致重量估算。无法可靠识别时返回 {"foods":[]}。不要输出 markdown 或解释。"""
+{"foods":[{"name":"中文食物名","grams":100,"kcal":130,"protein":2.7,"fat":0.3,"carbs":28.2,"sodium":2}]}
+grams 为估算重量，其余营养素均为该份食物的估算总量（单位依次为 kcal、g、g、g、mg）。
+无法可靠识别时返回 {"foods":[]}。不要输出 markdown、解释或诊断内容。"""
 
 
 def _provider_config() -> tuple[str, str, str]:
@@ -128,11 +133,67 @@ def _extract_json(text: str) -> dict[str, Any]:
     return value
 
 
-async def analyze_food(image_base64: str) -> list[dict[str, Any]]:
-    encoded = image_base64.split(",", 1)[-1].strip()
+def _normalize_food_image(image_base64: str) -> str:
+    """Validate, strip metadata and bound a food photo before sending it upstream."""
+    value = image_base64.strip()
+    if value.startswith("data:"):
+        match = re.fullmatch(
+            r"data:image/(?:jpeg|jpg|png|webp);base64,([A-Za-z0-9+/=\s]+)",
+            value,
+            re.IGNORECASE,
+        )
+        if not match:
+            raise BusinessError("INVALID_IMAGE", "图片格式不受支持，请重新选择")
+        encoded = match.group(1)
+    else:
+        encoded = value
+    encoded = "".join(encoded.split())
     max_bytes = int(getattr(settings, "image_max_bytes", 1024 * 1024))
-    if len(encoded) * 3 // 4 > max_bytes:
+    if not encoded or len(encoded) * 3 // 4 > max_bytes + 3:
         raise BusinessError("IMAGE_TOO_LARGE", "图片过大，请压缩后重试", status_code=413)
+    try:
+        raw = base64.b64decode(encoded, validate=True)
+    except (binascii.Error, ValueError) as exc:
+        raise BusinessError("INVALID_IMAGE", "图片无法识别，请重新选择") from exc
+    if not raw or len(raw) > max_bytes:
+        raise BusinessError("IMAGE_TOO_LARGE", "图片过大，请压缩后重试", status_code=413)
+
+    try:
+        with Image.open(BytesIO(raw)) as source:
+            if source.format not in {"JPEG", "PNG", "WEBP"} or getattr(source, "n_frames", 1) != 1:
+                raise BusinessError("INVALID_IMAGE", "仅支持静态 JPG、PNG 或 WEBP 图片")
+            width, height = source.size
+            if (
+                width < 1
+                or height < 1
+                or width > 12000
+                or height > 12000
+                or width * height > settings.media_max_pixels
+            ):
+                raise BusinessError("INVALID_IMAGE", "图片尺寸过大，请换一张")
+            source.load()
+            image = ImageOps.exif_transpose(source)
+            image.thumbnail((1600, 1600), Image.Resampling.LANCZOS)
+            output = Image.new("RGB", image.size, "#ffffff")
+            if image.mode in {"RGBA", "LA"} or (image.mode == "P" and "transparency" in image.info):
+                rgba = image.convert("RGBA")
+                output.paste(rgba, mask=rgba.getchannel("A"))
+            else:
+                output.paste(image.convert("RGB"))
+        destination = BytesIO()
+        output.save(destination, format="JPEG", quality=82, optimize=True)
+        normalized = destination.getvalue()
+    except BusinessError:
+        raise
+    except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError) as exc:
+        raise BusinessError("INVALID_IMAGE", "图片无法识别，请重新选择") from exc
+    if not normalized or len(normalized) > max_bytes:
+        raise BusinessError("IMAGE_TOO_LARGE", "图片处理后仍然过大，请换一张", status_code=413)
+    return base64.b64encode(normalized).decode("ascii")
+
+
+async def analyze_food(image_base64: str) -> list[dict[str, Any]]:
+    encoded = _normalize_food_image(image_base64)
     content = await _completion(
         [{
             "role": "user",
@@ -155,10 +216,25 @@ async def analyze_food(image_base64: str) -> list[dict[str, Any]]:
         if not isinstance(raw, dict):
             continue
         name = str(raw.get("name") or "").strip()[:40]
-        try:
-            grams = max(1, min(2000, round(float(raw.get("grams") or 100))))
-        except (TypeError, ValueError):
-            grams = 100
+        def number(field: str, default: float, maximum: float) -> float:
+            try:
+                value = float(raw.get(field, default))
+            except (TypeError, ValueError):
+                value = default
+            if value != value:  # NaN
+                value = default
+            return round(max(0.0, min(maximum, value)), 1)
+
+        grams = max(1, round(number("grams", 100, 2000)))
         if name:
-            foods.append({"name": name, "grams": grams})
+            foods.append({
+                "name": name,
+                "grams": grams,
+                "kcal": number("kcal", 0, 5000),
+                "protein": number("protein", 0, 500),
+                "fat": number("fat", 0, 500),
+                "carbs": number("carbs", 0, 1000),
+                "sodium": number("sodium", 0, 20000),
+                "confidence": 0.0,
+            })
     return foods[:12]

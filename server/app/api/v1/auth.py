@@ -12,6 +12,7 @@ from app.api.deps import current_user_id, get_db
 from app.config import settings
 from app.core.security import admin_auth_fingerprint, create_access_token, verify_password
 from app.models.user import User
+from app.services.media_service import signed_media_url
 from app.services.user_service import ensure_user, get_profile
 
 router = APIRouter()
@@ -23,8 +24,6 @@ router = APIRouter()
 
 class WechatLoginRequest(BaseModel):
     code: str
-    nickname: Optional[str] = None
-    avatar: Optional[str] = None
 
 
 class WechatLoginResponse(BaseModel):
@@ -91,53 +90,12 @@ async def login_with_wechat(body: WechatLoginRequest, db: AsyncSession = Depends
     else:
         raise HTTPException(status_code=503, detail="微信登录服务配置不完整")
 
-    user = await ensure_user(db, openid=openid, nickname=body.nickname, avatar=body.avatar)
+    # 微信登录接口只建立平台身份。客户端提交的昵称或头像都不可信：
+    # 昵称必须经过内容安全检查，头像必须走受控上传、解码和重编码流程。
+    user = await ensure_user(db, openid=openid)
     profile = await get_profile(db, user.id)
     token = create_access_token(subject=str(user.id), extra={"role": "patient", "openid": openid})
     return WechatLoginResponse(token=token, profile=profile, openid=openid, unionid=unionid, role="patient")
-
-
-# ────────────────────────────────────────────────────────────────────
-# 手机号验证码登录（患者）
-# ────────────────────────────────────────────────────────────────────
-
-class PhoneLoginRequest(BaseModel):
-    phone: str
-    code: str  # 验证码（开发期固定为 123456）
-
-
-class PhoneLoginResponse(BaseModel):
-    token: str
-    profile: dict
-    role: str = "patient"
-
-
-@router.post("/phone-login", response_model=PhoneLoginResponse)
-async def phone_login(body: PhoneLoginRequest, db: AsyncSession = Depends(get_db)) -> PhoneLoginResponse:
-    """患者通过手机号 + 验证码登录
-
-    开发期验证码固定为 123456，生产环境接入短信网关。
-    """
-    if settings.app_env != "development":
-        raise HTTPException(status_code=503, detail="手机号验证码登录暂未开放")
-    if body.code != "123456":
-        raise HTTPException(status_code=400, detail="验证码错误（开发期固定为 123456）")
-
-    # 查找现有手机号用户
-    stmt = select(User).where(User.phone == body.phone)
-    res = await db.execute(stmt)
-    user = res.scalar_one_or_none()
-
-    if not user:
-        # 自动创建患者账号
-        user = User(phone=body.phone, role="patient", nickname=f"用户{body.phone[-4:]}")
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
-
-    profile = await get_profile(db, user.id)
-    token = create_access_token(subject=str(user.id), extra={"role": "patient", "phone": body.phone})
-    return PhoneLoginResponse(token=token, profile=profile, role="patient")
 
 
 # ────────────────────────────────────────────────────────────────────
@@ -188,7 +146,7 @@ async def account_login(body: AccountLoginRequest, db: AsyncSession = Depends(ge
         "username": user.username,
         "nickname": user.nickname,
         "real_name": user.real_name,
-        "avatar": user.avatar,
+        "avatar": signed_media_url(user.avatar),
         "role": user.role,
     }
     if user.role == "doctor":
@@ -298,7 +256,7 @@ async def me(user_id: str = Depends(current_user_id), db: AsyncSession = Depends
         "username": user.username,
         "nickname": user.nickname,
         "real_name": user.real_name,
-        "avatar": user.avatar,
+        "avatar": signed_media_url(user.avatar),
         "phone": user.phone,
         "department": user.department,
         "title": user.title,

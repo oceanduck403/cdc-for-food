@@ -33,8 +33,8 @@
          │          │          │
     ┌────▼───┐ ┌────▼───┐ ┌────▼────┐
     │ 患者端  │ │ 医生端  │ │ 管理员端 │
-    │ 患者    │ │ 账号    │ │ 默认账号 │
-    │ 微信登录│ │ 密码登录│ │ admin   │
+    │ 患者    │ │ 账号    │ │ 管理账号 │
+    │ 微信登录│ │ 密码登录│ │ 强密码登录│
     └────┬───┘ └────┬───┘ └────┬────┘
          │          │          │
          ▼          ▼          ▼
@@ -66,6 +66,9 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 微信开发者工具导入步骤、模拟器/真机调试、常见问题排查见
 [`docs/miniprogram-devtools.md`](docs/miniprogram-devtools.md)。
+
+正式发布采用微信云托管 / CloudBase 承载 FastAPI 后端，操作与资源要求见
+[`docs/deploy-wechat-cloudrun.md`](docs/deploy-wechat-cloudrun.md)。Railway 仅保留为联调或备选方案。
 
 ## 数据库
 

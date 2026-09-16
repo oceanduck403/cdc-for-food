@@ -23,7 +23,11 @@ def production_settings(**overrides) -> Settings:
         "wechat_appid": "wx1234567890abcdef",
         "wechat_secret": "a" * 32,
         "qwen_api_key": "server-only-qwen-key",
-        "redis_url": "redis://redis.internal:6379/0",
+        "media_storage_backend": "cos",
+        "media_cos_secret_id": "AKID" + "a" * 32,
+        "media_cos_secret_key": "b" * 32,
+        "media_cos_region": "ap-chengdu",
+        "media_cos_bucket": "nutrition-private-1250000000",
     }
     values.update(overrides)
     return Settings(_env_file=None, **values)
@@ -41,7 +45,8 @@ def test_production_settings_normalize_railway_postgres_url():
         ({"database_url": "sqlite:///./data/app.db"}, "DATABASE_URL"),
         ({"wechat_secret": ""}, "WECHAT_APPID"),
         ({"qwen_api_key": ""}, "QWEN_API_KEY"),
-        ({"redis_url": "redis://localhost:6379/0"}, "REDIS_URL"),
+        ({"media_storage_backend": "local"}, "MEDIA_STORAGE_BACKEND"),
+        ({"media_cos_bucket": ""}, "MEDIA_COS_BUCKET"),
         ({"admin_bootstrap_username": "admin", "admin_bootstrap_password": "weak"},
          "ADMIN_BOOTSTRAP_PASSWORD"),
         ({"admin_bootstrap_username": "admin"}, "必须同时配置"),
@@ -53,7 +58,7 @@ def test_production_settings_reject_unsafe_values(overrides, message):
 
 
 @pytest.mark.asyncio
-async def test_production_disables_mock_wechat_and_fixed_phone_code(client, monkeypatch):
+async def test_production_disables_mock_wechat_and_has_no_fixed_phone_code(client, monkeypatch):
     from app.api.v1 import auth
 
     monkeypatch.setattr(
@@ -62,12 +67,9 @@ async def test_production_disables_mock_wechat_and_fixed_phone_code(client, monk
         SimpleNamespace(app_env="production", wechat_appid="", wechat_secret=""),
     )
     wechat = await client.post("/api/v1/auth/wechat", json={"code": "forged-code"})
-    phone = await client.post(
-        "/api/v1/auth/phone-login",
-        json={"phone": "13800000000", "code": "123456"},
-    )
+    phone = await client.post("/api/v1/auth/phone-login", json={})
     assert wechat.status_code == 503
-    assert phone.status_code == 503
+    assert phone.status_code == 404
 
 
 @pytest.mark.asyncio

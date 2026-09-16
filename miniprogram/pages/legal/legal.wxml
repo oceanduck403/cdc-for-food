@@ -1,0 +1,33 @@
+<view class="legal-page">
+  <view class="legal-header">
+    <text class="legal-kicker">营养健康 AI 小助手</text>
+    <text class="legal-title">{{legalDoc.title}}</text>
+    <text class="legal-meta">{{legalDoc.version}} · {{legalDoc.updatedAt}}</text>
+    <text class="legal-meta">{{legalDoc.effectiveAt}}</text>
+  </view>
+
+  <view class="summary-card">
+    <ui-icon name="info" size="34" />
+    <text>{{legalDoc.summary}}</text>
+  </view>
+
+  <button wx:if="{{type === 'privacy'}}" class="wechat-privacy" bindtap="openWechatPrivacy" hover-class="legal-pressed">
+    查看微信《小程序用户隐私保护指引》
+    <ui-icon name="right" size="26" />
+  </button>
+
+  <view class="legal-section" wx:for="{{legalDoc.sections}}" wx:key="title">
+    <text class="section-title">{{index + 1}}. {{item.title}}</text>
+    <text class="section-paragraph" wx:for="{{item.paragraphs}}" wx:for-item="paragraph" wx:key="*this">{{paragraph}}</text>
+    <view class="list-row" wx:for="{{item.items}}" wx:for-item="listItem" wx:key="*this">
+      <text class="list-bullet">•</text>
+      <text class="list-text">{{listItem}}</text>
+    </view>
+    <text class="section-paragraph" wx:for="{{item.paragraphsAfter}}" wx:for-item="afterParagraph" wx:key="*this">{{afterParagraph}}</text>
+  </view>
+
+  <view class="legal-footer">
+    <text>本应用由成都市疾病预防控制中心提供</text>
+    <text>仅供营养与食品安全科普使用，不作为诊疗依据</text>
+  </view>
+</view>

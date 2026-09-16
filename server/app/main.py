@@ -12,6 +12,7 @@ from app.core.errors import register_exception_handlers
 from app.core.logging import setup_logging
 from app.db.session import SessionLocal, init_db
 from app.db.survey_defaults import ensure_registration_template
+from app.services.media_service import ensure_media_directories
 
 
 @asynccontextmanager
@@ -19,6 +20,7 @@ async def lifespan(app: FastAPI):
     setup_logging()
     Path("logs").mkdir(exist_ok=True)
     Path("data").mkdir(exist_ok=True)
+    ensure_media_directories()
     if settings.app_env != "production":
         await init_db()
     async with SessionLocal() as db:
@@ -49,11 +51,6 @@ def create_app() -> FastAPI:
     static_dir = Path("app/static")
     static_dir.mkdir(parents=True, exist_ok=True)
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
-
-    # 上传的图片（聊天用）
-    uploads_dir = Path("uploads")
-    uploads_dir.mkdir(parents=True, exist_ok=True)
-    app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
     @app.get("/health", tags=["meta"])
     async def health() -> dict:

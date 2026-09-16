@@ -1,5 +1,5 @@
 """用户档案 schemas"""
-from typing import Optional
+from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 
@@ -27,3 +27,9 @@ class UserProfileUpdate(BaseModel):
     weightKg: Optional[float] = None
     activityLevel: Optional[str] = None
     healthNotes: Optional[str] = None
+
+
+class AccountDeletionRequest(BaseModel):
+    """Require an exact phrase so an accidental DELETE request cannot remove data."""
+
+    confirmation: Literal["注销账号"]

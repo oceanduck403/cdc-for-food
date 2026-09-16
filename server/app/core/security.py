@@ -81,6 +81,15 @@ async def get_current_subject(
     except (TypeError, ValueError):
         raise HTTPException(status_code=401, detail="invalid token payload")
     user = await db.get(User, uid)
-    if user and user.role == "admin":
+    if not user:
+        # A signed token must stop working immediately after its account is
+        # deleted; otherwise endpoints that only consume ``sub`` could still run.
+        raise HTTPException(status_code=401, detail="账号不存在或已注销")
+    if not user.is_active:
+        # Disabling a managed account is also a session-revocation operation.
+        # Enforce it here so endpoints using only ``current_user_id`` cannot be
+        # reached with a token issued before the account was disabled.
+        raise HTTPException(status_code=401, detail="账号已停用，请重新登录")
+    if user.role == "admin":
         verify_admin_session(payload, user)
     return sub

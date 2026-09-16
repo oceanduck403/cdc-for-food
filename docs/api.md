@@ -12,7 +12,7 @@
 }
 ```
 
-业务错误（4xx）会返回业务码，例如 `VALIDATION_ERROR`、`USER_NOT_FOUND`、`MEAL_NOT_FOUND`、`EMPTY_IMAGE`、`BAD_MEAL_ID`、`BAD_USER_ID`、`INTERNAL_ERROR`。
+业务错误（4xx）会返回业务码，例如 `VALIDATION_ERROR`、`USER_NOT_FOUND`、`MEAL_NOT_FOUND`、`CONTENT_REJECTED`、`BAD_MEAL_ID`、`BAD_USER_ID`、`INTERNAL_ERROR`。
 
 ## 接口清单
 
@@ -29,15 +29,25 @@
 | --- | --- | --- |
 | GET  | `/users/me` | 获取档案 |
 | PUT  | `/users/me` | 更新档案 |
+| POST | `/users/me/avatar` | 上传并安全处理头像 |
+| DELETE | `/users/me` | 注销并删除患者账号数据 |
 | GET  | `/users/me/quota` | 今日分析配额 |
 
 ### 膳食
 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
-| POST | `/meals/analyze` | 上传图片进行识别（base64） |
 | GET  | `/meals/{id}/report` | 单次膳食报告 |
 | GET  | `/meals/latest/report` | 最近一次报告 |
+
+### AI
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| POST | `/ai/chat` | AI 健康科普问答 |
+| POST | `/ai/survey-analysis` | 生成问卷科普分析 |
+| POST | `/ai/daily-suggestion` | 生成打卡建议 |
+| POST | `/ai/food-analysis` | 分析食物图片并保存膳食报告 |
 
 ### 报告
 
@@ -58,12 +68,6 @@
 | --- | --- | --- |
 | GET  | `/gis/mushroom-risk?city=chengdu` | 风险点列表 |
 | GET  | `/gis/mushroom-risk/{id}` | 风险点详情 |
-
-### 视觉识别（中转）
-
-| 方法 | 路径 | 说明 |
-| --- | --- | --- |
-| POST | `/vision/dish` | 直接调用识别 API（内部调试用） |
 
 ### 管理后台
 
@@ -92,7 +96,7 @@ Content-Type: application/json
 ### 上传膳食图片
 
 ```http
-POST /api/v1/meals/analyze
+POST /api/v1/ai/food-analysis
 Authorization: Bearer <token>
 Content-Type: application/json
 

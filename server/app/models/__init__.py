@@ -7,10 +7,12 @@ from app.models.meal import Meal, MealItem
 from app.models.knowledge import KnowledgeArticle, MushroomRisk
 from app.models.chat import ConsultAssignment, Consultation
 from app.models.survey import SurveyTemplate, SurveyResponse
+from app.models.ai_usage import AiUsageEvent
 
 __all__ = [
     "Base", "User", "Meal", "MealItem",
     "KnowledgeArticle", "MushroomRisk",
     "ConsultAssignment", "Consultation",
     "SurveyTemplate", "SurveyResponse",
+    "AiUsageEvent",
 ]

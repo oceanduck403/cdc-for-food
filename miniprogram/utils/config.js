@@ -19,9 +19,6 @@ module.exports = {
   useMock,
   knowledgeBase,
 
-  // ── 商用菜品识别 API 走小程序云函数中转，避免暴露密钥
-  visionGateway: '/vision/dish',
-
   // 单日分析次数上限（成本闸口）
   dailyAnalysisLimit: 20,
 
@@ -32,7 +29,7 @@ module.exports = {
   },
 
   // 隐私协议版本号（升级时强制重弹）
-  privacyVersion: 'v1.0-202607',
+  privacyVersion: 'v1.1-20260916',
 
   // GIS 地图默认中心：成都市中心
   gisCenter: { latitude: 30.6586, longitude: 104.0648 }

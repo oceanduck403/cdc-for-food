@@ -148,27 +148,20 @@ Page({
         const filePath = res.tempFiles[0].tempFilePath;
         wx.showLoading({ title: '上传中...', mask: true });
         try {
-          const imageUrl = await chatApi.uploadChatImage(filePath);
+          const uploaded = await chatApi.uploadChatImage(filePath, this.data.assignmentId);
           wx.hideLoading();
-          // 发送图片消息（content 携带说明）
           const messages = [...this.data.messages, {
-            id: 'tmp-img-' + Date.now(),
+            id: uploaded.id,
             sender_role: 'patient',
             msg_type: 'image',
             content: '[图片]',
-            image_url: imageUrl,
-            created_at: new Date().toISOString(),
-            _pending: true,
+            image_url: uploaded.url,
+            image_url_full: uploaded.url.startsWith('http') ? uploaded.url : `${config.baseUrl || ''}${uploaded.url}`,
+            created_at: uploaded.created_at,
           }];
           this.setData({
             messages,
             scrollIntoView: 'msg-' + (messages.length - 1),
-          });
-          await chatApi.sendMessage({
-            assignment_id: this.data.assignmentId,
-            content: '[图片]',
-            msg_type: 'image',
-            image_url: imageUrl,
           });
           await this.loadMessages();
         } catch (err) {
@@ -195,8 +188,8 @@ Page({
   previewImage(e) {
     const { url } = e.currentTarget.dataset;
     const all = this.data.messages
-      .filter(m => m.image_url)
-      .map(m => (config.baseUrl || '') + m.image_url);
-    wx.previewImage({ urls: all, current: (config.baseUrl || '') + url });
+      .filter(m => m.image_url_full)
+      .map(m => m.image_url_full);
+    wx.previewImage({ urls: all, current: url });
   },
 });

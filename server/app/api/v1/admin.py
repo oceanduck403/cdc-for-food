@@ -13,8 +13,26 @@ from app.api.deps import get_db
 from app.core.security import get_current_subject, hash_password, verify_password
 from app.models.chat import ConsultAssignment, Consultation
 from app.models.user import User
+from app.services.media_service import signed_media_url
 
 router = APIRouter()
+
+
+def _validate_managed_password(password: str) -> None:
+    """Apply one production password policy to administrator and doctor accounts."""
+    strong = (
+        12 <= len(password.encode("utf-8")) <= 72
+        and password == password.strip()
+        and re.search(r"[a-z]", password)
+        and re.search(r"[A-Z]", password)
+        and re.search(r"\d", password)
+        and re.search(r"[^A-Za-z0-9]", password)
+    )
+    if not strong:
+        raise HTTPException(
+            status_code=400,
+            detail="密码须为12至72字节，并包含大小写字母、数字和符号",
+        )
 
 
 def _uid(sub: str) -> int:
@@ -65,10 +83,7 @@ async def change_account(
 
     if password_changed:
         new_password = body.new_password
-        if len(new_password) < 8 or len(new_password.encode("utf-8")) > 72:
-            raise HTTPException(status_code=400, detail="新密码须至少8位，且不超过72字节")
-        if new_password != new_password.strip():
-            raise HTTPException(status_code=400, detail="新密码首尾不能包含空格")
+        _validate_managed_password(new_password)
         if verify_password(new_password, admin.password_hash):
             raise HTTPException(status_code=400, detail="新密码不能与原密码相同")
         admin.password_hash = hash_password(new_password)
@@ -197,6 +212,10 @@ async def create_doctor(
     """管理员创建医生账号"""
     await _require_admin(db, sub)
 
+    if not re.fullmatch(r"[A-Za-z0-9_]{3,64}", body.username):
+        raise HTTPException(status_code=400, detail="账号须为3至64位英文字母、数字或下划线")
+    _validate_managed_password(body.password)
+
     # 校验用户名重复
     stmt = select(User).where(User.username == body.username)
     res = await db.execute(stmt)
@@ -240,7 +259,9 @@ async def update_doctor(
         if val is not None:
             setattr(doctor, field, val)
     if body.new_password:
+        _validate_managed_password(body.new_password)
         doctor.password_hash = hash_password(body.new_password)
+        doctor.token_version += 1
 
     await db.commit()
     await db.refresh(doctor)
@@ -273,7 +294,7 @@ def _patient_to_dict(p: User) -> dict:
         "phone": p.phone,
         "nickname": p.nickname,
         "real_name": p.real_name,
-        "avatar": p.avatar,
+        "avatar": signed_media_url(p.avatar),
         "age": p.age,
         "sex": p.sex,
         "height_cm": p.height_cm,
@@ -433,7 +454,7 @@ async def list_chats(
                 "sender_id": m.sender_id,
                 "msg_type": m.msg_type,
                 "content": m.content,
-                "image_url": m.image_url,
+                "image_url": signed_media_url(m.image_url),
                 "created_at": m.created_at.isoformat() if m.created_at else None,
             }
             for m in msgs

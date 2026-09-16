@@ -128,28 +128,21 @@ Page({
         const filePath = res.tempFiles[0].tempFilePath;
         wx.showLoading({ title: '上传中...', mask: true });
         try {
-          const imageUrl = await chatApi.uploadChatImage(filePath);
+          const uploaded = await chatApi.uploadChatImage(filePath, this.data.assignmentId);
           wx.hideLoading();
           let messages = [...this.data.messages, {
-            id: 'tmp-img-' + Date.now(),
+            id: uploaded.id,
             sender_role: 'doctor',
             msg_type: 'image',
             content: '[图片]',
-            image_url: imageUrl,
-            image_url_full: imageUrl,
-            created_at: new Date().toISOString(),
-            time_str: this.formatTime(new Date()),
-            _pending: true,
+            image_url: uploaded.url,
+            image_url_full: uploaded.url.startsWith('http') ? uploaded.url : `${config.baseUrl || ''}${uploaded.url}`,
+            created_at: uploaded.created_at,
+            time_str: this.formatTime(uploaded.created_at),
           }];
           this.setData({
             messages,
             scrollIntoView: 'msg-' + (messages.length - 1),
-          });
-          await chatApi.sendMessage({
-            assignment_id: this.data.assignmentId,
-            content: '[图片]',
-            msg_type: 'image',
-            image_url: imageUrl,
           });
           await this.loadMessages();
         } catch (err) {

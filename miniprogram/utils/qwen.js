@@ -263,7 +263,7 @@ function fuzzyMatch(name) {
 async function analyzeFoodFromImage(imagePath) {
   // 1. 调用千问识别图片中的食物
   const qwenResult = await analyzeMeal(imagePath);
-  const foods = qwenResult.foods || [];
+  const foods = qwenResult.items || qwenResult.foods || [];
 
   if (foods.length === 0) {
     return {
@@ -272,7 +272,7 @@ async function analyzeFoodFromImage(imagePath) {
   }
 
   // 2. 估算营养
-  const items = enrichNutrition(foods);
+  const items = qwenResult.items || enrichNutrition(foods);
 
   // 3. 生成自然语言描述：识别 + 营养 + 建议
   const names = items.map(item => item.name).join('、');
@@ -335,6 +335,13 @@ async function analyzeFoodFromImage(imagePath) {
   }
 
   return {
+    ...qwenResult,
+    items,
+    totalKcal: qwenResult.totalKcal || items.reduce((sum, item) => sum + (item.kcal || 0), 0),
+    totalProtein: qwenResult.totalProtein || items.reduce((sum, item) => sum + (item.protein || 0), 0),
+    totalFat: qwenResult.totalFat || items.reduce((sum, item) => sum + (item.fat || 0), 0),
+    totalCarbs: qwenResult.totalCarbs || items.reduce((sum, item) => sum + (item.carbs || 0), 0),
+    totalSodium: qwenResult.totalSodium || items.reduce((sum, item) => sum + (item.sodium || 0), 0),
     description
   };
 }

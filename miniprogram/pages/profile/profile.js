@@ -18,8 +18,8 @@ const defaultProfile = {
 
 function avatarUrl(path) {
   if (!path) return '';
-  if (/^https?:\/\//i.test(path)) return path;
-  if (path.startsWith('/uploads/')) return `${config.baseUrl}${path}`;
+  if (/^(https?:|wxfile:|cloud:|data:)/i.test(path)) return path;
+  if (path.startsWith('/') && config.baseUrl) return `${config.baseUrl}${path}`;
   return path;
 }
 

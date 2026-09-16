@@ -138,7 +138,8 @@ async def test_admin_account_is_admin_only(client, db):
     for user in (doctor, patient, disabled):
         headers = _headers(user)
         response = await client.post("/api/v1/admin/account", json=body, headers=headers)
-        assert response.status_code == 403, response.text
+        expected = 401 if user is disabled else 403
+        assert response.status_code == expected, response.text
 
     legacy_headers = {"Authorization": f"Bearer {create_access_token(str(disabled.id))}"}
     assert (await client.get("/api/v1/admin/stats", headers=legacy_headers)).status_code == 401

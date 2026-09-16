@@ -3,12 +3,52 @@ const storage = require('../../utils/storage.js');
 const config = require('../../utils/config.js');
 const navigation = require('../../utils/navigation.js');
 const auth = require('../../utils/auth.js');
+const { request } = require('../../utils/api.js');
 
 function avatarDisplayUrl(avatar) {
   if (!avatar) return '';
   if (avatar.startsWith('//')) return `https:${avatar}`;
   if (/^(https?:|wxfile:|cloud:|data:)/i.test(avatar)) return avatar;
   return avatar.startsWith('/') && config.baseUrl ? `${config.baseUrl}${avatar}` : avatar;
+}
+
+function confirmModal(options) {
+  return new Promise((resolve) => {
+    wx.showModal({
+      ...options,
+      success: resolve,
+      fail: () => resolve({ confirm: false }),
+    });
+  });
+}
+
+function clearDeletedAccountData(userId) {
+  const id = String(userId || '');
+  const fixedKeys = new Set([
+    'token', 'role', 'profile', 'userInfo', 'history', 'survey_history',
+    'start_free_appointment', 'userMarkers',
+  ]);
+  let keys = [];
+  try {
+    const info = wx.getStorageInfoSync();
+    keys = Array.isArray(info && info.keys) ? info.keys : [];
+  } catch (_) {}
+  keys.forEach((key) => {
+    const belongsToDeletedAccount = id && (
+      key === `checkin_records_${id}` ||
+      key === `floating_ai_${id}` ||
+      key.startsWith(`floating_ai_${id}_quota_`) ||
+      key.startsWith(`survey_draft_${id}_`) ||
+      key.startsWith(`ai_suggestions_checkin_records_${id}_`)
+    );
+    if (fixedKeys.has(key) || belongsToDeletedAccount) {
+      try { wx.removeStorageSync(key); } catch (_) {}
+    }
+  });
+  // Some test/dev runtimes do not expose getStorageInfoSync.
+  fixedKeys.forEach((key) => {
+    try { wx.removeStorageSync(key); } catch (_) {}
+  });
 }
 
 Page({
@@ -53,12 +93,11 @@ Page({
   },
 
   openPrivacy() {
-    wx.showModal({
-      title: '隐私协议',
-      content: '本应用严格遵守《个人信息保护法》，仅收集必要的健康数据用于个性化营养建议，数据存储于您授权的服务端，不对外共享。',
-      showCancel: false,
-      confirmText: '我已知晓',
-    });
+    navigation.open('/pages/legal/legal?type=privacy');
+  },
+
+  openTerms() {
+    navigation.open('/pages/legal/legal?type=terms');
   },
 
   openAbout() {
@@ -80,5 +119,43 @@ Page({
         }
       }
     });
+  },
+
+  async onDeleteAccount() {
+    if (!this.data.isLogin) return;
+    const first = await confirmModal({
+      title: '注销账号',
+      content: '注销后，您的健康档案、评估、打卡、预约、咨询记录和互动数据将被永久删除，无法恢复。',
+      confirmText: '继续注销',
+      confirmColor: '#C83E3E',
+      cancelText: '暂不注销',
+    });
+    if (!first.confirm) return;
+
+    const second = await confirmModal({
+      title: '最后确认',
+      content: '确定永久注销当前账号吗？注销完成后需要重新授权才能使用。',
+      confirmText: '确认注销',
+      confirmColor: '#C83E3E',
+      cancelText: '取消',
+    });
+    if (!second.confirm) return;
+
+    wx.showLoading({ title: '正在注销', mask: true });
+    try {
+      const userId = this.data.profile && this.data.profile.id;
+      await request({
+        url: '/users/me',
+        method: 'DELETE',
+        data: { confirmation: '注销账号' },
+      });
+      clearDeletedAccountData(userId);
+      wx.hideLoading();
+      wx.showToast({ title: '账号已注销', icon: 'success', duration: 800 });
+      setTimeout(() => auth.logout(), 500);
+    } catch (err) {
+      wx.hideLoading();
+      wx.showToast({ title: err.message || '注销失败，请稍后重试', icon: 'none' });
+    }
   }
 });

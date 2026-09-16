@@ -36,7 +36,7 @@
 ├─ 证件号码：XXXXXXXXXXXXXXXXXX
 ├─ 手机：XXXXXXXXXXX（项目负责人）
 ├─ 应急电话：XXXXXXXXXXX
-└─ 邮箱：nutrition@cdcdc.example.cn
+└─ 邮箱：[提交前填写运营单位真实邮箱；如无对外邮箱，按备案平台要求处理]
 
 网站信息
 ├─ 网站名称：营养与食品安全 AI 小助手

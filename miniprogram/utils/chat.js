@@ -93,7 +93,10 @@ function fetchAvailableDoctors() {
 /**
  * 上传聊天图片
  */
-function uploadChatImage(filePath) {
+function uploadChatImage(filePath, assignmentId) {
+  if (!Number.isInteger(Number(assignmentId)) || Number(assignmentId) < 1) {
+    return Promise.reject(new Error('聊天会话无效，请刷新后重试'));
+  }
   const baseUrl = require('./api.js').getBaseUrl();
   const token = wx.getStorageSync('token');
   return new Promise((resolve, reject) => {
@@ -101,12 +104,13 @@ function uploadChatImage(filePath) {
       url: `${baseUrl}/chat/upload-image`,
       filePath,
       name: 'file',
+      formData: { assignment_id: String(assignmentId) },
       header: { 'Authorization': `Bearer ${token}` },
       success: res => {
         try {
           const data = JSON.parse(res.data);
-          if (data.url) resolve(data.url);
-          else reject(new Error(data.detail || '上传失败'));
+          if (res.statusCode >= 200 && res.statusCode < 300 && data.url) resolve(data);
+          else reject(new Error(data.detail || data.message || '上传失败'));
         } catch (e) {
           reject(new Error('解析响应失败'));
         }

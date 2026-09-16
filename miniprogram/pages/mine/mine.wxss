@@ -244,6 +244,29 @@
   margin-right: 8rpx;
 }
 
+.account-delete-row {
+  min-height: 112rpx;
+}
+
+.account-delete-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.account-delete-title {
+  color: #B83232;
+  font-weight: 600;
+}
+
+.account-delete-note {
+  margin-top: 4rpx;
+  font-size: 24rpx;
+  line-height: 1.45;
+  color: #7B6262;
+}
+
 .sr-arrow {
   font-size: 36rpx;
   color: var(--border, #E5E7EB);

@@ -22,7 +22,8 @@
     "pages/knowledge-detail/knowledge-detail",
     "pages/report/report",
     "pages/messages/messages",
-    "pages/favorites/favorites"
+    "pages/favorites/favorites",
+    "pages/legal/legal"
   ],
   "usingComponents": {
     "ui-icon": "/components/ui-icon/ui-icon"

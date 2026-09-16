@@ -42,7 +42,6 @@ docker compose up -d --build
 
 - `api`：FastAPI 服务（8000）
 - `postgres`：数据库（5432）
-- `redis`：缓存（6379）
 
 生产前请：
 
@@ -50,30 +49,32 @@ docker compose up -d --build
 2. 修改 PostgreSQL 默认账号密码
 3. 关闭 `APP_ENV=development`
 4. 配置 `WECHAT_APPID` 与 `WECHAT_SECRET`
-5. 配置 `OSS_*` 与 `VISION_*` 系列密钥
+5. 配置服务端 `QWEN_API_KEY` 与私有 COS 的 `MEDIA_COS_*` 参数
 
 ## 生产环境
 
+正式环境首选微信云托管 / CloudBase，完整步骤见 [微信云托管上线手册](./deploy-wechat-cloudrun.md)。小程序代码由微信开发者工具上传，FastAPI 容器由云托管运行；Railway 和自建服务器仅作为联调或备选部署方式。
+
 ### 推荐架构
 
-- 应用服务器：2 核 4G 起，根据日活调整
-- PostgreSQL：主从架构 + 每日备份
-- Redis：单实例 + 持久化
-- OSS：膳食图片与 GIS 静态资源
-- HTTPS：Let's Encrypt / 阿里云 SSL
-- 域名与备案：使用单位主体
+- 应用：CloudBase 云托管运行根目录 Dockerfile
+- PostgreSQL：CloudBase PG 模式或同地域腾讯云 PostgreSQL，启用备份
+- Redis：当前版本不需要；后续确需缓存或分布式锁时再通过 VPC 接入
+- 文件：私有腾讯云 COS，不写入容器本地磁盘
+- 小程序接入：首版使用云托管公网 HTTPS，完成上传链路改造后可切换 `wx.cloud.callContainer`
+- 域名与备案：若绑定自定义域名，使用单位主体并按平台要求备案
 
 ### 监控告警
 
-- 接口成功率、99 线延迟
-- 视觉 API 调用量与费用
-- 错误日志关键字告警（`INTERNAL_ERROR`、`VisionTimeout`）
+- 接口成功率与高分位延迟
+- Qwen 调用量、失败率与费用
+- 错误日志关键字告警（如 `INTERNAL_ERROR`），且日志不得记录密钥或健康原文
 
 ### 备份策略
 
-- PostgreSQL 每日凌晨全量 + binlog 增量
-- OSS 启用版本控制（versioning）
-- 每周异地冷备一份
+- 在数据库控制台启用符合运营单位要求的备份策略，并实际验证恢复流程
+- 私有 COS 根据数据保存规则配置版本控制或生命周期；不得改成公开读
+- 备份周期与保留期限由运营单位确认后写入运维制度
 
 ### 上线 Checklist
 

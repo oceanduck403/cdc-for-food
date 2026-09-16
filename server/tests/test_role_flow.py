@@ -37,3 +37,6 @@ async def test_role_login_and_complete_consultation(client, db):
     assert (await client.post('/api/v1/chat/read',headers=dh,params={'assignment_id':aid})).status_code==200
     doctor.is_active=False;await db.commit()
     assert (await login(doctor)).status_code==403
+    assert (await client.get('/api/v1/chat/doctor/patients',headers=dh)).status_code==401
+    patient.is_active=False;await db.commit()
+    assert (await client.get('/api/v1/users/me',headers=ph)).status_code==401

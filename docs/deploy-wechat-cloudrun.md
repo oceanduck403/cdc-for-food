@@ -1,38 +1,170 @@
-# 微信云托管发布说明
+# 微信云托管 / CloudBase 上线手册
 
-本项目的小程序前端通过微信开发者工具上传；FastAPI 后端可以部署到微信云托管，不依赖 Railway。仓库根目录的 `Dockerfile` 可直接作为云托管构建入口。
+## 结论
 
-## 当前账号状态
+本项目不要求使用 Railway。小程序前端仍由微信开发者工具上传到微信公众平台，FastAPI 后端部署到微信云托管（CloudBase 云托管）。微信公众平台负责代码包、体验版、审核和发布，不能直接运行 FastAPI、PostgreSQL 或 Redis；云托管才是微信生态中承载后端容器的服务。
 
-2026-09-15 通过小程序 AppID 的只读接口检查，返回 `no cloud base privilege`，说明这个小程序尚未开通云开发环境。需要先由小程序管理员在微信云开发控制台创建环境，再创建云托管服务。
-
-## 建议资源
-
-- 一个微信云开发环境，地域优先选择上海或广州。
-- 一个云托管服务，例如 `nutrition-api`，构建上下文为仓库根目录，Dockerfile 路径为 `Dockerfile`。
-- 一个 PostgreSQL 数据库和一个 Redis 实例。
-- 私有云存储，用于头像与健康咨询图片；健康图片不能放在匿名可访问的静态目录。
-
-## 生产环境变量
+Railway 只保留为临时联调或灾备选项。正式环境优先采用：
 
 ```text
-APP_ENV=production
-JWT_SECRET=<至少 32 位随机值>
-DATABASE_URL=<PostgreSQL 连接地址>
-REDIS_URL=<Redis 连接地址>
-WECHAT_APPID=<小程序 AppID>
-WECHAT_SECRET=<小程序 AppSecret>
-QWEN_API_KEY=<轮换后的百炼 Key>
-QWEN_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-QWEN_MODEL=qwen-vl-plus
-ADMIN_BOOTSTRAP_USERNAME=<首次管理员账号>
-ADMIN_BOOTSTRAP_PASSWORD=<12 至 72 字节、含大小写/数字/符号的强密码>
+微信小程序
+  └─ wx.request（首版）或 wx.cloud.callContainer（后续）
+       └─ CloudBase 云托管：FastAPI 容器
+            ├─ PostgreSQL
+            ├─ CloudBase 云存储 / COS
+            ├─ 微信开放接口
+            └─ 阿里云百炼接口
 ```
 
-容器启动时先执行 `alembic upgrade head`，再创建首个管理员并启动 API。管理员首次登录并修改密码后，应删除两项 `ADMIN_BOOTSTRAP_*` 环境变量。
+## 当前状态与不可代填项
 
-## 前端接入
+2026-09-15 使用当前小程序 AppID 做只读检查时，微信接口返回 `no cloud base privilege`。这表示该 AppID 尚未开通或关联可用的云开发环境。创建环境、确认计费和关联主体必须由小程序管理员在控制台完成。
 
-服务创建后可以使用云托管公网 HTTPS 地址，将其填入 `miniprogram/utils/config.js` 的 `apiBase` 并登记为合法域名；也可以改用 `wx.cloud.callContainer` 走微信内部链路。后者还要填写真实环境 ID 和服务名，并适配头像、聊天图片上传。
+当前还没有以下真实值，仓库中不得写假值：
 
-在环境和服务尚未创建前，不应把示例域名写入正式包。
+- CloudBase 环境 ID（`envId`）
+- 云托管服务名称（`serviceName`，创建后不能改名）
+- 云托管公网 HTTPS 地址（若首版使用 `wx.request`）
+- PostgreSQL 的连接地址、账号和密码
+- 轮换后的百炼 API Key
+
+## 资源选型
+
+### FastAPI 容器
+
+仓库根目录的 `Dockerfile` 可直接用于云托管源码构建：
+
+- 构建上下文：仓库根目录
+- Dockerfile：`Dockerfile`
+- 服务端口：`8000`
+- 监听地址：`0.0.0.0`
+- 启动命令：先执行 Alembic 迁移，再引导首个管理员，最后启动 Uvicorn
+- 进程健康地址：`GET /health`
+
+云托管会在容器内注入 `PORT`。Dockerfile 已使用 `${PORT:-8000}`，所以不要在环境变量中手工固定 `PORT`；控制台填写的服务端口要与容器实际端口一致。发布后用服务默认域名访问 `/health`，应返回 `status: ok`。
+
+首次发布先设为 1 个实例，确认数据库迁移完成后再调整扩缩容，避免新库初始化时多个实例同时执行 DDL。
+
+### PostgreSQL
+
+当前代码、Alembic 迁移和生产配置使用 PostgreSQL + `asyncpg`，不需要改业务代码。连接串支持以下前缀；应用会把前两种自动转换为异步驱动格式：
+
+```text
+postgres://...
+postgresql://...
+postgresql+asyncpg://...
+```
+
+有两条可行路径：
+
+1. 在腾讯云 CloudBase 控制台新建 **PG 模式环境**，从数据库控制台取得服务端直连地址。CloudBase 官方文档明确支持云托管通过 PostgreSQL 协议直连。微信云开发控制台目前不能创建 PG 模式环境，因此这一条必须从腾讯云 CloudBase 控制台创建，再按控制台能力关联小程序。
+2. 开通普通微信云托管环境，同时创建同地域的腾讯云 PostgreSQL，通过云托管的 VPC 私有网络访问。这条路径也不需要修改代码。
+
+不要为了使用云托管内置 MySQL，直接把 `DATABASE_URL` 改成 MySQL。当前依赖中没有异步 MySQL 驱动，生产校验也只接受 PostgreSQL，迁移链尚未在 MySQL 上验证。若以后确定迁到 MySQL，需要单独完成驱动、迁移和全量回归。
+
+连接数据库时使用控制台显示的真实地址、端口和 SSL 要求。账号密码中如含 `@`、`:`、`/` 等字符，要按 URL 规则编码。
+
+### Redis
+
+当前版本的 AI 调用限额已经记录在 PostgreSQL 的 `ai_usage_events` 表中，生产环境**不需要额外购买 Redis**，环境变量中也不需要 `REDIS_URL`。这是目前资源最少的部署路径。
+
+如果后续因高并发、缓存或分布式锁重新引入 Redis，云托管可以通过 VPC 访问同地域的腾讯云 Redis。届时使用内网连接串，并只给云托管所在子网放行：
+
+```text
+redis://:<密码>@<内网地址>:6379/0
+```
+
+若控制台要求 TLS，则使用它给出的 `rediss://` 地址。安全组或访问控制只放行云托管所在子网。
+
+### 出网与文件存储
+
+服务需要访问 `api.weixin.qq.com` 和 `dashscope.aliyuncs.com`。绑定 VPC 后必须验证这两个 HTTPS 出站请求；若关闭平台默认公网出口，应给子网配置 NAT 网关和路由。
+
+云托管实例会被重建和水平扩容，不能把用户头像、咨询图片或数据库文件永久保存在容器目录。当前代码在生产环境强制使用私有腾讯云 COS：上传图片经校验、内容安全检测和重编码后写入随机对象键，数据库只保存不透明引用，小程序通过后端短期签名代理读取；本地目录仅用于开发和测试。
+
+## 创建环境和服务
+
+1. 用与小程序主体一致的管理员账号进入 CloudBase 控制台，创建或关联环境。
+2. 如果选 CloudBase 自带 PostgreSQL，创建新环境时选择 PG 模式；该模式只支持新环境，存量传统环境不能原地切换。
+3. 创建云托管服务。服务名按真实名称填写并记录，后续不能修改。
+4. 选择从 Git 仓库或本地源码部署，目录选仓库根目录，Dockerfile 名称填 `Dockerfile`，服务端口填 `8000`。
+5. 配置 PostgreSQL 所在网络及访问规则；当前版本不需要 Redis。
+6. 在“服务设置 → 环境变量”中以 JSON 或 Key-Value 方式录入生产变量。可复制 `deploy/cloudbase/environment.example.json`，替换全部 `__FILL_...__` 后粘贴；填好的文件不得提交 Git。
+7. 初次发布将实例数设为 1，查看构建和启动日志，确认 Alembic 到最新版本。
+8. 访问 `https://<控制台给出的真实域名>/health`，再测试登录、问卷、AI 和图片链路。
+9. 管理员首次登录并修改密码后，从服务环境变量中删除 `ADMIN_BOOTSTRAP_USERNAME` 和 `ADMIN_BOOTSTRAP_PASSWORD`，重新发布版本。
+
+可在提交前做不泄露密钥的静态校验：
+
+```powershell
+python deploy/cloudbase/validate_config.py deploy/cloudbase/environment.local.json `
+  --api-base https://<真实云托管域名>/api/v1
+```
+
+校验器只报告字段问题，不打印字段值。
+
+## 小程序接入方式
+
+### 首次上线：公网 HTTPS + `wx.request`
+
+这是当前代码改动最少、最容易完成全链路验收的方案。现有请求、头像上传、聊天图片上传和图片预览均基于 HTTP URL。
+
+1. 云托管开启公网 HTTPS 访问。
+2. 把 `miniprogram/utils/config.js` 的 `apiBase` 改为控制台给出的真实地址，并保留 `/api/v1`：
+
+   ```javascript
+   const apiBase = 'https://<真实云托管域名>/api/v1';
+   ```
+
+3. 在微信公众平台配置该 HTTPS 主机为 `request`、`uploadFile` 和 `downloadFile` 合法域名；不要填写路径 `/api/v1`。
+4. 真机确认登录、普通请求、头像上传、咨询图片上传和图片预览。
+
+这个方案能直接复用全部现有网络代码。若使用 CloudBase 默认域名还是自定义域名，以微信公众平台实际校验结果为准；自定义域名必须按官方要求完成备案。
+
+### 后续收口：`wx.cloud.callContainer`
+
+官方建议仅供小程序 / 公众号调用的服务使用 `wx.cloud.callContainer`。它走微信到云托管的专用链路，不消耗公网流量，也不需要在公众平台配置服务器域名。开通后需要：
+
+```javascript
+wx.cloud.init({ env: '<真实 envId>' });
+
+wx.cloud.callContainer({
+  config: { env: '<真实 envId>' },
+  path: '/health',
+  method: 'GET',
+  header: {
+    'X-WX-SERVICE': '<真实 serviceName>'
+  }
+});
+```
+
+当前项目不能仅把 `apiBase` 替换成环境 ID 就完成迁移。需要先统一改造 `wx.request` 调用，并单独处理：
+
+- `wx.uploadFile` 的 multipart 文件上传
+- 返回图片 URL、头像 URL 和 `wx.previewImage`
+- 未来可能加入的文件下载或 WebSocket
+
+因此建议首次正式版本先用公网 HTTPS 跑通；体验版完整验证后，再把普通 JSON API 与 multipart 上传统一切到 `callContainer`，并关闭不需要的公网入口。
+
+## 发布验收
+
+- `GET /health` 返回 200，且 `env` 为 `production`
+- 启动日志中 Alembic 成功到达最新 revision，没有数据库或 Redis 地址泄露
+- PostgreSQL 使用非本机地址，容器重启后数据仍在
+- 微信登录调用真实 `jscode2session`，生产环境不会回退 mock
+- 百炼 Key 已轮换，只存在服务端环境变量
+- 真机完成登录、健康评估、打卡、科普互动、AI 问答、头像和咨询图片全链路
+- 容器扩缩容或重启后用户数据和图片仍可访问
+- 小程序正式包中没有局域网 IP、示例域名、环境占位符或测试账号
+
+## 官方依据
+
+- [CloudBase 云托管概述：支持 FastAPI、Docker、Git 部署，并可连接 PostgreSQL / Redis](https://docs.cloudbase.net/run/introduction)
+- [从源代码部署：Dockerfile、真实端口和默认域名验证](https://docs.cloudbase.net/run/deploy/deploy/deploying-source-code)
+- [服务开发说明：监听 `PORT`、绑定 `0.0.0.0`、无状态要求](https://docs.cloudbase.net/run/develop/developing-guide)
+- [小程序调用云托管：`wx.cloud.callContainer`、环境 ID 与服务名](https://docs.cloudbase.net/run/develop/access/mini)
+- [服务设置：公网 HTTPS、环境变量和服务名约束](https://docs.cloudbase.net/run/deploy/service-setting)
+- [CloudBase PostgreSQL 连接：云托管可用 PostgreSQL 协议直连](https://docs.cloudbase.net/database/postgresql/connecting-to-postgresql)
+- [云开发环境模式：微信云开发暂不能创建 PG 模式环境](https://docs.cloudbase.net/quick-start/env-overview)
+- [VPC 配置：访问 PostgreSQL、Redis 及公网出站要求](https://docs.cloudbase.net/run/deploy/networking/vpc)
+- [迁移既有服务：容器必须无状态，文件应放对象存储](https://docs.cloudbase.net/run/best-practice/migration)

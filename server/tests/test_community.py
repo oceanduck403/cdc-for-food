@@ -123,3 +123,33 @@ async def test_comment_report_and_admin_moderation(client, db):
     assert (await client.get(f'{base}/articles/{article.id}/comments')).json()['items'] == []
     assert (await client.get(f'{base}/moderation/reports', headers=auth(admin))).json() == []
     assert (await client.post(report_url, headers=auth(reporter), json={'reason':'不实信息'})).status_code == 404
+
+
+async def test_comment_maps_content_security_results(client, db, monkeypatch):
+    from app.api.v1 import community
+    from app.services.wechat_content_security import ContentSecurityRejected, ContentSecurityUnavailable
+
+    user = User(role='patient', nickname='审核用户', openid='openid-security-test')
+    article = KnowledgeArticle(category='guide', title='发布前审核', summary='健康知识')
+    db.add_all([user, article]); await db.commit()
+    await db.refresh(user); await db.refresh(article)
+
+    async def rejected(_content, _openid):
+        raise ContentSecurityRejected('评论含有不适合公开展示的内容，请修改后再试')
+
+    monkeypatch.setattr(community, 'check_public_text', rejected)
+    url = f'/api/v1/community/articles/{article.id}/comments'
+    bad = await client.post(url, headers=auth(user), json={
+        'content': '待审核文本', 'request_id': 'security-reject-001'
+    })
+    assert bad.status_code == 400
+    assert '修改后再试' in bad.json()['detail']
+
+    async def unavailable(_content, _openid):
+        raise ContentSecurityUnavailable('微信内容安全服务暂时不可用')
+
+    monkeypatch.setattr(community, 'check_public_text', unavailable)
+    retry = await client.post(url, headers=auth(user), json={
+        'content': '正常健康评论', 'request_id': 'security-retry-001'
+    })
+    assert retry.status_code == 503

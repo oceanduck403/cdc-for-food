@@ -1,5 +1,4 @@
 """膳食分析 & 报告"""
-import base64
 import pytest
 
 pytestmark = pytest.mark.asyncio
@@ -15,12 +14,26 @@ async def _login(client, monkeypatch) -> str:
     return r.json()["token"]
 
 
-async def test_analyze_meal_returns_items(client, monkeypatch):
+async def test_qwen_food_analysis_persists_items(client, monkeypatch):
+    from app.services import qwen_service
+
+    async def fake_food(_image):
+        return [{
+            "name": "测试餐",
+            "grams": 180,
+            "kcal": 320,
+            "protein": 20,
+            "fat": 8,
+            "carbs": 42,
+            "sodium": 360,
+            "confidence": 0.96,
+        }]
+
+    monkeypatch.setattr(qwen_service, "analyze_food", fake_food)
     token = await _login(client, monkeypatch)
-    fake = base64.b64encode(b"fake-image-bytes").decode("ascii")
     r = await client.post(
-        "/api/v1/meals/analyze",
-        json={"imageBase64": fake},
+        "/api/v1/ai/food-analysis",
+        json={"imageBase64": "data:image/jpeg;base64,ZmFrZS1pbWFnZQ=="},
         headers={"Authorization": f"Bearer {token}"},
     )
     assert r.status_code == 200

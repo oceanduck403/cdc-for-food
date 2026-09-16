@@ -21,8 +21,6 @@ class Settings(BaseSettings):
 
     database_url: str = "sqlite:///./data/app.db"
 
-    redis_url: str = "redis://localhost:6379/0"
-
     # 生成式 AI 仅由服务端调用，密钥绝不能下发到小程序。
     qwen_api_key: str = ""
     qwen_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
@@ -35,23 +33,23 @@ class Settings(BaseSettings):
     admin_bootstrap_username: str = ""
     admin_bootstrap_password: str = ""
 
-    # 微信支付配置
-    wechat_mchid: str = ""
-    wechat_mchkey: str = ""
-    wechat_notify_url: str = ""
-
-    vision_provider: str = "baidu"
-    vision_api_key: str = ""
-    vision_api_secret: str = ""
-    vision_daily_limit: int = 10000
-
-    oss_bucket: str = ""
-    oss_access_key: str = ""
-    oss_secret_key: str = ""
-    oss_endpoint: str = ""
-
     daily_analysis_limit_per_user: int = 20
     image_max_bytes: int = 1024 * 1024
+
+    # 用户媒体。开发/测试默认写入本地私有目录；生产必须使用私有 COS
+    # 存储桶，避免云托管容器重启或扩容时丢失文件。
+    media_storage_backend: str = "local"
+    media_storage_dir: str = "uploads"
+    media_url_ttl_seconds: int = 15 * 60
+    avatar_max_bytes: int = 5 * 1024 * 1024
+    chat_image_max_bytes: int = 8 * 1024 * 1024
+    media_max_pixels: int = 24 * 1024 * 1024
+    media_cos_secret_id: str = ""
+    media_cos_secret_key: str = ""
+    media_cos_region: str = ""
+    media_cos_bucket: str = ""
+    media_cos_token: str = ""
+    media_cos_prefix: str = "private/user-media"
 
     @model_validator(mode="after")
     def validate_runtime_configuration(self) -> "Settings":
@@ -59,8 +57,24 @@ class Settings(BaseSettings):
         self.app_env = self.app_env.strip().lower()
         if self.app_env not in {"development", "test", "production"}:
             raise ValueError("APP_ENV 只能是 development、test 或 production")
+        self.media_storage_backend = self.media_storage_backend.strip().lower()
+        if self.media_storage_backend not in {"local", "cos"}:
+            raise ValueError("MEDIA_STORAGE_BACKEND 只能是 local 或 cos")
+        if not self.media_storage_dir.strip():
+            raise ValueError("MEDIA_STORAGE_DIR 不能为空")
+        if not 60 <= self.media_url_ttl_seconds <= 3600:
+            raise ValueError("MEDIA_URL_TTL_SECONDS 必须在 60 到 3600 秒之间")
+        if self.avatar_max_bytes < 1024 or self.chat_image_max_bytes < 1024:
+            raise ValueError("用户图片大小上限配置过小")
+        if self.media_max_pixels < 1024:
+            raise ValueError("MEDIA_MAX_PIXELS 配置过小")
+        self.media_cos_prefix = self.media_cos_prefix.strip().strip("/")
+        if not self.media_cos_prefix or not re.fullmatch(
+            r"[A-Za-z0-9][A-Za-z0-9._/-]{0,190}", self.media_cos_prefix
+        ) or ".." in self.media_cos_prefix.split("/"):
+            raise ValueError("MEDIA_COS_PREFIX 格式无效")
 
-        # Railway PostgreSQL 提供的 DATABASE_URL 通常使用同步驱动前缀；
+        # CloudBase、腾讯云数据库及其他托管平台可能提供同步驱动前缀；
         # SQLAlchemy AsyncEngine 必须显式选择 asyncpg。
         if self.database_url.startswith("postgres://"):
             self.database_url = self.database_url.replace(
@@ -97,9 +111,23 @@ class Settings(BaseSettings):
             errors.append("QWEN_BASE_URL 必须使用 HTTPS")
         if not self.qwen_model.strip():
             errors.append("QWEN_MODEL 不能为空")
-        if self.redis_url.startswith("redis://localhost") or self.redis_url.startswith("redis://127.0.0.1"):
-            errors.append("REDIS_URL 生产环境必须指向可用的独立 Redis")
-
+        if self.media_storage_backend != "cos":
+            errors.append("MEDIA_STORAGE_BACKEND 生产环境必须设为 cos，不能依赖容器临时磁盘")
+        cos_values = {
+            "MEDIA_COS_SECRET_ID": self.media_cos_secret_id,
+            "MEDIA_COS_SECRET_KEY": self.media_cos_secret_key,
+            "MEDIA_COS_REGION": self.media_cos_region,
+            "MEDIA_COS_BUCKET": self.media_cos_bucket,
+        }
+        for name, value in cos_values.items():
+            if not value.strip():
+                errors.append(f"{name} 必须配置")
+        if self.media_cos_region and not re.fullmatch(r"[a-z0-9-]{3,64}", self.media_cos_region):
+            errors.append("MEDIA_COS_REGION 格式无效")
+        if self.media_cos_bucket and not re.fullmatch(
+            r"[a-z0-9][a-z0-9-]{0,48}-[0-9]{5,20}", self.media_cos_bucket
+        ):
+            errors.append("MEDIA_COS_BUCKET 必须是包含 APPID 的完整私有存储桶名称")
         bootstrap_username = self.admin_bootstrap_username.strip()
         bootstrap_password = self.admin_bootstrap_password
         if bool(bootstrap_username) != bool(bootstrap_password):

@@ -1,30 +1,34 @@
 """用户档案与配额"""
-from datetime import date
+from datetime import datetime, timezone
 import re
 from typing import Optional
 
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.core.errors import BusinessError
+from app.models.ai_usage import AiUsageEvent
 from app.models.user import User
+from app.services.ai_quota import current_quota_day_start
+from app.services.media_service import signed_media_url
 from app.services.nutrition_service import compute_tdee
+from app.services.wechat_content_security import (
+    ContentSecurityRejected,
+    ContentSecurityUnavailable,
+    check_public_text,
+)
 
 
-async def ensure_user(db: AsyncSession, openid: str, nickname: Optional[str] = None, avatar: Optional[str] = None) -> User:
+async def ensure_user(db: AsyncSession, openid: str) -> User:
     stmt = select(User).where(User.openid == openid)
     res = await db.execute(stmt)
     user = res.scalar_one_or_none()
     if user:
-        # 用户主动编辑后的资料不能在下次微信登录时被旧授权资料覆盖。
-        if nickname and not user.nickname:
-            user.nickname = nickname
-        if avatar and not user.avatar:
-            user.avatar = avatar
-        await db.commit()
         return user
-    user = User(openid=openid, nickname=nickname, avatar=avatar)
+    # 微信登录只建立平台身份。昵称和头像必须分别经过公开文本检查及
+    # 受控图片上传，不接受登录请求携带的客户端资料。
+    user = User(openid=openid)
     db.add(user)
     await db.commit()
     await db.refresh(user)
@@ -58,6 +62,19 @@ async def update_profile(db: AsyncSession, user_id: str, payload: dict) -> Optio
         nickname = nickname.strip()
         if not 1 <= len(nickname) <= 20 or re.search(r"[\x00-\x1f<>]", nickname):
             raise BusinessError("INVALID_NICKNAME", "昵称需为 1 到 20 个有效字符")
+        if user.role == "patient":
+            # Nicknames appear next to public article comments and therefore
+            # need the same fail-closed review as comment bodies.
+            try:
+                await check_public_text(nickname, user.openid)
+            except ContentSecurityRejected as exc:
+                raise BusinessError(
+                    "CONTENT_REJECTED", "昵称含有不适合公开展示的内容，请修改后再试", status_code=400
+                ) from exc
+            except ContentSecurityUnavailable as exc:
+                raise BusinessError(
+                    "CONTENT_SECURITY_UNAVAILABLE", str(exc), status_code=503
+                ) from exc
         payload = {**payload, "nickname": nickname}
     mapping = {
         "nickname": "nickname",
@@ -77,42 +94,32 @@ async def update_profile(db: AsyncSession, user_id: str, payload: dict) -> Optio
 
 
 async def get_daily_quota(db: AsyncSession, user_id: str) -> dict:
-    """返回当前用户今日已使用次数（成本闸口）"""
+    """返回与 AI 成本闸口使用同一事件表、同一天界线的配额。"""
+    limit = settings.daily_analysis_limit_per_user
     try:
         uid = int(user_id)
-    except ValueError:
-        return {"used": 0, "remaining": 20, "limit": 20, "is_vip": False}
+    except (TypeError, ValueError):
+        return {"used": 0, "remaining": limit, "limit": limit, "is_vip": False, "expire_at": None}
 
     user = await db.get(User, uid)
     if not user:
-        return {"used": 0, "remaining": 20, "limit": 20, "is_vip": False}
+        return {"used": 0, "remaining": limit, "limit": limit, "is_vip": False, "expire_at": None}
 
-    today = date.today()
-
-    # VIP用户
-    if user.is_vip and user.vip_expire_at and user.vip_expire_at >= today:
-        return {
-            "used": 0,
-            "remaining": user.purchased_analysis_count,
-            "limit": user.purchased_analysis_count,
-            "is_vip": True,
-            "expire_at": user.vip_expire_at.isoformat(),
-        }
-
-    # 免费用户：每日限制
-    if user.last_active_on == today:
-        return {
-            "used": settings.daily_analysis_limit_per_user,
-            "remaining": 0,
-            "limit": settings.daily_analysis_limit_per_user,
-            "is_vip": False,
-            "expire_at": None,
-        }
+    used = int(
+        await db.scalar(
+            select(func.count(AiUsageEvent.id)).where(
+                AiUsageEvent.user_id == uid,
+                AiUsageEvent.created_at
+                >= current_quota_day_start(datetime.now(timezone.utc)),
+            )
+        )
+        or 0
+    )
 
     return {
-        "used": 0,
-        "remaining": settings.daily_analysis_limit_per_user,
-        "limit": settings.daily_analysis_limit_per_user,
+        "used": used,
+        "remaining": max(limit - used, 0),
+        "limit": limit,
         "is_vip": False,
         "expire_at": None,
     }
@@ -146,7 +153,7 @@ def _to_profile(user: User) -> dict:
         "username": user.username,
         "real_name": user.real_name,
         "nickname": user.nickname,
-        "avatar": user.avatar,
+        "avatar": signed_media_url(user.avatar),
         "phone": user.phone,
         "age": user.age,
         "sex": user.sex,

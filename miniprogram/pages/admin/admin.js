@@ -4,6 +4,12 @@ const auth = require('../../utils/auth.js');
 const adminApi = require('../../utils/admin.js');
 const surveyApi = require('../../utils/survey.js');
 
+function isStrongManagedPassword(value) {
+  return typeof value === 'string' && value.length >= 12 && value.length <= 72 &&
+    value.trim() === value && /[a-z]/.test(value) && /[A-Z]/.test(value) &&
+    /\d/.test(value) && /[^A-Za-z0-9]/.test(value);
+}
+
 Page({
   data: {
     profile: {},
@@ -126,8 +132,8 @@ Page({
       wx.showToast({ title: '请修改账号或填写新密码', icon: 'none' });
       return;
     }
-    if (next && next.length < 8) {
-      wx.showToast({ title: '新密码至少8位', icon: 'none' });
+    if (next && !isStrongManagedPassword(next)) {
+      wx.showToast({ title: '密码需12位以上并含大小写、数字和符号', icon: 'none' });
       return;
     }
     if (next !== confirm) {
@@ -206,6 +212,12 @@ Page({
     if (!real_name || !username || !password) {
       wx.showToast({ title: '请填写姓名/账号/密码', icon: 'none' }); return;
     }
+    if (!/^[A-Za-z0-9_]{3,64}$/.test(username)) {
+      wx.showToast({ title: '账号须为3至64位字母、数字或下划线', icon: 'none' }); return;
+    }
+    if (!isStrongManagedPassword(password)) {
+      wx.showToast({ title: '密码需12位以上并含大小写、数字和符号', icon: 'none' }); return;
+    }
     try {
       await adminApi.createDoctor(this.data.newDoctor);
       wx.showToast({ title: '创建成功', icon: 'success' });
@@ -242,8 +254,8 @@ Page({
   },
 
   async submitResetPassword() {
-    if (!this.data.newPassword || this.data.newPassword.length < 6) {
-      wx.showToast({ title: '密码至少6位', icon: 'none' }); return;
+    if (!isStrongManagedPassword(this.data.newPassword)) {
+      wx.showToast({ title: '密码需12位以上并含大小写、数字和符号', icon: 'none' }); return;
     }
     try {
       await adminApi.updateDoctor(this.data.resetTarget.id, { new_password: this.data.newPassword });

@@ -1,23 +1,31 @@
 """用户：档案、每日配额"""
-from io import BytesIO
-import os
-from pathlib import Path
-import re
-from uuid import uuid4
+import asyncio
 
 from fastapi import APIRouter, Depends, File, UploadFile
-from PIL import Image, ImageOps, UnidentifiedImageError
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import current_user_id, get_db
+from app.config import settings
 from app.core.errors import BusinessError
 from app.models.user import User
+from app.schemas.user import AccountDeletionRequest
+from app.services.account_deletion_service import delete_patient_account
+from app.services.media_service import (
+    MediaStorageError,
+    delete_chat_assignment_media,
+    delete_managed_media,
+    read_normalized_image,
+    store_avatar,
+)
 from app.services.user_service import get_profile, update_profile, get_daily_quota
+from app.services.wechat_content_security import (
+    ContentSecurityRejected,
+    ContentSecurityUnavailable,
+    check_uploaded_image,
+)
 
 router = APIRouter()
-AVATAR_DIR = Path("uploads/avatars")
-MAX_AVATAR_BYTES = 5 * 1024 * 1024
-MAX_AVATAR_PIXELS = 12 * 1024 * 1024
 
 
 @router.get("/me")
@@ -53,62 +61,74 @@ async def upload_my_avatar(
     if user.role != "patient" or not user.is_active:
         raise BusinessError("FORBIDDEN", "当前账号不能修改头像", status_code=403)
 
-    # wx.uploadFile may label a camera or album image as application/octet-stream.
-    # Validate the decoded image below rather than trusting the multipart MIME type.
+    # wx.uploadFile may label camera files as octet-stream.  The decoder, pixel
+    # limits and full re-encoding below are the source of truth.
+    normalized = await read_normalized_image(
+        file,
+        max_bytes=settings.avatar_max_bytes,
+        crop_square=True,
+    )
     try:
-        raw = await file.read(MAX_AVATAR_BYTES + 1)
-    finally:
-        await file.close()
-    if not raw or len(raw) > MAX_AVATAR_BYTES:
-        raise BusinessError("INVALID_AVATAR", "头像图片不能超过 5 MB")
-
+        await check_uploaded_image(normalized)
+    except ContentSecurityRejected as exc:
+        raise BusinessError("CONTENT_REJECTED", str(exc), status_code=400) from exc
+    except ContentSecurityUnavailable as exc:
+        raise BusinessError(
+            "CONTENT_SECURITY_UNAVAILABLE", str(exc), status_code=503
+        ) from exc
     try:
-        with Image.open(BytesIO(raw)) as source:
-            if source.format not in {"JPEG", "PNG", "WEBP"} or getattr(source, "is_animated", False):
-                raise BusinessError("INVALID_AVATAR", "图片格式不受支持")
-            width, height = source.size
-            if not width or not height or width * height > MAX_AVATAR_PIXELS:
-                raise BusinessError("INVALID_AVATAR", "图片尺寸过大，请换一张")
-            source.load()
-            upright = ImageOps.exif_transpose(source)
-            cropped = ImageOps.fit(upright, (512, 512), method=Image.Resampling.LANCZOS)
-            output = Image.new("RGB", cropped.size, "#ffffff")
-            if cropped.mode in {"RGBA", "LA"} or (cropped.mode == "P" and "transparency" in cropped.info):
-                rgba = cropped.convert("RGBA")
-                output.paste(rgba, mask=rgba.getchannel("A"))
-            else:
-                output.paste(cropped.convert("RGB"))
-    except BusinessError:
-        raise
-    except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
-        raise BusinessError("INVALID_AVATAR", "图片无法识别，请重新选择") from None
-
-    AVATAR_DIR.mkdir(parents=True, exist_ok=True)
-    filename = f"{user.id}-{uuid4().hex}.jpg"
-    target = AVATAR_DIR / filename
-    temporary = AVATAR_DIR / f"{filename}.tmp"
+        stored = await asyncio.to_thread(store_avatar, normalized)
+    except MediaStorageError:
+        logger.exception("avatar storage failed")
+        raise BusinessError(
+            "MEDIA_STORAGE_UNAVAILABLE",
+            "头像暂时无法保存，请稍后重试",
+            status_code=503,
+        ) from None
     old_avatar = user.avatar
     try:
-        output.save(temporary, format="JPEG", quality=84, optimize=True)
-        os.replace(temporary, target)
-        user.avatar = f"/uploads/avatars/{filename}"
+        user.avatar = stored.reference
         await db.commit()
         await db.refresh(user)
     except Exception:
-        temporary.unlink(missing_ok=True)
-        target.unlink(missing_ok=True)
         await db.rollback()
+        try:
+            await asyncio.to_thread(delete_managed_media, stored.reference)
+        except (OSError, MediaStorageError):
+            logger.exception("failed to clean uncommitted avatar media")
         raise
 
-    if old_avatar:
-        old_name = old_avatar.removeprefix("/uploads/avatars/")
-        if re.fullmatch(rf"{user.id}-[0-9a-f]{{32}}\.jpg", old_name) and old_avatar.startswith("/uploads/avatars/"):
-            try:
-                (AVATAR_DIR / old_name).unlink(missing_ok=True)
-            except OSError:
-                # The new avatar is already committed; stale-file cleanup is best effort.
-                pass
+    try:
+        await asyncio.to_thread(delete_managed_media, old_avatar)
+    except (OSError, MediaStorageError):
+        # The new avatar is already committed; stale-object cleanup is best effort.
+        logger.exception("failed to clean replaced avatar media")
     return await get_profile(db, str(user.id))
+
+
+@router.delete("/me")
+async def delete_me(
+    body: AccountDeletionRequest,
+    user_id: str = Depends(current_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Permanently delete the signed-in patient's account and private avatar."""
+    deleted = await delete_patient_account(db, user_id)
+    try:
+        await asyncio.to_thread(delete_managed_media, deleted.avatar)
+    except (OSError, MediaStorageError):
+        # Database deletion has committed; stale-object cleanup can be retried later.
+        logger.exception("failed to clean deleted account avatar media")
+    for assignment_id in deleted.chat_assignment_ids:
+        try:
+            await asyncio.to_thread(delete_chat_assignment_media, assignment_id)
+        except (OSError, MediaStorageError):
+            # Database deletion has committed; stale-object cleanup can be retried later.
+            logger.exception(
+                "failed to clean deleted account chat media: assignment_id={assignment_id}",
+                assignment_id=assignment_id,
+            )
+    return {"deleted": True}
 
 
 @router.get("/me/quota")

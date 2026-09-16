@@ -27,6 +27,7 @@ server/.venv/
 server/.env
 server/.env.*
 !.env.example
+deploy/cloudbase/environment.local.json
 
 # Node / npm (rarely used but safe)
 node_modules/
@@ -48,6 +49,7 @@ miniprogram/.eslintcache
 miniprogram/node_modules/
 miniprogram/miniprogram_npm/
 miniprogram/project.private.config.json
+project.private.config.json
 
 # One-off extraction and local smoke-test artefacts
 extract_stderr.txt

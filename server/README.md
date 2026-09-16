@@ -1,6 +1,6 @@
 # 营养健康 AI 小助手 · 后端服务（FastAPI）
 
-提供微信小程序 API：用户档案、AI 识图膳食评估、个性化报告、知识库、毒蘑菇 GIS、管理后台，以及文章互动与站内消息。
+提供微信小程序 API：用户档案、Qwen 膳食分析与健康科普、个性化报告、知识库、健康评估、医生指导、管理后台，以及文章互动与站内消息。
 
 ## 目录结构
 
@@ -38,14 +38,13 @@ python main.py
 
 - 所有路由挂载在 `/api/v1`
 - 鉴权使用 JWT（`Authorization: Bearer <token>`）
-- 限流键 `user:{id}:{day}`，由 Redis 实现每日分析次数闸口
-- 商用菜品识别 API 通过 `vision_service.py` 抽象，便于切换供应商
+- AI 调用次数写入 PostgreSQL `ai_usage_events`，同一事务完成预占与失败回滚，当前不依赖 Redis
+- 食物图片由 `/api/v1/ai/food-analysis` 发往服务端 Qwen 网关；AI Key 不下发到小程序
 - 文章列表、详情、点赞、收藏、评论、举报和站内消息位于 `/api/v1/community`；个人操作需登录，举报处理仅管理员可用。`alembic/versions/0002_community.py` 包含互动数据表迁移。
-- 患者在 `/api/v1/users/me` 修改昵称；头像通过带登录令牌的 `POST /api/v1/users/me/avatar` 上传。服务端只接收 5 MB 以内的有效 JPG/PNG/WebP，裁成 512×512 JPEG 并清除原图元数据，文件位于 `uploads/avatars/`。Docker Compose 已挂载 `./uploads:/app/uploads`，部署时需保留该目录或迁移到对象存储；此入口只用于个人头像，不用于科普素材。
+- 患者在 `/api/v1/users/me` 修改昵称；头像通过带登录令牌的 `POST /api/v1/users/me/avatar` 上传。服务端校验并重编码图片、调用微信内容安全检测，生产环境保存到私有 COS，并以短期签名的后端代理地址访问。此入口只用于个人头像，不用于科普素材。
 
 ## 下一步
 
-1. 落地 `app/db/init_db.py` 初始化脚本与 Alembic 迁移
-2. 接入微信 code2Session、绑定手机号
-3. 接入商用菜品识别 API（推荐先以 mock 数据演示）
-4. 与甲方确认毒蘑菇 GIS 数据格式后接入 `gis/` 目录
+1. 复制 `.env.example` 并填写本地配置；不要提交 `.env`
+2. 执行 `alembic upgrade head`，再运行服务
+3. 生产部署按 `../docs/deploy-wechat-cloudrun.md` 配置 PostgreSQL、私有 COS 和服务端密钥

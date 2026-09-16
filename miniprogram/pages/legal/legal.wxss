@@ -1,0 +1,139 @@
+page {
+  min-height: 100%;
+  background: #F5F9FC;
+  color: #17364A;
+}
+
+.legal-page {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 28rpx 28rpx calc(64rpx + env(safe-area-inset-bottom));
+}
+
+.legal-header {
+  display: flex;
+  flex-direction: column;
+  padding: 34rpx 30rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg, #0E5F93, #1F7CB4);
+  box-shadow: 0 12rpx 30rpx rgba(14, 77, 124, 0.16);
+}
+
+.legal-kicker {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 26rpx;
+  line-height: 1.5;
+}
+
+.legal-title {
+  margin: 8rpx 0 16rpx;
+  color: #FFFFFF;
+  font-size: 44rpx;
+  line-height: 1.3;
+  font-weight: 800;
+}
+
+.legal-meta {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 25rpx;
+  line-height: 1.7;
+}
+
+.summary-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  margin: 24rpx 0;
+  padding: 26rpx;
+  border: 2rpx solid #B9D8EA;
+  border-radius: 20rpx;
+  background: #EAF5FB;
+  color: #244D63;
+  font-size: 29rpx;
+  line-height: 1.8;
+}
+
+.summary-card ui-icon {
+  flex-shrink: 0;
+  margin-top: 5rpx;
+}
+
+.wechat-privacy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  min-height: 94rpx;
+  margin: 0 0 24rpx;
+  border: 2rpx solid #1973AB;
+  border-radius: 18rpx;
+  background: #FFFFFF;
+  color: #0E5F93;
+  font-size: 29rpx;
+  font-weight: 700;
+}
+
+.wechat-privacy::after { border: none; }
+.legal-pressed { background: #EAF5FB; }
+
+.legal-section {
+  margin-bottom: 20rpx;
+  padding: 30rpx 28rpx;
+  border: 1rpx solid #D8E5ED;
+  border-radius: 22rpx;
+  background: #FFFFFF;
+  box-shadow: 0 5rpx 18rpx rgba(29, 65, 88, 0.05);
+}
+
+.section-title {
+  display: block;
+  margin-bottom: 16rpx;
+  color: #123E5A;
+  font-size: 34rpx;
+  line-height: 1.45;
+  font-weight: 800;
+}
+
+.section-paragraph {
+  display: block;
+  margin-top: 12rpx;
+  color: #344F60;
+  font-size: 30rpx;
+  line-height: 1.9;
+  word-break: break-all;
+}
+
+.list-row {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 12rpx;
+}
+
+.list-bullet {
+  flex-shrink: 0;
+  width: 30rpx;
+  color: #1973AB;
+  font-size: 32rpx;
+  line-height: 1.8;
+  font-weight: 800;
+}
+
+.list-text {
+  flex: 1;
+  min-width: 0;
+  color: #344F60;
+  font-size: 30rpx;
+  line-height: 1.9;
+  word-break: break-all;
+}
+
+.legal-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30rpx 18rpx 10rpx;
+  color: #526C7B;
+  font-size: 27rpx;
+  line-height: 1.8;
+  text-align: center;
+}

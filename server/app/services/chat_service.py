@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.chat import ConsultAssignment, Consultation
 from app.models.user import User
+from app.services.media_service import signed_media_url
 
 
 # ────────────────────────────────────────────────────────────────────
@@ -48,7 +49,7 @@ async def get_doctor_patients(db: AsyncSession, doctor_id: int) -> List[Dict[str
             "assignment_id": a.id,
             "patient_id": u.id,
             "patient_name": u.real_name or u.nickname or f"患者{u.id}",
-            "patient_avatar": u.avatar,
+            "patient_avatar": signed_media_url(u.avatar),
             "patient_phone": u.phone,
             "patient_age": u.age,
             "patient_sex": u.sex,
@@ -87,7 +88,7 @@ async def search_doctor_patients(
             "assignment_id": a.id,
             "patient_id": u.id,
             "patient_name": u.real_name or u.nickname or f"患者{u.id}",
-            "patient_avatar": u.avatar,
+            "patient_avatar": signed_media_url(u.avatar),
             "patient_phone": u.phone,
             "patient_age": u.age,
             "patient_sex": u.sex,

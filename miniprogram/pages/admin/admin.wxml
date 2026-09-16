@@ -345,7 +345,7 @@
       </view>
       <view class="form-row">
         <text class="form-label">新密码（不修改可留空）</text>
-        <input class="form-input" password="true" placeholder="至少8位" value="{{accountForm.next}}" bindinput="onAccountFieldInput" data-field="next" />
+        <input class="form-input" password="true" placeholder="至少12位，含大小写、数字和符号" value="{{accountForm.next}}" bindinput="onAccountFieldInput" data-field="next" />
       </view>
       <view class="form-row">
         <text class="form-label">确认新密码</text>
@@ -372,7 +372,7 @@
       </view>
       <view class="form-row">
         <text class="form-label">初始密码 *</text>
-        <input class="form-input" password placeholder="登录密码" value="{{newDoctor.password}}" bindinput="onNewDoctorField" data-field="password" />
+        <input class="form-input" password placeholder="至少12位，含大小写、数字和符号" value="{{newDoctor.password}}" bindinput="onNewDoctorField" data-field="password" />
       </view>
       <view class="form-row">
         <text class="form-label">科室</text>
@@ -406,7 +406,7 @@
       </view>
       <view class="form-row">
         <text class="form-label">新密码 *</text>
-        <input class="form-input" password placeholder="新密码" value="{{newPassword}}" bindinput="onNewPasswordInput" />
+        <input class="form-input" password placeholder="至少12位，含大小写、数字和符号" value="{{newPassword}}" bindinput="onNewPasswordInput" />
       </view>
       <view class="modal-actions">
         <view class="btn-cancel" bindtap="closeResetPassword">

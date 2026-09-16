@@ -4,9 +4,9 @@ const navigation = require('../../utils/navigation.js');
 
 const FEATURES = [
   { icon: 'camera', name: '拍照识别食物', desc: 'AI 智能分析食物种类与营养成分' },
-  { icon: 'search', name: '毒蘑菇风险地图', desc: '实时查看周边毒蘑菇分布与中毒高发期' },
-  { icon: 'book', name: '知识库', desc: '膳食指南、食品安全与食源性疾病科普' },
-  { icon: 'user', name: '个性化健康档案', desc: '基于您的身体数据提供精准营养建议' },
+  { icon: 'file', name: '健康评估与打卡', desc: '记录健康信息与日常习惯' },
+  { icon: 'book', name: '科普互动', desc: '阅读、评论、点赞和收藏健康知识' },
+  { icon: 'chat', name: '健康咨询', desc: '使用 AI 问答或预约医生在线指导' },
 ];
 
 Page({
@@ -111,17 +111,10 @@ Page({
   },
 
   openPrivacy() {
-    if (wx.openPrivacyContract) {
-      wx.openPrivacyContract({ fail: () => {} });
-    }
+    navigation.open('/pages/legal/legal?type=privacy');
   },
 
   openTerms() {
-    wx.showModal({
-      title: '用户服务条款',
-      content: '1. 本应用由成都市疾病预防控制中心提供，仅供营养与食品安全科普使用，不作为诊疗依据。\n2. 用户需确保提供信息的真实性。\n3. 成都市疾病预防控制中心保留本服务的解释权。',
-      showCancel: false,
-      confirmText: '我已知晓',
-    });
+    navigation.open('/pages/legal/legal?type=terms');
   },
 });

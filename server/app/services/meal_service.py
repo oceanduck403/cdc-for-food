@@ -9,33 +9,47 @@ from app.core.errors import BusinessError
 from app.models.meal import Meal, MealItem
 from app.models.user import User
 from app.services.nutrition_service import generate_advice
-from app.services.vision_service import recognize_dish
-
-
-async def analyze_meal(db: AsyncSession, user_id: str, image_b64: str) -> dict:
+async def save_analyzed_meal(db: AsyncSession, user_id: str, items: list[dict]) -> dict:
+    """Persist a validated provider result and return the report navigation ID."""
     user = await _load_user(db, user_id)
-    items = await recognize_dish(user_id=user_id, image_b64=image_b64)
+    if not items:
+        raise BusinessError(
+            "FOOD_NOT_FOUND", "未识别到食物，请换一张清晰的膳食照片", status_code=422
+        )
+
+    normalized = []
+    for raw in items[:12]:
+        normalized.append({
+            "name": str(raw.get("name") or "食物")[:128],
+            "grams": float(raw.get("grams") or 0),
+            "kcal": float(raw.get("kcal") or 0),
+            "protein": float(raw.get("protein") or 0),
+            "fat": float(raw.get("fat") or 0),
+            "carbs": float(raw.get("carbs") or 0),
+            "sodium": float(raw.get("sodium") or 0),
+            "confidence": float(raw.get("confidence") or 0),
+        })
 
     meal = Meal(
         user_id=user.id,
         image_url=None,
-        total_kcal=sum(i["kcal"] for i in items),
-        protein=sum(i["protein"] for i in items),
-        fat=sum(i["fat"] for i in items),
-        carbs=sum(i["carbs"] for i in items),
-        sodium=sum(i["sodium"] for i in items),
+        total_kcal=sum(i["kcal"] for i in normalized),
+        protein=sum(i["protein"] for i in normalized),
+        fat=sum(i["fat"] for i in normalized),
+        carbs=sum(i["carbs"] for i in normalized),
+        sodium=sum(i["sodium"] for i in normalized),
         captured_at=datetime.now(tz=timezone.utc),
     )
     db.add(meal)
     await db.flush()
-    for i in items:
+    for i in normalized:
         db.add(MealItem(meal_id=meal.id, **i))
     await db.commit()
     await db.refresh(meal)
 
     return {
         "mealId": meal.id,
-        "items": items,
+        "items": normalized,
         "totalKcal": meal.total_kcal,
         "totalProtein": meal.protein,
         "totalFat": meal.fat,

@@ -6,7 +6,7 @@ from sqlalchemy import select
 from app.config import settings
 from app.core.security import hash_password
 from app.db.session import SessionLocal, init_db
-from app.models import ConsultAssignment, Consultation, KnowledgeArticle, MushroomRisk, User
+from app.models import KnowledgeArticle, MushroomRisk, User
 from app.models.base import Base
 import json
 
@@ -311,47 +311,12 @@ async def seed() -> None:
             MushroomRisk(city="chengdu", name="彭州白水河", species="黄盖鹅膏", lat=31.10, lng=103.83, level="中", period="7-8 月"),
         ])
 
-        # 演示用管理员账号（生产环境务必修改密码）
-        from sqlalchemy import select as sa_select
-        existing_admin = (await db.execute(sa_select(User).where(User.username == 'admin'))).scalars().first()
-        if not existing_admin:
-            db.add(User(
-                role="admin",
-                username="admin",
-                password_hash=hash_password("admin123"),
-                nickname="系统管理员",
-                real_name="管理员",
-                is_active=True,
-            ))
-        existing_doctor1 = (await db.execute(sa_select(User).where(User.username == 'doctor1'))).scalars().first()
-        if not existing_doctor1:
-            db.add(User(
-                role="doctor",
-                username="doctor1",
-                password_hash=hash_password("doctor123"),
-                nickname="李医生",
-                real_name="李华",
-                department="营养科",
-                title="主任医师",
-                intro="从事临床营养工作 15 年，擅长慢性病饮食指导。",
-                is_available=True,
-                is_active=True,
-            ))
-        existing_doctor2 = (await db.execute(sa_select(User).where(User.username == 'doctor2'))).scalars().first()
-        if not existing_doctor2:
-            db.add(User(
-                role="doctor",
-                username="doctor2",
-                password_hash=hash_password("doctor123"),
-                nickname="王医生",
-                real_name="王明",
-                department="内科",
-                title="副主任医师",
-                intro="擅长常见内科疾病诊治，慢病管理。",
-                is_available=True,
-                is_active=True,
-            ))
         await db.commit()
+
+        # 开发环境也不创建任何固定口令账号。确有管理端联调需要时，
+        # 由开发者在本地 .env 显式设置一次性引导账号。
+        if settings.admin_bootstrap_username and settings.admin_bootstrap_password:
+            await ensure_production_admin(db)
         from app.db.survey_defaults import ensure_registration_template
         await ensure_registration_template(db)
 

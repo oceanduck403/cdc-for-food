@@ -77,13 +77,26 @@
 <view class="settings-section card">
     <view class="settings-row" bindtap="openPrivacy" hover-class="mine-pressed">
       <ui-icon class="sr-icon" name="file" size="38" />
-      <text class="sr-text">隐私协议</text>
+      <text class="sr-text">隐私政策</text>
+      <ui-icon name="right" tone="muted" size="26" />
+    </view>
+    <view class="settings-row" bindtap="openTerms" hover-class="mine-pressed">
+      <ui-icon class="sr-icon" name="file" size="38" />
+      <text class="sr-text">用户服务条款</text>
       <ui-icon name="right" tone="muted" size="26" />
     </view>
     <view class="settings-row" bindtap="openAbout" hover-class="mine-pressed">
       <ui-icon class="sr-icon" name="info" size="38" />
       <text class="sr-text">关于我们</text>
       <text class="sr-ver">v1.0.0</text>
+      <ui-icon name="right" tone="muted" size="26" />
+    </view>
+    <view class="settings-row account-delete-row" wx:if="{{isLogin}}" bindtap="onDeleteAccount" hover-class="mine-pressed">
+      <ui-icon class="sr-icon" name="delete" size="38" />
+      <view class="account-delete-copy">
+        <text class="sr-text account-delete-title">注销账号</text>
+        <text class="account-delete-note">永久删除账号及个人数据</text>
+      </view>
       <ui-icon name="right" tone="muted" size="26" />
     </view>
   </view>

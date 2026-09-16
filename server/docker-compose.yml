@@ -13,7 +13,6 @@ services:
       - ./storage:/app/storage
       - ./uploads:/app/uploads
     depends_on:
-      - redis
       - postgres
 
   postgres:
@@ -28,13 +27,6 @@ services:
       - pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-
-  redis:
-    image: redis:7-alpine
-    container_name: nutrition-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
 
 volumes:
   pgdata:

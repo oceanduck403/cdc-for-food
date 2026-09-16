@@ -112,8 +112,8 @@ miniprogram/
 
 ### 后端（FastAPI）
 - **框架**：Python FastAPI + SQLAlchemy
-- **数据库**：MySQL（生产）/ SQLite（开发）
-- **缓存**：Redis
+- **数据库**：PostgreSQL（生产）/ SQLite（开发测试）
+- **AI 用量闸口**：PostgreSQL 事件表，当前无需 Redis
 - **AI 集成**：阿里云百炼千问 VL
 - **路径**：`server/app/`
 
@@ -160,7 +160,6 @@ miniprogram/
 - [ ] 接诊医生查看患者问卷历史
 - [ ] 问卷结果导出为 PDF
 - [ ] 用户权限细分（医生访问权限）
-- [ ] 集成支付功能（医生指导收费）
 - [ ] 添加数据统计分析面板
 
 ## 🔒 隐私合规

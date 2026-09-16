@@ -10,6 +10,11 @@ from app.models.user import User
 from app.models.knowledge import KnowledgeArticle
 from app.models.community import ArticleReaction, ArticleComment, CommentLike, CommentReport, CommunityNotification as Notice
 from app.services.knowledge_service import _article_to_item
+from app.services.wechat_content_security import (
+    ContentSecurityRejected,
+    ContentSecurityUnavailable,
+    check_public_text,
+)
 
 router = APIRouter()
 
@@ -169,6 +174,12 @@ async def post_comment(aid: int, body: CommentBody, user=Depends(member), db: As
     parent = await db.get(ArticleComment, body.parent_id) if body.parent_id else None
     if body.parent_id and (not parent or parent.article_id != aid or parent.deleted):
         raise HTTPException(400, '回复的评论不存在或已删除')
+    try:
+        await check_public_text(body.content, user.openid)
+    except ContentSecurityRejected as exc:
+        raise HTTPException(400, str(exc)) from exc
+    except ContentSecurityUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
     comment = ArticleComment(article_id=aid, user_id=user.id, content=body.content, parent_id=body.parent_id, request_id=body.request_id)
     db.add(comment)
     await db.flush()

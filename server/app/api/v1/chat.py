@@ -1,13 +1,15 @@
 """聊天 API：自动分配医生、消息收发、会诊邀请"""
+import asyncio
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db
+from app.config import settings
 from app.core.security import get_current_subject
 from app.models.chat import ConsultAssignment, Consultation
 from app.models.user import User
@@ -23,6 +25,18 @@ from app.services.chat_service import (
     respond_consult_invite,
     search_doctor_patients,
     send_message,
+)
+from app.services.media_service import (
+    MediaStorageError,
+    delete_managed_media,
+    read_normalized_image,
+    signed_media_url,
+    store_chat_image,
+)
+from app.services.wechat_content_security import (
+    ContentSecurityRejected,
+    ContentSecurityUnavailable,
+    check_uploaded_image,
 )
 
 router = APIRouter()
@@ -42,6 +56,23 @@ async def _get_user(db: AsyncSession, uid: int) -> User:
     if not user.is_active:
         raise HTTPException(status_code=403, detail="账号已停用")
     return user
+
+
+def _require_assignment_access(
+    user: User,
+    assignment: ConsultAssignment,
+    *,
+    require_active: bool = False,
+) -> None:
+    """Allow only the patient or primary doctor bound to this conversation."""
+    allowed = (
+        (user.role == "patient" and assignment.patient_id == user.id)
+        or (user.role == "doctor" and assignment.doctor_id == user.id)
+    )
+    if not allowed:
+        raise HTTPException(status_code=403, detail="无权访问该聊天会话")
+    if require_active and assignment.status != "active":
+        raise HTTPException(status_code=409, detail="会话已结束或已改派，请刷新预约状态")
 
 
 # ────────────────────────────────────────────────────────────────────
@@ -72,7 +103,7 @@ async def my_doctor(
             "department": doctor.department,
             "title": doctor.title,
             "intro": doctor.intro,
-            "avatar": doctor.avatar,
+            "avatar": signed_media_url(doctor.avatar),
         },
         "patient": {
             "id": user.id,
@@ -106,16 +137,14 @@ async def api_send_message(
     if not assignment:
         raise HTTPException(status_code=404, detail="聊天会话不存在")
 
-    # 权限校验：必须是该会话的患者或医生
-    if user.role == "patient" and assignment.patient_id != uid:
-        raise HTTPException(status_code=403, detail="无权发送")
-    if user.role == "doctor" and assignment.doctor_id != uid:
-        raise HTTPException(status_code=403, detail="无权发送")
-
-    if not user.is_active or user.role not in ('patient', 'doctor'):
-        raise HTTPException(status_code=403, detail="无权发送")
-    if assignment.status != 'active':
-        raise HTTPException(status_code=409, detail="会话已结束或已改派，请刷新预约状态")
+    _require_assignment_access(user, assignment, require_active=True)
+    if body.msg_type != "text" or body.image_url:
+        raise HTTPException(status_code=400, detail="图片消息必须通过图片上传接口发送")
+    content = body.content.strip()
+    if not content:
+        raise HTTPException(status_code=400, detail="消息内容不能为空")
+    if len(content) > 4000:
+        raise HTTPException(status_code=400, detail="单条消息不能超过 4000 字")
 
     # 患者首次聊天时确保 first_chat_at 写入（auto_assign 已处理）
     msg = await send_message(
@@ -123,9 +152,9 @@ async def api_send_message(
         assignment_id=body.assignment_id,
         sender_role=user.role,
         sender_id=uid,
-        content=body.content,
-        msg_type=body.msg_type,
-        image_url=body.image_url,
+        content=content,
+        msg_type="text",
+        image_url=None,
     )
     return {"id": msg.id, "created_at": msg.created_at.isoformat() if msg.created_at else None}
 
@@ -150,10 +179,7 @@ async def api_list_messages(
     if not assignment:
         raise HTTPException(status_code=404, detail="聊天会话不存在")
 
-    if user.role == "patient" and assignment.patient_id != uid:
-        raise HTTPException(status_code=403, detail="无权访问")
-    if user.role == "doctor" and assignment.doctor_id != uid:
-        raise HTTPException(status_code=403, detail="无权访问")
+    _require_assignment_access(user, assignment)
 
     msgs = await list_messages(db, assignment_id, limit=limit, before_id=before_id)
     msgs.reverse()  # 倒序转正序
@@ -166,7 +192,7 @@ async def api_list_messages(
                 "sender_id": m.sender_id,
                 "msg_type": m.msg_type,
                 "content": m.content,
-                "image_url": m.image_url,
+                "image_url": signed_media_url(m.image_url),
                 "consult_target_doctor_id": m.consult_target_doctor_id,
                 "consult_target_doctor_name": m.consult_target_doctor_name,
                 "consult_status": m.consult_status,
@@ -189,6 +215,10 @@ async def api_mark_read(
     """标记消息已读"""
     uid = _uid(sub)
     user = await _get_user(db, uid)
+    assignment = await get_assignment(db, assignment_id)
+    if not assignment:
+        raise HTTPException(status_code=404, detail="聊天会话不存在")
+    _require_assignment_access(user, assignment)
     count = await mark_read(db, assignment_id, user.role)
     return {"marked": count}
 
@@ -252,43 +282,73 @@ async def api_patient_detail(
             "weight_kg": patient.weight_kg,
             "health_notes": patient.health_notes,
             "activity_level": patient.activity_level,
-            "avatar": patient.avatar,
+            "avatar": signed_media_url(patient.avatar),
         },
     }
 
 
 # ────────────────────────────────────────────────────────────────────
-# 图片上传（聊天图片）
+# 图片上传并发送（聊天图片）
 # ────────────────────────────────────────────────────────────────────
-
-import os
-import uuid as _uuid
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile, Depends
-from app.core.security import get_current_subject
-
-UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
 
 @router.post("/upload-image")
 async def upload_image(
+    assignment_id: int = Form(...),
     file: UploadFile = File(...),
     sub: str = Depends(get_current_subject),
-):
-    """上传一张图片，返回可访问的 URL"""
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="只支持图片文件")
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """校验图片和会话权限后，原子式创建一条图片消息。"""
+    uid = _uid(sub)
+    user = await _get_user(db, uid)
+    assignment = await get_assignment(db, assignment_id)
+    if not assignment:
+        raise HTTPException(status_code=404, detail="聊天会话不存在")
+    _require_assignment_access(user, assignment, require_active=True)
 
-    ext = os.path.splitext(file.filename or "")[1] or ".jpg"
-    name = f"{_uuid.uuid4().hex}{ext}"
-    save_path = os.path.join(UPLOAD_DIR, name)
-    content = await file.read()
-    if len(content) > 10 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="图片不能超过 10MB")
-    with open(save_path, "wb") as f:
-        f.write(content)
-    # 通过 /uploads/{name} 暴露
-    return {"url": f"/uploads/{name}", "filename": name, "size": len(content)}
+    normalized = await read_normalized_image(
+        file,
+        max_bytes=settings.chat_image_max_bytes,
+    )
+    try:
+        await check_uploaded_image(normalized)
+    except ContentSecurityRejected as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except ContentSecurityUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    try:
+        stored = await asyncio.to_thread(store_chat_image, normalized, assignment_id)
+    except MediaStorageError:
+        logger.exception(
+            "chat image storage failed: assignment_id={assignment_id}",
+            assignment_id=assignment_id,
+        )
+        raise HTTPException(status_code=503, detail="图片暂时无法保存，请稍后重试") from None
+    try:
+        message = await send_message(
+            db,
+            assignment_id=assignment_id,
+            sender_role=user.role,
+            sender_id=uid,
+            content="[图片]",
+            msg_type="image",
+            image_url=stored.reference,
+        )
+    except Exception:
+        try:
+            await asyncio.to_thread(delete_managed_media, stored.reference)
+        except (OSError, MediaStorageError):
+            logger.exception(
+                "failed to clean uncommitted chat image: assignment_id={assignment_id}",
+                assignment_id=assignment_id,
+            )
+        raise
+    return {
+        "id": message.id,
+        "url": signed_media_url(stored.reference),
+        "size": stored.size,
+        "created_at": message.created_at.isoformat() if message.created_at else None,
+    }
 
 
 # ────────────────────────────────────────────────────────────────────

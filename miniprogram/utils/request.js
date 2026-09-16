@@ -44,7 +44,7 @@ const mockRoutes = [
   }},
   { match: /\/users\/me\/quota$/, data: () => mock.dailyQuota },
   { match: /\/users\/me$/, data: () => mock.profile },
-  { match: /\/meals\/analyze$/, data: () => mock.mealAnalyzeResult, method: 'POST' },
+  { match: /\/ai\/food-analysis$/, data: () => mock.mealAnalyzeResult, method: 'POST' },
   { match: /\/meals\/.*\/report$/, data: () => mock.mealReport },
   { match: /\/auth\/wechat$/, data: () => ({
     token: 'demo-token-2026-07-31',

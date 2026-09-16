@@ -3,6 +3,7 @@ import os
 import subprocess
 import sys
 
+import pytest
 from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -10,6 +11,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from app.models import Base
 
 
+@pytest.mark.asyncio
 async def test_alembic_head_matches_models(tmp_path):
     database = tmp_path / "migration.sqlite3"
     env = os.environ.copy()

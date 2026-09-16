@@ -36,8 +36,8 @@
       <view class="feature-item">
         <ui-icon name="chat" size="42" />
         <view class="feature-text">
-          <text class="feature-name">在线问诊</text>
-          <text class="feature-desc">一键匹配医生咨询</text>
+          <text class="feature-name">医生在线指导</text>
+          <text class="feature-desc">预约匹配医生沟通</text>
         </view>
       </view>
       <view class="feature-item">
@@ -120,16 +120,16 @@
       </view>
       <view class="privacy-content">
         <text class="privacy-main">已阅读并同意</text>
-        <text class="privacy-link" bindtap="openPrivacy">《隐私协议》</text>
+        <text class="privacy-link" catchtap="openPrivacy">《隐私政策》</text>
         <text class="privacy-main">与</text>
-        <text class="privacy-link" bindtap="openTerms">《用户服务条款》</text>
+        <text class="privacy-link" catchtap="openTerms">《用户服务条款》</text>
       </view>
     </view>
   </view>
 
   <!-- 页脚 -->
   <view class="login-footer">
-    <text>登录即代表您同意我们按照协议收集与使用必要的个人信息\n（最小必要原则，数据仅用于个性化营养建议）</text>
+    <text>登录仅用于建立账号；健康信息、照片和咨询内容仅在您主动使用相应功能时处理。</text>
   </view>
 
 </view>
