@@ -39,6 +39,20 @@ def test_production_settings_normalize_railway_postgres_url():
 
 
 @pytest.mark.parametrize(
+    "database_url",
+    [
+        "postgresql://user:password@postgres:5432/nutrition?sslmode=require",
+        "postgres://user:password@postgres:5432/nutrition?connect_timeout=10&sslmode=require",
+        "postgresql+asyncpg://user:password@postgres:5432/nutrition?sslmode=require",
+    ],
+)
+def test_production_settings_normalize_cloudbase_sslmode(database_url):
+    configured = production_settings(database_url=database_url)
+    assert "sslmode=" not in configured.database_url
+    assert "ssl=require" in configured.database_url
+
+
+@pytest.mark.parametrize(
     ("overrides", "message"),
     [
         ({"jwt_secret": "change-me"}, "JWT_SECRET"),

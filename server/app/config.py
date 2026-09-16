@@ -84,6 +84,17 @@ class Settings(BaseSettings):
             self.database_url = self.database_url.replace(
                 "postgresql://", "postgresql+asyncpg://", 1
             )
+        # PostgreSQL 控制台和 libpq 常返回 ``sslmode=require``。SQLAlchemy
+        # 的 asyncpg 方言会把未知的 ``sslmode`` 原样传给 asyncpg.connect，
+        # 从而在容器启动迁移时触发 TypeError；asyncpg 使用的参数名是 ssl。
+        # 保留其他查询参数及已显式提供的 ssl，仅规范化参数名。
+        if self.database_url.startswith("postgresql+asyncpg://"):
+            self.database_url = re.sub(
+                r"([?&])sslmode=",
+                r"\1ssl=",
+                self.database_url,
+                flags=re.IGNORECASE,
+            )
 
         if self.app_env != "production":
             return self
