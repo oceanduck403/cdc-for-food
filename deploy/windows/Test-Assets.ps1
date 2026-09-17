@@ -24,7 +24,7 @@ $envExample = [System.IO.File]::ReadAllText(
     (New-Object System.Text.UTF8Encoding($false))
 )
 foreach ($secretName in @("JWT_SECRET", "QWEN_API_KEY", "WECHAT_APPID", "WECHAT_SECRET", "ADMIN_BOOTSTRAP_PASSWORD")) {
-    if ($envExample -match ("(?m)^" + [regex]::Escape($secretName) + "=.+$")) {
+    if ($envExample -match ("(?m)^" + [regex]::Escape($secretName) + "=[^\r\n]+\r?$")) {
         $failures.Add("environment.example.env 不应为 $secretName 提供值")
     }
 }
