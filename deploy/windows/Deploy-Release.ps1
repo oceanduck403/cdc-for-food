@@ -51,6 +51,7 @@ if ($RunMigrations) {
 
 $staging = Join-Path $releaseRoot (".staging-{0}-{1}" -f $ReleaseId, [Guid]::NewGuid().ToString("N"))
 $stagingServer = Join-Path $staging "server"
+$targetCreated = $false
 try {
     New-Item -ItemType Directory -Path $releaseRoot -Force | Out-Null
     New-Item -ItemType Directory -Path (Join-Path $root "shared\logs") -Force | Out-Null
@@ -93,6 +94,7 @@ try {
     )
 
     Move-Item -LiteralPath $staging -Destination $target
+    $targetCreated = $true
 
     if ($RunMigrations) {
         Set-ProcessEnvironment -Values $environment
@@ -109,6 +111,9 @@ try {
 catch {
     if (Test-Path -LiteralPath $staging) {
         Remove-Item -LiteralPath $staging -Recurse -Force
+    }
+    if ($targetCreated -and (Test-Path -LiteralPath $target)) {
+        Remove-Item -LiteralPath $target -Recurse -Force
     }
     throw
 }

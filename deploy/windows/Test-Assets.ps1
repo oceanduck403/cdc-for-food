@@ -59,6 +59,9 @@ if (Test-Path -LiteralPath $repositoryEntryPoint -PathType Leaf) {
         if ($selfHostRequirements -match '(?im)^cos-python-sdk-v5(?:[=<>!~].*)?$') {
             $failures.Add("自建部署依赖不得包含 COS SDK")
         }
+        if ($selfHostRequirements -notmatch '(?im)^greenlet==3\.5\.5\r?$') {
+            $failures.Add("自建部署依赖必须显式锁定 Python 3.13 所需的 greenlet")
+        }
         $expectedSelfHost = @(
             Get-Content -LiteralPath $defaultRequirementsPath |
                 Where-Object { $_ -notmatch '^cos-python-sdk-v5(?:[=<>!~].*)?$' }
@@ -73,6 +76,10 @@ if (Test-Path -LiteralPath $repositoryEntryPoint -PathType Leaf) {
 $deployReleaseText = [System.IO.File]::ReadAllText((Join-Path $PSScriptRoot "Deploy-Release.ps1"))
 if ($deployReleaseText -notmatch '\(Join-Path \$stagingServer "requirements-selfhost\.txt"\)') {
     $failures.Add("Deploy-Release.ps1 未安装自建部署依赖清单")
+}
+if ($deployReleaseText -notmatch '\$targetCreated' -or
+    $deployReleaseText -notmatch 'Remove-Item -LiteralPath \$target -Recurse -Force') {
+    $failures.Add("Deploy-Release.ps1 缺少失败发布目录回滚")
 }
 
 $allText = ($scripts | Where-Object { $_.Name -ne "Test-Assets.ps1" } |

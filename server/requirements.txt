@@ -3,6 +3,7 @@ uvicorn[standard]==0.32.0
 pydantic==2.9.2
 pydantic-settings==2.6.1
 SQLAlchemy==2.0.36
+greenlet==3.5.5
 alembic==1.13.3
 asyncpg==0.30.0
 aiosqlite==0.20.0
