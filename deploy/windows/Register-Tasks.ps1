@@ -3,7 +3,7 @@ param(
     [Parameter(Mandatory = $true)][ValidatePattern('^[0-9A-Za-z][0-9A-Za-z._-]{0,63}$')][string]$ReleaseId,
     [string]$AppRoot = "E:\CDC-Food",
     [string]$ScriptsDirectory = "E:\CDC-Food\ops\windows",
-    [ValidateSet("SYSTEM")][string]$RunAsUser = "SYSTEM",
+    [ValidateSet("S-1-5-19")][string]$RunAsUser = "S-1-5-19",
     [switch]$Apply
 )
 
@@ -47,7 +47,7 @@ $apiArguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Fil
 
 Write-PlanLine "创建唯一计划任务 $postgresTaskName（开机启动，异常退出后重试）"
 Write-PlanLine "创建唯一计划任务 $apiTaskName（ReleaseId=$ReleaseId，开机启动，异常退出后重试）"
-Write-PlanLine "两个任务以 $RunAsUser 运行，只调用 $scripts 下的脚本"
+Write-PlanLine "两个任务以低权限 LocalService（$RunAsUser）运行，只调用 $scripts 下的脚本"
 Write-PlanLine "不启动任务、不覆盖同名任务、不修改其他任务、服务、防火墙或 Nginx"
 if (-not $Apply) {
     Write-Host "仅显示计划。确认脚本目录 ACL 和 server.env ACL 后添加 -Apply。" -ForegroundColor Yellow
@@ -85,4 +85,3 @@ catch {
 }
 
 Write-Host "计划任务注册完成，但尚未手动启动：$postgresTaskName、$apiTaskName" -ForegroundColor Green
-

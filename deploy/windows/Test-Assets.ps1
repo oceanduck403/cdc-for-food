@@ -82,6 +82,14 @@ if ($deployReleaseText -notmatch '\$targetCreated' -or
     $failures.Add("Deploy-Release.ps1 缺少失败发布目录回滚")
 }
 
+$registerTasksText = [System.IO.File]::ReadAllText((Join-Path $PSScriptRoot "Register-Tasks.ps1"))
+if ($registerTasksText -notmatch '\[ValidateSet\("S-1-5-19"\)\]\[string\]\$RunAsUser = "S-1-5-19"') {
+    $failures.Add("计划任务必须默认使用低权限 LocalService 账号")
+}
+if ($registerTasksText -match '\$RunAsUser = "SYSTEM"') {
+    $failures.Add("PostgreSQL 计划任务不得默认以 SYSTEM 运行")
+}
+
 $allText = ($scripts | Where-Object { $_.Name -ne "Test-Assets.ps1" } |
     ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw }) -join "`n"
 foreach ($forbidden in @('Stop-Process', 'taskkill', 'netsh advfirewall', 'Remove-Service')) {

@@ -93,7 +93,7 @@ E:\CDC-Food\ops\windows\Test-Health.ps1
 Start-ScheduledTask -TaskName CDC-Food-API
 ```
 
-任务默认以 `SYSTEM` 服务账号运行，因此 `server.env`、数据库目录、上传目录与日志目录无需向普通用户开放。注册前仍应人工检查这些路径的 ACL；不要给 `Everyone` 或 `Users` 写权限。任务动作是前台受管进程，异常退出后由任务计划程序重试，且不会操作已有服务。
+任务默认以低权限内置账号 `LocalService`（SID `S-1-5-19`）运行。注册前应只向该账号授予项目运行所需的最小权限：数据库、上传和日志目录可写，发布目录与运维脚本只读，`server.env` 只读；不要给 `Everyone` 或 `Users` 写权限。任务动作是前台受管进程，异常退出后由任务计划程序重试，且不会操作已有服务。
 
 停止或注销必须使用单独脚本并显式选择动作；默认同样只显示计划。脚本会核对任务动作确实指向 `E:\CDC-Food\ops\windows`，避免误操作碰巧同名的任务：
 
