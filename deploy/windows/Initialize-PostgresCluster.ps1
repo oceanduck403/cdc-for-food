@@ -27,10 +27,7 @@ $pgCtl = Assert-Executable -Path (Join-Path $PostgresBin "pg_ctl.exe") -Label "p
 $psql = Assert-Executable -Path (Join-Path $PostgresBin "psql.exe") -Label "psql"
 
 if (Test-Path -LiteralPath $data) {
-    $items = @(Get-ChildItem -LiteralPath $data -Force -ErrorAction Stop)
-    if ($items.Count -gt 0) {
-        throw "数据目录非空，脚本拒绝覆盖或接管：$data"
-    }
+    throw "数据目录已存在，脚本拒绝覆盖或接管（即使为空也需先人工核对）：$data"
 }
 Assert-PortAvailable -Port $Port
 
@@ -64,7 +61,7 @@ if ($clusterPassword.Length -lt 16 -or $appPassword.Length -lt 16) {
     throw "两个数据库密码都必须至少 16 位"
 }
 
-New-Item -ItemType Directory -Path $data -Force | Out-Null
+    New-Item -ItemType Directory -Path (Split-Path -Parent $data) -Force | Out-Null
 New-Item -ItemType Directory -Path $logs -Force | Out-Null
 $passwordFile = Join-Path $root ("shared\config\.pg-init-{0}" -f [Guid]::NewGuid().ToString("N"))
 $postgresLog = Join-Path $logs "postgresql.log"
