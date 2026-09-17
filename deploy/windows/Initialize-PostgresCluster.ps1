@@ -99,19 +99,21 @@ try {
         "log_rotation_age = 1d",
         "log_truncate_on_rotation = on"
     )
-    [System.IO.File]::AppendAllLines(
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    $lineEnding = [System.Environment]::NewLine
+    [System.IO.File]::AppendAllText(
         (Join-Path $data "postgresql.conf"),
-        $config,
-        (New-Object System.Text.UTF8Encoding($false))
+        (($config -join $lineEnding) + $lineEnding),
+        $utf8NoBom
     )
     $hba = @(
         "# TYPE  DATABASE  USER  ADDRESS         METHOD",
         "host    all       all   127.0.0.1/32    scram-sha-256"
     )
-    [System.IO.File]::WriteAllLines(
+    [System.IO.File]::WriteAllText(
         (Join-Path $data "pg_hba.conf"),
-        $hba,
-        (New-Object System.Text.UTF8Encoding($false))
+        (($hba -join $lineEnding) + $lineEnding),
+        $utf8NoBom
     )
 
     Invoke-CheckedNative -Executable $pgCtl -Arguments @(
