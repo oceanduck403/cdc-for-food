@@ -1,8 +1,7 @@
 """Validate CloudBase production values without echoing any secret.
 
 Usage:
-    python deploy/cloudbase/validate_config.py environment.local.json \
-        --api-base https://real-service.example.com/api/v1
+    python deploy/cloudbase/validate_config.py environment.local.json
 """
 
 from __future__ import annotations
@@ -30,10 +29,6 @@ REQUIRED = {
     "QWEN_BASE_URL",
     "QWEN_MODEL",
     "MEDIA_STORAGE_BACKEND",
-    "MEDIA_COS_SECRET_ID",
-    "MEDIA_COS_SECRET_KEY",
-    "MEDIA_COS_REGION",
-    "MEDIA_COS_BUCKET",
     "MEDIA_COS_PREFIX",
     "ADMIN_BOOTSTRAP_USERNAME",
     "ADMIN_BOOTSTRAP_PASSWORD",
@@ -89,16 +84,44 @@ def validate(values: dict[str, object], api_base: str | None) -> list[str]:
     if not is_placeholder(appid) and not re.fullmatch(r"wx[A-Za-z0-9]{10,30}", appid):
         errors.append("WECHAT_APPID 格式异常")
 
-    if str(values.get("MEDIA_STORAGE_BACKEND", "")).strip().lower() != "cos":
-        errors.append("MEDIA_STORAGE_BACKEND 生产环境必须为 cos")
-    cos_region = str(values.get("MEDIA_COS_REGION", "")).strip()
-    if not is_placeholder(cos_region) and not re.fullmatch(r"[a-z0-9-]{3,64}", cos_region):
-        errors.append("MEDIA_COS_REGION 格式异常")
-    cos_bucket = str(values.get("MEDIA_COS_BUCKET", "")).strip()
-    if not is_placeholder(cos_bucket) and not re.fullmatch(
-        r"[a-z0-9][a-z0-9-]{0,48}-[0-9]{5,20}", cos_bucket
-    ):
-        errors.append("MEDIA_COS_BUCKET 必须是包含 APPID 的完整桶名")
+    storage_backend = str(values.get("MEDIA_STORAGE_BACKEND", "")).strip().lower()
+    if storage_backend not in {"cos", "cloudbase_pg"}:
+        errors.append("MEDIA_STORAGE_BACKEND 生产环境必须为 cos 或 cloudbase_pg")
+    elif storage_backend == "cos":
+        for name in (
+            "MEDIA_COS_SECRET_ID",
+            "MEDIA_COS_SECRET_KEY",
+            "MEDIA_COS_REGION",
+            "MEDIA_COS_BUCKET",
+        ):
+            if is_placeholder(values.get(name)):
+                errors.append(f"{name} 尚未填写真实值")
+        cos_region = str(values.get("MEDIA_COS_REGION", "")).strip()
+        if not is_placeholder(cos_region) and not re.fullmatch(r"[a-z0-9-]{3,64}", cos_region):
+            errors.append("MEDIA_COS_REGION 格式异常")
+        cos_bucket = str(values.get("MEDIA_COS_BUCKET", "")).strip()
+        if not is_placeholder(cos_bucket) and not re.fullmatch(
+            r"[a-z0-9][a-z0-9-]{0,48}-[0-9]{5,20}", cos_bucket
+        ):
+            errors.append("MEDIA_COS_BUCKET 必须是包含 APPID 的完整桶名")
+    else:
+        for name in (
+            "MEDIA_CLOUDBASE_ENV_ID",
+            "MEDIA_CLOUDBASE_API_KEY",
+            "MEDIA_CLOUDBASE_BUCKET",
+        ):
+            if is_placeholder(values.get(name)):
+                errors.append(f"{name} 尚未填写真实值")
+        env_id = str(values.get("MEDIA_CLOUDBASE_ENV_ID", "")).strip()
+        if not is_placeholder(env_id) and not re.fullmatch(
+            r"[A-Za-z0-9][A-Za-z0-9-]{2,127}", env_id
+        ):
+            errors.append("MEDIA_CLOUDBASE_ENV_ID 格式异常")
+        bucket = str(values.get("MEDIA_CLOUDBASE_BUCKET", "")).strip()
+        if not is_placeholder(bucket) and not re.fullmatch(
+            r"[A-Za-z0-9][A-Za-z0-9._-]{0,99}", bucket
+        ):
+            errors.append("MEDIA_CLOUDBASE_BUCKET 格式异常")
     cos_prefix = str(values.get("MEDIA_COS_PREFIX", "")).strip().strip("/")
     if not is_placeholder(cos_prefix) and (
         not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/-]{0,190}", cos_prefix)
@@ -144,7 +167,7 @@ def validate(values: dict[str, object], api_base: str | None) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="校验 CloudBase 生产环境变量（不会打印密钥）")
     parser.add_argument("env_json", type=Path, help="由 environment.example.json 复制并填写的本地文件")
-    parser.add_argument("--api-base", help="首版 wx.request 使用的真实 HTTPS API 地址")
+    parser.add_argument("--api-base", help="仅在开发直连模式下额外校验 HTTPS API 地址")
     args = parser.parse_args()
 
     try:

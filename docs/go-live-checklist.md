@@ -13,12 +13,12 @@
 | 数据库 | PostgreSQL；使用 CloudBase PG 模式或同地域腾讯云 PostgreSQL |
 | AI | 阿里云百炼 Qwen，由后端代理调用，Key 不进入小程序包 |
 | AI 限额 | PostgreSQL `ai_usage_events` 表，当前无需 Redis |
-| 用户图片 | 私有腾讯云 COS，经后端短期签名代理访问 |
-| 后端访问 | 首版公网 HTTPS；完成上传链路改造后可切换 `wx.cloud.callContainer` |
+| 用户图片 | 私有 CloudBase PG 云存储或腾讯云 COS，经后端短期签名代理访问 |
+| 后端访问 | `wx.cloud.callContainer` 私有链路 |
 
 微信公众平台只接收和发布小程序前端代码包，不能直接运行 FastAPI 和关系型数据库。FastAPI 放在微信云托管，仍属于微信 / 腾讯云的一体化部署路径。
 
-当前 AppID 的只读检查返回 `no cloud base privilege`，需要小程序管理员先开通或关联 CloudBase 环境。详细操作见 [微信云托管上线手册](./deploy-wechat-cloudrun.md)。
+当前已创建 CloudBase PG 环境 `cdc-food-prod-d8gtxkdw22781847c`，云托管服务名为 `cdc-food-api`。详细操作见 [微信云托管上线手册](./deploy-wechat-cloudrun.md)。
 
 ## 二、账号和控制台
 
@@ -73,7 +73,7 @@
 
 ### 文件存储
 
-- [ ] 用户头像和咨询图片使用私有腾讯云 COS，并已按媒体前缀配置最小权限
+- [ ] 用户头像和咨询图片使用私有 CloudBase PG 云存储或腾讯云 COS，并已按媒体前缀配置最小权限
 - [ ] 文件不依赖云托管容器本地目录，实例重启或扩容后仍可访问
 - [ ] 上传限制文件大小、图片格式和像素，并清除不需要的元数据
 - [ ] 下载使用鉴权或短期签名地址，不开放匿名目录浏览
@@ -96,26 +96,19 @@
 静态检查示例：
 
 ```powershell
-python deploy/cloudbase/validate_config.py deploy/cloudbase/environment.local.json `
-  --api-base https://<真实云托管域名>/api/v1
+python deploy/cloudbase/validate_config.py deploy/cloudbase/environment.local.json
 ```
 
 ## 六、小程序正式网络
 
-### 首版使用公网 HTTPS
-
-- [ ] `miniprogram/utils/config.js` 的 `apiBase` 是真实云托管 HTTPS 地址并以 `/api/v1` 结尾
-- [ ] 正式包不包含 `localhost`、`127.0.0.1`、局域网 IP 或示例域名
-- [ ] 微信公众平台中的 `request`、`uploadFile`、`downloadFile` 合法域名与真实请求主机一致
-- [ ] 若绑定自定义域名，已按控制台和所在地主管部门要求完成备案与证书配置
-
-### 后续使用 `wx.cloud.callContainer`
+### 使用 `wx.cloud.callContainer`
 
 - [ ] 小程序已关联目标 CloudBase 环境
 - [ ] `wx.cloud.init` 使用真实 `envId`
 - [ ] 每次调用的 `X-WX-SERVICE` 使用真实 `serviceName`
 - [ ] 普通 JSON 请求、multipart 上传、头像 / 聊天图片显示和预览均完成真机回归
 - [ ] 确认没有其他客户端需要公网 API 后，再关闭不需要的公网入口
+- [ ] 正式包不包含 `localhost`、`127.0.0.1`、局域网 IP、示例域名或未使用旧页面
 
 ## 七、隐私、内容和账号能力
 
@@ -161,10 +154,10 @@ python deploy/cloudbase/validate_config.py deploy/cloudbase/environment.local.js
 
 ## 十一、当前阻塞项
 
-- [ ] 当前 AppID 尚未开通 / 关联 CloudBase 环境
-- [ ] 尚无真实 `envId`、`serviceName` 和生产 API 地址
+- [x] 已创建 CloudBase PG 环境并确定 `envId` 与 `serviceName`
+- [ ] 当前免费体验环境未提供可用的 PostgreSQL 直连地址、角色和密码；需选择能让云托管安全直连 PG 的正式套餐或独立数据库
 - [ ] 尚无生产 PostgreSQL 连接信息
-- [ ] 用户媒体仍需确认已经使用持久化对象存储
+- [ ] 尚未创建并注入仅供后端使用的 CloudBase `service_role` API Key，也未创建私有 `user-media` Bucket
 - [ ] 泄漏过的百炼 Key 仍需由账号管理员撤销并轮换
 - [ ] 真人在线指导功能与当前小程序主体、服务类目及医疗资质尚待核验
 - [ ] 微信开发者工具服务端口需由用户在安全设置中开启，才能使用 CLI 上传

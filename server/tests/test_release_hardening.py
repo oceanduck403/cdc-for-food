@@ -38,6 +38,20 @@ def test_production_settings_normalize_railway_postgres_url():
     assert configured.database_url.startswith("postgresql+asyncpg://")
 
 
+def test_production_accepts_cloudbase_pg_storage_without_cam_access_key():
+    configured = production_settings(
+        media_storage_backend="cloudbase_pg",
+        media_cos_secret_id="",
+        media_cos_secret_key="",
+        media_cos_region="",
+        media_cos_bucket="",
+        media_cloudbase_env_id="cdc-food-prod-d8gtxkdw22781847c",
+        media_cloudbase_api_key="environment-scoped-service-role-token",
+        media_cloudbase_bucket="user-media",
+    )
+    assert configured.media_storage_backend == "cloudbase_pg"
+
+
 @pytest.mark.parametrize(
     "database_url",
     [
@@ -61,6 +75,15 @@ def test_production_settings_normalize_cloudbase_sslmode(database_url):
         ({"qwen_api_key": ""}, "QWEN_API_KEY"),
         ({"media_storage_backend": "local"}, "MEDIA_STORAGE_BACKEND"),
         ({"media_cos_bucket": ""}, "MEDIA_COS_BUCKET"),
+        (
+            {
+                "media_storage_backend": "cloudbase_pg",
+                "media_cloudbase_env_id": "cloudbase-prod-123",
+                "media_cloudbase_api_key": "",
+                "media_cloudbase_bucket": "user-media",
+            },
+            "MEDIA_CLOUDBASE_API_KEY",
+        ),
         ({"admin_bootstrap_username": "admin", "admin_bootstrap_password": "weak"},
          "ADMIN_BOOTSTRAP_PASSWORD"),
         ({"admin_bootstrap_username": "admin"}, "必须同时配置"),

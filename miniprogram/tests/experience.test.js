@@ -80,11 +80,18 @@ test('正式包不包含固定验证码、默认凭证或模拟支付入口',()=
   assert.equal(projectConfig.setting.urlCheck,true);
   assert.equal(projectConfig.setting.uploadWithSourceMap,false);
   assert.ok(projectConfig.packOptions.ignore.some(item=>item.type==='folder'&&item.value==='tests'));
+  for(const legacyPage of ['pages/gis-map','pages/knowledge']) {
+    assert.ok(
+      projectConfig.packOptions.ignore.some(item=>item.type==='folder'&&item.value===legacyPage),
+      `legacy page ${legacyPage} must not enter the release package`,
+    );
+  }
 });
 
 test('旧账号请求返回401时不能清除新账号登录态',async()=>{
   const storage={token:'old-token',role:'patient'};let pending;
-  const sandbox={module:{exports:{}},require:()=>({apiBase:'http://test'}),wx:{getStorageSync:k=>storage[k],removeStorageSync:k=>delete storage[k],request:opts=>pending=opts}};
+  const wx={getStorageSync:k=>storage[k],removeStorageSync:k=>delete storage[k],request:opts=>pending=opts};
+  const sandbox={module:{exports:{}},require:name=>name.includes('transport')?{send:opts=>wx.request(opts),getDirectBaseUrl:()=> 'http://test'}:name.includes('config')?{apiBase:'http://test'}:{networkError:e=>e},wx};
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../utils/api.js'),'utf8'),sandbox);
   const failed=sandbox.module.exports.request('/survey/my-responses');
   storage.token='doctor-token';storage.role='doctor';

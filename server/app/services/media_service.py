@@ -1,11 +1,12 @@
 """Private user-media validation, persistence and short-lived access.
 
-Development and tests use a private local directory. Production uses a
-private Tencent COS bucket so CloudBase container replacement or horizontal
-scaling cannot lose patient avatars or consultation images. Database rows
-store opaque references; callers only receive application URLs protected by a
-short-lived HMAC. The application proxies bounded object bytes after checking
-that HMAC, so the mini program does not need a public bucket.
+Development and tests use a private local directory. Production uses either a
+private Tencent COS bucket or the CloudBase PG Storage HTTP API so container
+replacement or horizontal scaling cannot lose patient avatars or consultation
+images. Database rows store opaque references; callers only receive
+application URLs protected by a short-lived HMAC. The application proxies
+bounded object bytes after checking that HMAC, so the mini program never needs
+a public bucket or a storage credential.
 """
 from __future__ import annotations
 
@@ -21,8 +22,10 @@ import secrets
 import shutil
 import time
 from typing import Literal, Optional
+from urllib.parse import quote
 
 from fastapi import UploadFile
+import httpx
 from PIL import Image, ImageOps, UnidentifiedImageError
 from qcloud_cos import CosClientError, CosConfig, CosS3Client, CosServiceError
 
@@ -56,6 +59,14 @@ def _uses_cos() -> bool:
     return settings.media_storage_backend == "cos"
 
 
+def _uses_cloudbase_pg() -> bool:
+    return settings.media_storage_backend == "cloudbase_pg"
+
+
+def _uses_remote_storage() -> bool:
+    return _uses_cos() or _uses_cloudbase_pg()
+
+
 def media_root() -> Path:
     """Return the private local root used outside production."""
     return Path(settings.media_storage_dir).expanduser().resolve()
@@ -63,7 +74,7 @@ def media_root() -> Path:
 
 def ensure_media_directories() -> None:
     """Prepare local storage without creating container media dirs for COS."""
-    if _uses_cos():
+    if _uses_remote_storage():
         return
     root = media_root()
     (root / "avatar").mkdir(parents=True, exist_ok=True)
@@ -102,6 +113,40 @@ def _cos_client() -> CosS3Client:
         settings.media_cos_region,
         settings.media_cos_token,
     )
+
+
+def _cloudbase_request(method: str, path: str, **kwargs) -> httpx.Response:
+    """Call the PG Storage API with an environment-scoped service-role key."""
+    env_id = settings.media_cloudbase_env_id.strip()
+    api_key = settings.media_cloudbase_api_key.strip()
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9-]{2,127}", env_id) or not api_key:
+        raise MediaStorageError("CloudBase 云存储配置不完整")
+    request_headers = {
+        "Authorization": f"Bearer {api_key}",
+        **kwargs.pop("headers", {}),
+    }
+    try:
+        with httpx.Client(
+            base_url=f"https://{env_id}.api.tcloudbasegateway.com",
+            headers=request_headers,
+            timeout=settings.media_cloudbase_timeout_seconds,
+            follow_redirects=False,
+        ) as client:
+            return client.request(method, path, **kwargs)
+    except httpx.HTTPError as exc:
+        raise MediaStorageError("CloudBase 云存储请求失败") from exc
+
+
+def _cloudbase_bucket_path() -> str:
+    bucket = settings.media_cloudbase_bucket.strip()
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,99}", bucket):
+        raise MediaStorageError("CloudBase 云存储 Bucket 配置无效")
+    return quote(bucket, safe="")
+
+
+def _cloudbase_object_path(key: str) -> str:
+    encoded_key = "/".join(quote(part, safe="") for part in key.split("/"))
+    return f"/v1/storages/object/{_cloudbase_bucket_path()}/{encoded_key}"
 
 
 def _cos_key(kind: MediaKind, filename: str, assignment_id: Optional[int] = None) -> str:
@@ -223,7 +268,32 @@ def _store_cos_image(data: bytes, kind: MediaKind, assignment_id: Optional[int])
     return StoredMedia(reference=reference, size=len(data), object_key=key)
 
 
+def _store_cloudbase_image(
+    data: bytes,
+    kind: MediaKind,
+    assignment_id: Optional[int],
+) -> StoredMedia:
+    filename = f"{secrets.token_hex(32)}.jpg"
+    key = _cos_key(kind, filename, assignment_id)
+    response = _cloudbase_request(
+        "POST",
+        _cloudbase_object_path(key),
+        content=data,
+        headers={"Content-Type": "image/jpeg", "x-upsert": "false"},
+    )
+    if response.status_code != 200:
+        raise MediaStorageError("CloudBase 图片写入失败")
+    reference = (
+        f"media:avatar:{filename}"
+        if kind == "avatar"
+        else f"media:chat:{assignment_id}:{filename}"
+    )
+    return StoredMedia(reference=reference, size=len(data), object_key=key)
+
+
 def store_avatar(data: bytes) -> StoredMedia:
+    if _uses_cloudbase_pg():
+        return _store_cloudbase_image(data, "avatar", None)
     if _uses_cos():
         return _store_cos_image(data, "avatar", None)
     filename, path = _write_private_image(data, _safe_child("avatar"))
@@ -233,6 +303,8 @@ def store_avatar(data: bytes) -> StoredMedia:
 def store_chat_image(data: bytes, assignment_id: int) -> StoredMedia:
     if assignment_id < 1:
         raise ValueError("invalid assignment id")
+    if _uses_cloudbase_pg():
+        return _store_cloudbase_image(data, "chat", assignment_id)
     if _uses_cos():
         return _store_cos_image(data, "chat", assignment_id)
     filename, path = _write_private_image(data, _safe_child("chat", str(assignment_id)))
@@ -265,7 +337,7 @@ def reference_belongs_to_chat(reference: Optional[str], assignment_id: int) -> b
 
 def media_path_for_reference(reference: Optional[str]) -> Optional[Path]:
     """Resolve local media only; COS objects never map to a container path."""
-    if _uses_cos():
+    if _uses_remote_storage():
         return None
     parsed = parse_reference(reference)
     if not parsed:
@@ -299,6 +371,17 @@ def delete_managed_media(reference: Optional[str]) -> None:
     if not parsed:
         return
     kind, assignment_id, filename = parsed
+    if _uses_cloudbase_pg():
+        # Legacy /uploads references were never remote objects.
+        if not _SAFE_FILENAME.fullmatch(filename):
+            return
+        response = _cloudbase_request(
+            "DELETE",
+            _cloudbase_object_path(_cos_key(kind, filename, assignment_id)),
+        )
+        if response.status_code not in {200, 404}:
+            raise MediaStorageError("CloudBase 图片删除失败")
+        return
     if _uses_cos():
         # Legacy /uploads references were never COS objects.
         if not _SAFE_FILENAME.fullmatch(filename):
@@ -323,13 +406,55 @@ def delete_chat_assignment_media(assignment_id: int) -> None:
     """Remove all private images for one deleted conversation."""
     if assignment_id < 1:
         return
-    if not _uses_cos():
+    if not _uses_remote_storage():
         directory = _safe_child("chat", str(assignment_id))
         if directory.is_dir():
             shutil.rmtree(directory)
         return
 
     prefix = f"{settings.media_cos_prefix.strip('/')}/chat/{assignment_id}/"
+    if _uses_cloudbase_pg():
+        cursor = ""
+        while True:
+            payload: dict[str, object] = {"prefix": prefix, "limit": 1000}
+            if cursor:
+                payload["cursor"] = cursor
+            listed = _cloudbase_request(
+                "POST",
+                f"/v1/storages/object/list/{_cloudbase_bucket_path()}",
+                json=payload,
+            )
+            if listed.status_code != 200:
+                raise MediaStorageError("CloudBase 会话图片列举失败")
+            try:
+                result = listed.json()
+            except ValueError as exc:
+                raise MediaStorageError("CloudBase 会话图片列举结果无效") from exc
+            if not isinstance(result, dict):
+                raise MediaStorageError("CloudBase 会话图片列举结果无效")
+            keys: list[str] = []
+            for item in result.get("objects") or []:
+                if not isinstance(item, dict):
+                    continue
+                key = str(item.get("key") or item.get("name") or "")
+                if key.startswith(prefix):
+                    keys.append(key)
+            for start in range(0, len(keys), 100):
+                deleted = _cloudbase_request(
+                    "DELETE",
+                    f"/v1/storages/object/{_cloudbase_bucket_path()}",
+                    json={"prefixes": keys[start:start + 100]},
+                )
+                if deleted.status_code != 200:
+                    raise MediaStorageError("CloudBase 会话图片清理失败")
+            if not result.get("hasNext"):
+                break
+            next_cursor = str(result.get("nextCursor") or "")
+            if not next_cursor or next_cursor == cursor:
+                raise MediaStorageError("CloudBase 会话图片列举结果缺少分页游标")
+            cursor = next_cursor
+        return
+
     marker = ""
     try:
         while True:
@@ -401,7 +526,7 @@ def media_path_for_request(
     filename: str,
     assignment_id: Optional[int] = None,
 ) -> Optional[Path]:
-    if _uses_cos():
+    if _uses_remote_storage():
         return None
     if kind == "chat":
         if assignment_id is None or assignment_id < 1 or not _SAFE_FILENAME.fullmatch(filename):
@@ -419,8 +544,8 @@ def media_bytes_for_request(
     filename: str,
     assignment_id: Optional[int] = None,
 ) -> Optional[bytes]:
-    """Read a bounded local or COS object after the API signature is checked."""
-    if not _uses_cos():
+    """Read a bounded local or remote object after the API signature is checked."""
+    if not _uses_remote_storage():
         path = media_path_for_request(kind, filename, assignment_id)
         if not path or not path.is_file():
             return None
@@ -437,6 +562,17 @@ def media_bytes_for_request(
     if not _SAFE_FILENAME.fullmatch(filename):
         return None
     key = _cos_key(kind, filename, assignment_id)
+    if _uses_cloudbase_pg():
+        response = _cloudbase_request("GET", _cloudbase_object_path(key))
+        if response.status_code == 404:
+            return None
+        if response.status_code != 200:
+            raise MediaStorageError("CloudBase 图片读取失败")
+        data = response.content
+        limit = max(settings.avatar_max_bytes, settings.chat_image_max_bytes) + 1
+        if len(data) >= limit:
+            raise MediaStorageError("CloudBase 图片大小超出服务端限制")
+        return data
     try:
         response = _cos_client().get_object(Bucket=settings.media_cos_bucket, Key=key)
         stream = response["Body"].get_raw_stream()

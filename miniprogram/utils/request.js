@@ -2,6 +2,7 @@
 const config = require('./config.js');
 const { networkError } = require('./network-error.js');
 const mock = require('./mock.js');
+const transport = require('./transport.js');
 
 // 简易 URL → mock 数据 路由（按 URL 前缀匹配）
 const mockRoutes = [
@@ -128,9 +129,6 @@ function request({ url, method = 'GET', data = {}, header = {}, showLoading = tr
   const app = getApp();
   const token = wx.getStorageSync('token') || '';
 
-  // 实际后端地址（本地开发）
-  const apiBase = config.apiBase;
-
   if (showLoading) {
     wx.showLoading({ title: '加载中', mask: true });
   }
@@ -143,8 +141,8 @@ function request({ url, method = 'GET', data = {}, header = {}, showLoading = tr
   }
 
   return new Promise((resolve, reject) => {
-    wx.request({
-      url: (url.startsWith('http') ? '' : apiBase) + url,
+    transport.send({
+      url,
       method,
       timeout: 10000,
       data,

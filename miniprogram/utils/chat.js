@@ -1,6 +1,7 @@
 // utils/chat.js
 // 聊天相关 API 封装
 const { request } = require('./api.js');
+const transport = require('./transport.js');
 
 /**
  * 患者：获取/自动分配我的医生
@@ -97,11 +98,10 @@ function uploadChatImage(filePath, assignmentId) {
   if (!Number.isInteger(Number(assignmentId)) || Number(assignmentId) < 1) {
     return Promise.reject(new Error('聊天会话无效，请刷新后重试'));
   }
-  const baseUrl = require('./api.js').getBaseUrl();
   const token = wx.getStorageSync('token');
   return new Promise((resolve, reject) => {
-    wx.uploadFile({
-      url: `${baseUrl}/chat/upload-image`,
+    transport.uploadFile({
+      url: '/chat/upload-image',
       filePath,
       name: 'file',
       formData: { assignment_id: String(assignmentId) },

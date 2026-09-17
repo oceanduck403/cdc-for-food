@@ -2,17 +2,23 @@
 const config = require('./utils/config.js');
 const auth = require('./utils/auth.js');
 const appointments = require('./utils/appointments.js');
+const transport = require('./utils/transport.js');
 
 App({
   globalData: {
     userInfo: null,
     token: '',
-    apiBase: config.apiBase,
     systemInfo: null,
     dailyAnalysisCount: 0
   },
 
   onLaunch() {
+    // 正式环境统一从小程序私有链路访问 CloudBase 云托管。
+    try {
+      transport.initCloud();
+    } catch (error) {
+      console.warn('[CloudBase] 初始化失败', error);
+    }
     // 恢复登录态
     const token = wx.getStorageSync('token');
     if (token) {

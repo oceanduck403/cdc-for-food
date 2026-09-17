@@ -2,6 +2,7 @@
 const { request } = require('../../utils/request.js');
 const storage = require('../../utils/storage.js');
 const config = require('../../utils/config.js');
+const transport = require('../../utils/transport.js');
 const { bmrMifflin, tdee } = require('../../utils/nutrition.js');
 
 const activityOptions = [
@@ -19,8 +20,9 @@ const defaultProfile = {
 function avatarUrl(path) {
   if (!path) return '';
   if (/^(https?:|wxfile:|cloud:|data:)/i.test(path)) return path;
-  if (path.startsWith('/') && config.baseUrl) return `${config.baseUrl}${path}`;
-  return path;
+  const base = transport.getDirectBaseUrl ? transport.getDirectBaseUrl() : config.baseUrl;
+  if (path.startsWith('/') && base) return `${base}${path}`;
+  return '';
 }
 
 function calcBmiResult(h, w) {
@@ -66,6 +68,11 @@ Page({
       sexIndex: merged.sex === 'female' ? 1 : 0,
       bmiResult: calcBmiResult(Number(merged.heightCm), Number(merged.weightKg)),
     }, () => this.recalc());
+    if (merged.avatar && !this.data.avatarDisplayUrl && transport.resolveMediaUrl) {
+      transport.resolveMediaUrl(merged.avatar).then((resolved) => {
+        if (this.data.profile.avatar === merged.avatar) this.setData({ avatarDisplayUrl: resolved });
+      }).catch(() => {});
+    }
   },
 
   loadProfile() {
@@ -118,8 +125,8 @@ Page({
   uploadAvatar(filePath) {
     this.setData({ savingAvatar: true });
     wx.showLoading({ title: '保存头像中', mask: true });
-    wx.uploadFile({
-      url: `${config.apiBase}/users/me/avatar`, filePath, name: 'file',
+    transport.uploadFile({
+      url: '/users/me/avatar', filePath, name: 'file',
       header: { Authorization: `Bearer ${storage.get('token')}` }, timeout: 20000,
       success: (result) => {
         let payload;

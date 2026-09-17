@@ -1,13 +1,13 @@
 // utils/api.js
 // 后端 API 集中管理
 // ─────────────────────────────────────────────────
-//  后端地址统一读取 config.js 的 apiBase，手机联调不能使用 localhost。
+//  正式版由 transport.js 统一走 CloudBase 私有链路；开发版可临时直连。
 // ─────────────────────────────────────────────────
-const config = require('./config.js');
 const { networkError } = require('./network-error.js');
+const transport = require('./transport.js');
 
 function getBaseUrl() {
-  return config.apiBase;
+  return transport.getDirectBaseUrl();
 }
 
 // 通用请求封装
@@ -31,15 +31,14 @@ function request(urlOrOptions, maybeMethod, maybeData, maybeHeader, maybeAuth) {
   }
 
   const { url = '', method = 'GET', data, header = {}, auth = true } = options;
-  const fullUrl = url.startsWith('http') ? url : `${getBaseUrl()}${url}`;
   const token = wx.getStorageSync('token');
   const finalHeader = { 'Content-Type': 'application/json', ...header };
   if (auth && token) {
     finalHeader['Authorization'] = `Bearer ${token}`;
   }
   return new Promise((resolve, reject) => {
-    wx.request({
-      url: fullUrl,
+    transport.send({
+      url,
       method,
       timeout: 10000,
       data,

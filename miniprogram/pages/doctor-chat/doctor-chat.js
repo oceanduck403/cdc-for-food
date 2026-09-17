@@ -1,7 +1,7 @@
 // pages/doctor-chat/doctor-chat.js
 // 医生与患者的聊天窗口（含会诊邀请）
 const chatApi = require('../../utils/chat.js');
-const config = require('../../utils/config.js');
+const transport = require('../../utils/transport.js');
 
 Page({
   data: {
@@ -59,12 +59,11 @@ Page({
     if (!this.data.assignmentId) return;
     try {
       const data = await chatApi.fetchMessages({ assignment_id: this.data.assignmentId, limit: 100 });
-      const base = config.baseUrl || '';
-      const messages = (data.messages || []).map(m => ({
+      const messages = await Promise.all((data.messages || []).map(async m => ({
         ...m,
-        image_url_full: m.image_url ? (m.image_url.startsWith('http') ? m.image_url : base + m.image_url) : null,
+        image_url_full: m.image_url ? await transport.resolveMediaUrl(m.image_url).catch(() => '') : null,
         time_str: this.formatTime(m.created_at),
-      }));
+      })));
       this.setData({
         messages,
         loading: false,
@@ -130,13 +129,14 @@ Page({
         try {
           const uploaded = await chatApi.uploadChatImage(filePath, this.data.assignmentId);
           wx.hideLoading();
+          const imageUrl = await transport.resolveMediaUrl(uploaded.url).catch(() => '');
           let messages = [...this.data.messages, {
             id: uploaded.id,
             sender_role: 'doctor',
             msg_type: 'image',
             content: '[图片]',
             image_url: uploaded.url,
-            image_url_full: uploaded.url.startsWith('http') ? uploaded.url : `${config.baseUrl || ''}${uploaded.url}`,
+            image_url_full: imageUrl,
             created_at: uploaded.created_at,
             time_str: this.formatTime(uploaded.created_at),
           }];

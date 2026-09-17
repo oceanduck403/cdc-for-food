@@ -8,7 +8,7 @@ Railway 只保留为临时联调或灾备选项。正式环境优先采用：
 
 ```text
 微信小程序
-  └─ wx.request（首版）或 wx.cloud.callContainer（后续）
+  └─ wx.cloud.callContainer（正式版私有链路）
        └─ CloudBase 云托管：FastAPI 容器
             ├─ PostgreSQL
             ├─ CloudBase 云存储 / COS
@@ -18,15 +18,13 @@ Railway 只保留为临时联调或灾备选项。正式环境优先采用：
 
 ## 当前状态与不可代填项
 
-2026-09-15 使用当前小程序 AppID 做只读检查时，微信接口返回 `no cloud base privilege`。这表示该 AppID 尚未开通或关联可用的云开发环境。创建环境、确认计费和关联主体必须由小程序管理员在控制台完成。
+截至 2026-09-17，已创建 CloudBase PG 环境 `cdc-food-prod-d8gtxkdw22781847c`，云托管服务名确定为 `cdc-food-api`，小程序生产配置已经写入这两个非敏感标识。当前仍需在控制台完成服务端资源和密钥配置。
 
 当前还没有以下真实值，仓库中不得写假值：
 
-- CloudBase 环境 ID（`envId`）
-- 云托管服务名称（`serviceName`，创建后不能改名）
-- 云托管公网 HTTPS 地址（若首版使用 `wx.request`）
 - PostgreSQL 的连接地址、账号和密码
-- 轮换后的百炼 API Key
+- CloudBase 服务端 `service_role` API Key
+- 已轮换且未泄漏的百炼 API Key
 
 ## 资源选型
 
@@ -80,7 +78,18 @@ redis://:<密码>@<内网地址>:6379/0
 
 服务需要访问 `api.weixin.qq.com` 和 `dashscope.aliyuncs.com`。绑定 VPC 后必须验证这两个 HTTPS 出站请求；若关闭平台默认公网出口，应给子网配置 NAT 网关和路由。
 
-云托管实例会被重建和水平扩容，不能把用户头像、咨询图片或数据库文件永久保存在容器目录。当前代码在生产环境强制使用私有腾讯云 COS：上传图片经校验、内容安全检测和重编码后写入随机对象键，数据库只保存不透明引用，小程序通过后端短期签名代理读取；本地目录仅用于开发和测试。
+云托管实例会被重建和水平扩容，不能把用户头像、咨询图片或数据库文件永久保存在容器目录。PG 环境优先使用内置 CloudBase 云存储：设置 `MEDIA_STORAGE_BACKEND=cloudbase_pg`，在环境的“API 密钥”页创建服务端 API Key，并建立私有 `user-media` Bucket。这个 Key 仅限当前 CloudBase 环境，不需要创建账号级 CAM AccessKey；它属于 `service_role`，必须只放在云托管环境变量中。上传图片经校验、内容安全检测和重编码后写入随机对象键，数据库只保存不透明引用，小程序仍通过后端短期签名代理读取。
+
+如使用独立 COS，也可保留 `MEDIA_STORAGE_BACKEND=cos` 和 `MEDIA_COS_*` 配置。两种生产后端都禁止公开读，本地目录仅用于开发和测试。PG 内置云存储所需变量为：
+
+```text
+MEDIA_STORAGE_BACKEND=cloudbase_pg
+MEDIA_CLOUDBASE_ENV_ID=<环境 ID>
+MEDIA_CLOUDBASE_API_KEY=<服务端 API Key；仅放后端>
+MEDIA_CLOUDBASE_BUCKET=user-media
+MEDIA_CLOUDBASE_TIMEOUT_SECONDS=15
+MEDIA_COS_PREFIX=private/user-media
+```
 
 ## 创建环境和服务
 
@@ -97,54 +106,29 @@ redis://:<密码>@<内网地址>:6379/0
 可在提交前做不泄露密钥的静态校验：
 
 ```powershell
-python deploy/cloudbase/validate_config.py deploy/cloudbase/environment.local.json `
-  --api-base https://<真实云托管域名>/api/v1
+python deploy/cloudbase/validate_config.py deploy/cloudbase/environment.local.json
 ```
 
 校验器只报告字段问题，不打印字段值。
 
 ## 小程序接入方式
 
-### 首次上线：公网 HTTPS + `wx.request`
-
-这是当前代码改动最少、最容易完成全链路验收的方案。现有请求、头像上传、聊天图片上传和图片预览均基于 HTTP URL。
-
-1. 云托管开启公网 HTTPS 访问。
-2. 把 `miniprogram/utils/config.js` 的 `apiBase` 改为控制台给出的真实地址，并保留 `/api/v1`：
-
-   ```javascript
-   const apiBase = 'https://<真实云托管域名>/api/v1';
-   ```
-
-3. 在微信公众平台配置该 HTTPS 主机为 `request`、`uploadFile` 和 `downloadFile` 合法域名；不要填写路径 `/api/v1`。
-4. 真机确认登录、普通请求、头像上传、咨询图片上传和图片预览。
-
-这个方案能直接复用全部现有网络代码。若使用 CloudBase 默认域名还是自定义域名，以微信公众平台实际校验结果为准；自定义域名必须按官方要求完成备案。
-
-### 后续收口：`wx.cloud.callContainer`
-
-官方建议仅供小程序 / 公众号调用的服务使用 `wx.cloud.callContainer`。它走微信到云托管的专用链路，不消耗公网流量，也不需要在公众平台配置服务器域名。开通后需要：
+正式版已经统一使用 `wx.cloud.callContainer`。它走微信到云托管的专用链路，不消耗公网流量，也不需要在公众平台配置普通 `request`、`uploadFile` 或 `downloadFile` 合法域名：
 
 ```javascript
-wx.cloud.init({ env: '<真实 envId>' });
+wx.cloud.init({ env: 'cdc-food-prod-d8gtxkdw22781847c' });
 
 wx.cloud.callContainer({
-  config: { env: '<真实 envId>' },
+  config: { env: 'cdc-food-prod-d8gtxkdw22781847c' },
   path: '/health',
   method: 'GET',
   header: {
-    'X-WX-SERVICE': '<真实 serviceName>'
+    'X-WX-SERVICE': 'cdc-food-api'
   }
 });
 ```
 
-当前项目不能仅把 `apiBase` 替换成环境 ID 就完成迁移。需要先统一改造 `wx.request` 调用，并单独处理：
-
-- `wx.uploadFile` 的 multipart 文件上传
-- 返回图片 URL、头像 URL 和 `wx.previewImage`
-- 未来可能加入的文件下载或 WebSocket
-
-因此建议首次正式版本先用公网 HTTPS 跑通；体验版完整验证后，再把普通 JSON API 与 multipart 上传统一切到 `callContainer`，并关闭不需要的公网入口。
+`miniprogram/utils/transport.js` 已统一处理普通 JSON 请求、multipart 图片上传和私有图片下载缓存。体验版必须真机回归登录、头像、咨询图片及图片预览。开发版需要本地后端时，可通过 `__cdc_api_transport__` 与 `__cdc_api_base__` 两个本机存储项临时切换直连；体验版和正式版不会读取这个覆盖配置。
 
 ## 发布验收
 

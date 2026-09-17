@@ -49,7 +49,7 @@ docker compose up -d --build
 2. 修改 PostgreSQL 默认账号密码
 3. 关闭 `APP_ENV=development`
 4. 配置 `WECHAT_APPID` 与 `WECHAT_SECRET`
-5. 配置服务端 `QWEN_API_KEY` 与私有 COS 的 `MEDIA_COS_*` 参数
+5. 配置服务端 `QWEN_API_KEY` 与私有 CloudBase PG 云存储（或 COS）参数
 
 ## 生产环境
 
@@ -60,8 +60,8 @@ docker compose up -d --build
 - 应用：CloudBase 云托管运行根目录 Dockerfile
 - PostgreSQL：CloudBase PG 模式或同地域腾讯云 PostgreSQL，启用备份
 - Redis：当前版本不需要；后续确需缓存或分布式锁时再通过 VPC 接入
-- 文件：私有腾讯云 COS，不写入容器本地磁盘
-- 小程序接入：首版使用云托管公网 HTTPS，完成上传链路改造后可切换 `wx.cloud.callContainer`
+- 文件：私有 CloudBase PG 云存储或腾讯云 COS，不写入容器本地磁盘
+- 小程序接入：正式版使用 `wx.cloud.callContainer` 私有链路，开发版可在本机存储中临时切换直连
 - 域名与备案：若绑定自定义域名，使用单位主体并按平台要求备案
 
 ### 监控告警

@@ -1,6 +1,6 @@
 """Private media upload, authorization and signed URL regression tests."""
 from io import BytesIO
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, unquote, urlsplit
 from uuid import uuid4
 
 import pytest
@@ -76,6 +76,18 @@ class _FakeCosClient:
             "IsTruncated": "true" if len(matches) > len(page) else "false",
             "NextMarker": page[-1] if page else "",
         }
+
+
+class _FakeCloudBaseResponse:
+    def __init__(self, status_code: int, *, content: bytes = b"", payload=None):
+        self.status_code = status_code
+        self.content = content
+        self._payload = payload
+
+    def json(self):
+        if self._payload is None:
+            raise ValueError("not json")
+        return self._payload
 
 
 async def chat_session(db):
@@ -249,3 +261,80 @@ async def test_cos_chat_cleanup_is_limited_to_assignment_prefix(monkeypatch):
     assert first.object_key not in fake.objects
     assert second.object_key not in fake.objects
     assert retained.object_key in fake.objects
+
+
+async def test_cloudbase_pg_storage_is_private_persistent_and_scoped(
+    client,
+    monkeypatch,
+    tmp_path,
+):
+    objects: dict[str, bytes] = {}
+    calls: list[tuple[str, str]] = []
+    bucket_prefix = "/v1/storages/object/user-media/"
+
+    def request(method: str, path: str, **kwargs):
+        calls.append((method, path))
+        if path == "/v1/storages/object/list/user-media":
+            prefix = kwargs["json"]["prefix"]
+            matches = sorted(key for key in objects if key.startswith(prefix))
+            return _FakeCloudBaseResponse(
+                200,
+                payload={
+                    "objects": [{"key": key} for key in matches],
+                    "hasNext": False,
+                },
+            )
+        if path == "/v1/storages/object/user-media" and method == "DELETE":
+            for key in kwargs["json"]["prefixes"]:
+                objects.pop(key, None)
+            return _FakeCloudBaseResponse(200, payload=[])
+
+        assert path.startswith(bucket_prefix)
+        key = unquote(path.removeprefix(bucket_prefix))
+        if method == "POST":
+            assert kwargs["headers"]["Content-Type"] == "image/jpeg"
+            objects[key] = bytes(kwargs["content"])
+            return _FakeCloudBaseResponse(200, payload={"Key": key})
+        if method == "GET":
+            if key not in objects:
+                return _FakeCloudBaseResponse(404)
+            return _FakeCloudBaseResponse(200, content=objects[key])
+        if method == "DELETE":
+            objects.pop(key, None)
+            return _FakeCloudBaseResponse(200, payload={"message": "ok"})
+        raise AssertionError(f"unexpected call: {method} {path}")
+
+    monkeypatch.setattr(settings, "media_storage_backend", "cloudbase_pg")
+    monkeypatch.setattr(settings, "media_storage_dir", str(tmp_path / "must-not-exist"))
+    monkeypatch.setattr(settings, "media_cloudbase_bucket", "user-media")
+    monkeypatch.setattr(settings, "media_cos_prefix", "private/user-media")
+    monkeypatch.setattr(media_service, "_cloudbase_request", request)
+
+    ensure_media_directories()
+    assert not (tmp_path / "must-not-exist").exists()
+
+    content = jpeg_bytes()
+    avatar = store_avatar(content)
+    first = store_chat_image(content, 41)
+    second = store_chat_image(content, 41)
+    retained = store_chat_image(content, 42)
+
+    assert avatar.object_key in objects
+    assert first.object_key in objects
+    assert second.object_key in objects
+    assert retained.object_key in objects
+
+    url = signed_media_url(avatar.reference)
+    assert url and url.startswith("/api/v1/media/avatar/")
+    assert avatar.object_key not in url
+    response = await client.get(url)
+    assert response.status_code == 200
+    assert response.content == content
+
+    delete_managed_media(avatar.reference)
+    delete_chat_assignment_media(41)
+    assert avatar.object_key not in objects
+    assert first.object_key not in objects
+    assert second.object_key not in objects
+    assert retained.object_key in objects
+    assert any(path == "/v1/storages/object/list/user-media" for _, path in calls)

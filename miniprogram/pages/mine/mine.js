@@ -4,12 +4,14 @@ const config = require('../../utils/config.js');
 const navigation = require('../../utils/navigation.js');
 const auth = require('../../utils/auth.js');
 const { request } = require('../../utils/api.js');
+const transport = require('../../utils/transport.js');
 
 function avatarDisplayUrl(avatar) {
   if (!avatar) return '';
   if (avatar.startsWith('//')) return `https:${avatar}`;
   if (/^(https?:|wxfile:|cloud:|data:)/i.test(avatar)) return avatar;
-  return avatar.startsWith('/') && config.baseUrl ? `${config.baseUrl}${avatar}` : avatar;
+  const base = transport.getDirectBaseUrl ? transport.getDirectBaseUrl() : config.baseUrl;
+  return avatar.startsWith('/') && base ? `${base}${avatar}` : '';
 }
 
 function confirmModal(options) {
@@ -66,6 +68,14 @@ Page({
     if (token && token.startsWith('demo-')) token = '';
     const bmi = this.calcBmi(profile);
     this.setData({ profile: { ...profile, avatarDisplayUrl: avatarDisplayUrl(profile.avatar) }, isLogin: !!token, bmi });
+    if (profile.avatar && !this.data.profile.avatarDisplayUrl && transport.resolveMediaUrl) {
+      const source = profile.avatar;
+      transport.resolveMediaUrl(source).then((resolved) => {
+        if (this.data.profile && this.data.profile.avatar === source) {
+          this.setData({ 'profile.avatarDisplayUrl': resolved });
+        }
+      }).catch(() => {});
+    }
   },
 
   calcBmi(profile) {

@@ -104,8 +104,12 @@ test('原生导航卡片包含模板 ID 和编码后的标题', async () => {
 
 test('接口地址统一使用配置，切换服务器无需修改请求封装', async () => {
   const calls = [], config = { apiBase: 'http://192.168.0.102:8000/api/v1' };
-  const sandbox = { module: { exports: {} }, require: () => config, wx: {
-    getStorageSync: () => '', request: options => { calls.push(options); options.success({ statusCode: 200, data: {} }); },
+  const transport = { getDirectBaseUrl: () => config.apiBase.replace(/\/api\/v1$/, ''), send: options => {
+    calls.push({ ...options, url: config.apiBase + options.url });
+    options.success({ statusCode: 200, data: {} });
+  } };
+  const sandbox = { module: { exports: {} }, require: name => name.includes('transport') ? transport : name.includes('config') ? config : { networkError: e => e }, wx: {
+    getStorageSync: () => '',
   } };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../utils/api.js'), 'utf8'), sandbox);
   await sandbox.module.exports.request('/survey/templates');

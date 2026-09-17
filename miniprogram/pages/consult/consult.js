@@ -2,8 +2,8 @@ const navigation = require('../../utils/navigation.js');
 // pages/consult/consult.js
 // 患者端：与分配的医生一对一聊天（类似美团线上问诊）
 const chatApi = require('../../utils/chat.js');
-const config = require('../../utils/config.js');
 const appointments = require('../../utils/appointments.js');
+const transport = require('../../utils/transport.js');
 
 const app = getApp();
 
@@ -74,12 +74,11 @@ Page({
     try {
       const data = await chatApi.fetchMessages({ assignment_id: this.data.assignmentId, limit: 100 });
       if (assignmentId !== this.data.assignmentId || !this._visible) return;
-      const base = config.baseUrl || '';
-      const messages = (data.messages || []).map(m => ({
+      const messages = await Promise.all((data.messages || []).map(async m => ({
         ...m,
-        image_url_full: m.image_url ? (m.image_url.startsWith('http') ? m.image_url : base + m.image_url) : null,
+        image_url_full: m.image_url ? await transport.resolveMediaUrl(m.image_url).catch(() => '') : null,
         time_str: this.formatTime(m.created_at),
-      }));
+      })));
       const last = messages[messages.length - 1];
       const previous = this.data.messages[this.data.messages.length - 1];
       this.setData({ messages, ...(last && (!previous || last.id !== previous.id)
@@ -150,13 +149,14 @@ Page({
         try {
           const uploaded = await chatApi.uploadChatImage(filePath, this.data.assignmentId);
           wx.hideLoading();
+          const imageUrl = await transport.resolveMediaUrl(uploaded.url).catch(() => '');
           const messages = [...this.data.messages, {
             id: uploaded.id,
             sender_role: 'patient',
             msg_type: 'image',
             content: '[图片]',
             image_url: uploaded.url,
-            image_url_full: uploaded.url.startsWith('http') ? uploaded.url : `${config.baseUrl || ''}${uploaded.url}`,
+            image_url_full: imageUrl,
             created_at: uploaded.created_at,
           }];
           this.setData({

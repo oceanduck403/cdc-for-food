@@ -36,8 +36,8 @@ class Settings(BaseSettings):
     daily_analysis_limit_per_user: int = 20
     image_max_bytes: int = 1024 * 1024
 
-    # 用户媒体。开发/测试默认写入本地私有目录；生产必须使用私有 COS
-    # 存储桶，避免云托管容器重启或扩容时丢失文件。
+    # 用户媒体。开发/测试默认写入本地私有目录；生产可使用私有 COS，
+    # 或 PG 环境内置的 CloudBase Storage API，避免容器重启或扩容丢失文件。
     media_storage_backend: str = "local"
     media_storage_dir: str = "uploads"
     media_url_ttl_seconds: int = 15 * 60
@@ -50,6 +50,10 @@ class Settings(BaseSettings):
     media_cos_bucket: str = ""
     media_cos_token: str = ""
     media_cos_prefix: str = "private/user-media"
+    media_cloudbase_env_id: str = ""
+    media_cloudbase_api_key: str = ""
+    media_cloudbase_bucket: str = "user-media"
+    media_cloudbase_timeout_seconds: float = 15.0
 
     @model_validator(mode="after")
     def validate_runtime_configuration(self) -> "Settings":
@@ -58,8 +62,8 @@ class Settings(BaseSettings):
         if self.app_env not in {"development", "test", "production"}:
             raise ValueError("APP_ENV 只能是 development、test 或 production")
         self.media_storage_backend = self.media_storage_backend.strip().lower()
-        if self.media_storage_backend not in {"local", "cos"}:
-            raise ValueError("MEDIA_STORAGE_BACKEND 只能是 local 或 cos")
+        if self.media_storage_backend not in {"local", "cos", "cloudbase_pg"}:
+            raise ValueError("MEDIA_STORAGE_BACKEND 只能是 local、cos 或 cloudbase_pg")
         if not self.media_storage_dir.strip():
             raise ValueError("MEDIA_STORAGE_DIR 不能为空")
         if not 60 <= self.media_url_ttl_seconds <= 3600:
@@ -68,6 +72,8 @@ class Settings(BaseSettings):
             raise ValueError("用户图片大小上限配置过小")
         if self.media_max_pixels < 1024:
             raise ValueError("MEDIA_MAX_PIXELS 配置过小")
+        if not 1 <= self.media_cloudbase_timeout_seconds <= 60:
+            raise ValueError("MEDIA_CLOUDBASE_TIMEOUT_SECONDS 必须在 1 到 60 秒之间")
         self.media_cos_prefix = self.media_cos_prefix.strip().strip("/")
         if not self.media_cos_prefix or not re.fullmatch(
             r"[A-Za-z0-9][A-Za-z0-9._/-]{0,190}", self.media_cos_prefix
@@ -122,23 +128,45 @@ class Settings(BaseSettings):
             errors.append("QWEN_BASE_URL 必须使用 HTTPS")
         if not self.qwen_model.strip():
             errors.append("QWEN_MODEL 不能为空")
-        if self.media_storage_backend != "cos":
-            errors.append("MEDIA_STORAGE_BACKEND 生产环境必须设为 cos，不能依赖容器临时磁盘")
-        cos_values = {
-            "MEDIA_COS_SECRET_ID": self.media_cos_secret_id,
-            "MEDIA_COS_SECRET_KEY": self.media_cos_secret_key,
-            "MEDIA_COS_REGION": self.media_cos_region,
-            "MEDIA_COS_BUCKET": self.media_cos_bucket,
-        }
-        for name, value in cos_values.items():
-            if not value.strip():
-                errors.append(f"{name} 必须配置")
-        if self.media_cos_region and not re.fullmatch(r"[a-z0-9-]{3,64}", self.media_cos_region):
-            errors.append("MEDIA_COS_REGION 格式无效")
-        if self.media_cos_bucket and not re.fullmatch(
-            r"[a-z0-9][a-z0-9-]{0,48}-[0-9]{5,20}", self.media_cos_bucket
-        ):
-            errors.append("MEDIA_COS_BUCKET 必须是包含 APPID 的完整私有存储桶名称")
+        if self.media_storage_backend == "local":
+            errors.append(
+                "MEDIA_STORAGE_BACKEND 生产环境必须设为 cos 或 cloudbase_pg，不能依赖容器临时磁盘"
+            )
+        elif self.media_storage_backend == "cos":
+            cos_values = {
+                "MEDIA_COS_SECRET_ID": self.media_cos_secret_id,
+                "MEDIA_COS_SECRET_KEY": self.media_cos_secret_key,
+                "MEDIA_COS_REGION": self.media_cos_region,
+                "MEDIA_COS_BUCKET": self.media_cos_bucket,
+            }
+            for name, value in cos_values.items():
+                if not value.strip():
+                    errors.append(f"{name} 必须配置")
+            if self.media_cos_region and not re.fullmatch(
+                r"[a-z0-9-]{3,64}", self.media_cos_region
+            ):
+                errors.append("MEDIA_COS_REGION 格式无效")
+            if self.media_cos_bucket and not re.fullmatch(
+                r"[a-z0-9][a-z0-9-]{0,48}-[0-9]{5,20}", self.media_cos_bucket
+            ):
+                errors.append("MEDIA_COS_BUCKET 必须是包含 APPID 的完整私有存储桶名称")
+        elif self.media_storage_backend == "cloudbase_pg":
+            cloudbase_values = {
+                "MEDIA_CLOUDBASE_ENV_ID": self.media_cloudbase_env_id,
+                "MEDIA_CLOUDBASE_API_KEY": self.media_cloudbase_api_key,
+                "MEDIA_CLOUDBASE_BUCKET": self.media_cloudbase_bucket,
+            }
+            for name, value in cloudbase_values.items():
+                if not value.strip():
+                    errors.append(f"{name} 必须配置")
+            if self.media_cloudbase_env_id and not re.fullmatch(
+                r"[A-Za-z0-9][A-Za-z0-9-]{2,127}", self.media_cloudbase_env_id
+            ):
+                errors.append("MEDIA_CLOUDBASE_ENV_ID 格式无效")
+            if self.media_cloudbase_bucket and not re.fullmatch(
+                r"[A-Za-z0-9][A-Za-z0-9._-]{0,99}", self.media_cloudbase_bucket
+            ):
+                errors.append("MEDIA_CLOUDBASE_BUCKET 格式无效")
         bootstrap_username = self.admin_bootstrap_username.strip()
         bootstrap_password = self.admin_bootstrap_password
         if bool(bootstrap_username) != bool(bootstrap_password):

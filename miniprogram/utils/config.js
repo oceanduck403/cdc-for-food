@@ -9,13 +9,47 @@ const knowledgeBase = {
   baseUrl: 'https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/sync/data',
 };
 
-// 同一 Wi-Fi 下的手机联调地址；电脑 IP 改变时只需修改这里。
-// 体验版/正式版须换成已配置合法域名的公网 HTTPS 服务。
-const apiBase = 'http://192.168.0.102:8000/api/v1';
+// 正式包通过 CloudBase 云托管私有链路访问后端，无需配置 request 合法域名。
+// 本地联调如需直连，在开发者工具控制台写入以下两个仅本机生效的配置：
+//   wx.setStorageSync('__cdc_api_transport__', 'direct')
+//   wx.setStorageSync('__cdc_api_base__', 'http://电脑局域网IP:8000/api/v1')
+// 直连覆盖只在开发版生效，体验版和正式版始终使用云托管。
+const apiTransport = 'cloud';
+const apiBase = '';
+const cloud = {
+  envId: 'cdc-food-prod-d8gtxkdw22781847c',
+  service: 'cdc-food-api',
+  apiPrefix: '/api/v1',
+};
+
+function accountEnvVersion() {
+  try {
+    if (typeof wx !== 'undefined' && wx.getAccountInfoSync) {
+      return wx.getAccountInfoSync().miniProgram.envVersion || '';
+    }
+  } catch (_) {}
+  return '';
+}
+
+function getApiRuntime() {
+  const runtime = { mode: apiTransport, apiBase, cloud };
+  if (accountEnvVersion() !== 'develop') return runtime;
+  try {
+    const mode = wx.getStorageSync('__cdc_api_transport__');
+    const directBase = wx.getStorageSync('__cdc_api_base__');
+    if (mode === 'direct' && /^https?:\/\//i.test(directBase || '')) {
+      return { ...runtime, mode: 'direct', apiBase: String(directBase).replace(/\/$/, '') };
+    }
+  } catch (_) {}
+  return runtime;
+}
 
 module.exports = {
   apiBase,
-  baseUrl: apiBase.replace(/\/api\/v1\/?$/, ''),
+  baseUrl: '',
+  apiTransport,
+  cloud,
+  getApiRuntime,
   useMock,
   knowledgeBase,
 

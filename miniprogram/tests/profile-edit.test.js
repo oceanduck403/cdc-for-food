@@ -41,6 +41,11 @@ function harness() {
     require: name => name.includes('request.js') ? { request }
       : name.includes('storage.js') ? storage
       : name.includes('config.js') ? { apiBase: 'https://api.example.test/api/v1', baseUrl: 'https://api.example.test' }
+      : name.includes('transport.js') ? {
+        getDirectBaseUrl: () => 'https://api.example.test',
+        resolveMediaUrl: value => Promise.resolve(`https://api.example.test${value}`),
+        uploadFile: options => wx.uploadFile({ ...options, url: `https://api.example.test/api/v1${options.url}` }),
+      }
       : name.includes('nutrition.js') ? { bmrMifflin: () => 1000, tdee: () => 1200 }
       : {},
   };
