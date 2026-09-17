@@ -57,7 +57,7 @@ $appCredential = Get-Credential -Message "CDC-Food 应用数据库账号"
   -Apply -LeaveRunning
 ```
 
-初始化脚本不会注册 Windows 服务。服务器重启后的自动启动方式应在确认专用运行账号与恢复方案后单独配置，不能复用或修改已有服务。
+初始化使用跨 Windows 区域设置稳定的 `C` locale，数据库文本仍统一使用 UTF-8。脚本不会注册 Windows 服务；服务器重启后的自动启动由下方两个唯一命名的计划任务负责，不能复用或修改已有任务或服务。
 
 从一份干净的仓库副本创建发布。第一次先省略 `-Apply` 查看计划：
 

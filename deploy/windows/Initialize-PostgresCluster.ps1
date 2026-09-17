@@ -86,7 +86,8 @@ try {
 
     Invoke-CheckedNative -Executable $initDb -Arguments @(
         "--pgdata=$data", "--username=$($ClusterCredential.UserName)",
-        "--encoding=UTF8", "--auth-host=scram-sha-256", "--auth-local=scram-sha-256",
+        "--encoding=UTF8", "--locale=C",
+        "--auth-host=scram-sha-256", "--auth-local=scram-sha-256",
         "--pwfile=$passwordFile"
     ) -FailureMessage "initdb 失败"
 
@@ -150,4 +151,3 @@ finally {
 }
 
 Write-Host "隔离 PostgreSQL 集群已初始化：$data" -ForegroundColor Green
-
