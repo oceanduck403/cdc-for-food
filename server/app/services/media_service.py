@@ -1,12 +1,12 @@
 """Private user-media validation, persistence and short-lived access.
 
-Development and tests use a private local directory. Production uses either a
-private Tencent COS bucket or the CloudBase PG Storage HTTP API so container
-replacement or horizontal scaling cannot lose patient avatars or consultation
-images. Database rows store opaque references; callers only receive
-application URLs protected by a short-lived HMAC. The application proxies
-bounded object bytes after checking that HMAC, so the mini program never needs
-a public bucket or a storage credential.
+Development and tests use a private local directory. A fixed-disk self-hosted
+deployment may explicitly use an absolute persistent local directory;
+container platforms use either a private Tencent COS bucket or the CloudBase
+PG Storage HTTP API. Database rows store opaque references; callers only
+receive application URLs protected by a short-lived HMAC. The application
+proxies bounded object bytes after checking that HMAC, so the mini program
+never needs a public bucket or a storage credential.
 """
 from __future__ import annotations
 
@@ -68,17 +68,39 @@ def _uses_remote_storage() -> bool:
 
 
 def media_root() -> Path:
-    """Return the private local root used outside production."""
-    return Path(settings.media_storage_dir).expanduser().resolve()
+    """Return the canonical private root for either local storage mode."""
+    configured = Path(settings.media_storage_dir).expanduser()
+    if (
+        settings.media_storage_backend == "local_persistent"
+        and not configured.is_absolute()
+    ):
+        # Settings rejects this at startup. Keep the storage boundary intact if
+        # configuration is replaced or monkeypatched after validation.
+        raise MediaStorageError("持久化媒体目录必须使用绝对路径")
+    root = configured.resolve()
+    if settings.media_storage_backend == "local_persistent" and root == Path(root.anchor):
+        raise MediaStorageError("持久化媒体目录不能使用文件系统根目录")
+    return root
+
+
+def _make_private_directory(directory: Path, *, parents: bool = False) -> None:
+    directory.mkdir(parents=parents, exist_ok=True, mode=0o700)
+    try:
+        directory.chmod(0o700)
+    except OSError:
+        # Windows permissions are applied to the service directory ACL during
+        # deployment; chmod remains useful on POSIX self-hosted installations.
+        pass
 
 
 def ensure_media_directories() -> None:
-    """Prepare local storage without creating container media dirs for COS."""
+    """Prepare private local storage; remote backends create no local media dirs."""
     if _uses_remote_storage():
         return
     root = media_root()
-    (root / "avatar").mkdir(parents=True, exist_ok=True)
-    (root / "chat").mkdir(parents=True, exist_ok=True)
+    _make_private_directory(root, parents=True)
+    _make_private_directory(root / "avatar")
+    _make_private_directory(root / "chat")
 
 
 def _safe_child(*parts: str) -> Path:
@@ -224,7 +246,7 @@ async def read_normalized_image(
 
 
 def _write_private_image(data: bytes, directory: Path) -> tuple[str, Path]:
-    directory.mkdir(parents=True, exist_ok=True)
+    _make_private_directory(directory, parents=True)
     filename = f"{secrets.token_hex(32)}.jpg"
     destination = directory / filename
     temporary = directory / f".{filename}.{secrets.token_hex(8)}.tmp"

@@ -21,6 +21,7 @@ for stream in (sys.stdout, sys.stderr):
 
 REQUIRED = {
     "APP_ENV",
+    "APP_LOG_DIR",
     "JWT_SECRET",
     "DATABASE_URL",
     "WECHAT_APPID",
@@ -58,6 +59,12 @@ def validate(values: dict[str, object], api_base: str | None) -> list[str]:
 
     if str(values.get("APP_ENV", "")).strip().lower() != "production":
         errors.append("APP_ENV 必须为 production")
+
+    app_log_dir = str(values.get("APP_LOG_DIR", "")).strip()
+    if not is_placeholder(app_log_dir) and not (
+        app_log_dir.startswith("/") or re.match(r"^[A-Za-z]:[\\/]", app_log_dir)
+    ):
+        errors.append("APP_LOG_DIR 在生产环境必须是绝对路径")
 
     jwt_secret = str(values.get("JWT_SECRET", ""))
     if not is_placeholder(jwt_secret) and len(jwt_secret) < 32:

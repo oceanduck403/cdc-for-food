@@ -1,4 +1,4 @@
-// CloudBase 云托管 / 本地直连的统一传输层。
+// 云托管 / 自建 HTTPS / 本地直连的统一传输层。
 const config = require('./config.js');
 
 let cloudInitialized = false;
@@ -29,7 +29,7 @@ function cloudPath(url, current) {
 function directUrl(url, current) {
   if (isAbsoluteUrl(url)) return url;
   const base = String(current.apiBase || '').replace(/\/$/, '');
-  if (!base) throw new Error('本地接口地址未配置');
+  if (!base) throw new Error('接口地址未配置，请使用发布脚本生成可上传的小程序包');
   return `${base}${String(url || '').startsWith('/') ? '' : '/'}${url || ''}`;
 }
 

@@ -1,5 +1,6 @@
 // demo 模式开关：true 时 request 失败不报错，返回 mock 数据
 const useMock = false;
+const releaseRuntime = require('./release-runtime.js');
 
 // ── 知识库配置（GitHub 托管，GitHub Actions 自动同步）──────────
 //    将 enabled 改为 true 启用外部知识库
@@ -9,18 +10,15 @@ const knowledgeBase = {
   baseUrl: 'https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/sync/data',
 };
 
-// 正式包通过 CloudBase 云托管私有链路访问后端，无需配置 request 合法域名。
-// 本地联调如需直连，在开发者工具控制台写入以下两个仅本机生效的配置：
+// 体验版/正式版的后端地址由 deploy/selfhost/build_miniprogram.js 注入构建产物。
+// 源码不保存生产地址，也不绑定某个 CloudBase 环境。
+// 本地联调可在开发者工具控制台写入以下两个仅本机生效的配置：
 //   wx.setStorageSync('__cdc_api_transport__', 'direct')
 //   wx.setStorageSync('__cdc_api_base__', 'http://电脑局域网IP:8000/api/v1')
-// 直连覆盖只在开发版生效，体验版和正式版始终使用云托管。
-const apiTransport = 'cloud';
-const apiBase = '';
-const cloud = {
-  envId: 'cdc-food-prod-d8gtxkdw22781847c',
-  service: 'cdc-food-api',
-  apiPrefix: '/api/v1',
-};
+// 直连覆盖只在开发版生效；体验版和正式版始终使用构建时注入的 HTTPS 地址。
+const apiTransport = releaseRuntime.apiTransport;
+const apiBase = releaseRuntime.apiBase;
+const cloud = releaseRuntime.cloud;
 
 function accountEnvVersion() {
   try {

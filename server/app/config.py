@@ -1,5 +1,6 @@
 """应用配置（从环境变量加载）"""
 from functools import lru_cache
+from pathlib import Path
 import re
 
 from pydantic import model_validator
@@ -14,6 +15,7 @@ class Settings(BaseSettings):
     app_host: str = "0.0.0.0"
     app_port: int = 8000
     log_level: str = "INFO"
+    app_log_dir: str = "logs"
 
     jwt_secret: str = "change-me"
     jwt_algorithm: str = "HS256"
@@ -36,8 +38,8 @@ class Settings(BaseSettings):
     daily_analysis_limit_per_user: int = 20
     image_max_bytes: int = 1024 * 1024
 
-    # 用户媒体。开发/测试默认写入本地私有目录；生产可使用私有 COS，
-    # 或 PG 环境内置的 CloudBase Storage API，避免容器重启或扩容丢失文件。
+    # 用户媒体。开发/测试默认写入本地私有目录；固定磁盘上的自建生产环境
+    # 可显式使用 local_persistent，托管环境则使用私有 COS 或 CloudBase Storage。
     media_storage_backend: str = "local"
     media_storage_dir: str = "uploads"
     media_url_ttl_seconds: int = 15 * 60
@@ -61,10 +63,21 @@ class Settings(BaseSettings):
         self.app_env = self.app_env.strip().lower()
         if self.app_env not in {"development", "test", "production"}:
             raise ValueError("APP_ENV 只能是 development、test 或 production")
+        self.app_log_dir = self.app_log_dir.strip()
+        if not self.app_log_dir:
+            raise ValueError("APP_LOG_DIR 不能为空")
         self.media_storage_backend = self.media_storage_backend.strip().lower()
-        if self.media_storage_backend not in {"local", "cos", "cloudbase_pg"}:
-            raise ValueError("MEDIA_STORAGE_BACKEND 只能是 local、cos 或 cloudbase_pg")
-        if not self.media_storage_dir.strip():
+        if self.media_storage_backend not in {
+            "local",
+            "local_persistent",
+            "cos",
+            "cloudbase_pg",
+        }:
+            raise ValueError(
+                "MEDIA_STORAGE_BACKEND 只能是 local、local_persistent、cos 或 cloudbase_pg"
+            )
+        self.media_storage_dir = self.media_storage_dir.strip()
+        if not self.media_storage_dir:
             raise ValueError("MEDIA_STORAGE_DIR 不能为空")
         if not 60 <= self.media_url_ttl_seconds <= 3600:
             raise ValueError("MEDIA_URL_TTL_SECONDS 必须在 60 到 3600 秒之间")
@@ -128,10 +141,22 @@ class Settings(BaseSettings):
             errors.append("QWEN_BASE_URL 必须使用 HTTPS")
         if not self.qwen_model.strip():
             errors.append("QWEN_MODEL 不能为空")
+        log_path = Path(self.app_log_dir)
+        if not log_path.is_absolute():
+            errors.append("APP_LOG_DIR 在生产环境必须是绝对路径")
+        elif log_path == Path(log_path.anchor):
+            errors.append("APP_LOG_DIR 不能直接使用磁盘或文件系统根目录")
         if self.media_storage_backend == "local":
             errors.append(
-                "MEDIA_STORAGE_BACKEND 生产环境必须设为 cos 或 cloudbase_pg，不能依赖容器临时磁盘"
+                "MEDIA_STORAGE_BACKEND 生产环境不能使用开发模式 local；"
+                "固定磁盘请使用 local_persistent，托管环境请使用 cos 或 cloudbase_pg"
             )
+        elif self.media_storage_backend == "local_persistent":
+            storage_path = Path(self.media_storage_dir)
+            if not storage_path.is_absolute():
+                errors.append("MEDIA_STORAGE_DIR 使用 local_persistent 时必须是绝对路径")
+            elif storage_path == Path(storage_path.anchor):
+                errors.append("MEDIA_STORAGE_DIR 不能直接使用磁盘或文件系统根目录")
         elif self.media_storage_backend == "cos":
             cos_values = {
                 "MEDIA_COS_SECRET_ID": self.media_cos_secret_id,

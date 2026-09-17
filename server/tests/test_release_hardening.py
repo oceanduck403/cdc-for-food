@@ -18,6 +18,7 @@ from app.models.user import User
 def production_settings(**overrides) -> Settings:
     values = {
         "app_env": "production",
+        "app_log_dir": str(Path.cwd() / "logs"),
         "jwt_secret": "6hd!QvP2zN8#rL4xT7mK9sW3cF5aJ1uB",
         "database_url": "postgresql://user:password@postgres:5432/nutrition",
         "wechat_appid": "wx1234567890abcdef",
@@ -52,6 +53,28 @@ def test_production_accepts_cloudbase_pg_storage_without_cam_access_key():
     assert configured.media_storage_backend == "cloudbase_pg"
 
 
+def test_production_accepts_absolute_persistent_local_storage(tmp_path):
+    configured = production_settings(
+        media_storage_backend="local_persistent",
+        media_storage_dir=str(tmp_path / "private-user-media"),
+        media_cos_secret_id="",
+        media_cos_secret_key="",
+        media_cos_region="",
+        media_cos_bucket="",
+    )
+    assert configured.media_storage_backend == "local_persistent"
+    assert Path(configured.media_storage_dir).is_absolute()
+
+
+def test_development_keeps_relative_log_directory_compatibility():
+    configured = Settings(
+        _env_file=None,
+        app_env="development",
+        app_log_dir="logs",
+    )
+    assert configured.app_log_dir == "logs"
+
+
 @pytest.mark.parametrize(
     "database_url",
     [
@@ -73,7 +96,23 @@ def test_production_settings_normalize_cloudbase_sslmode(database_url):
         ({"database_url": "sqlite:///./data/app.db"}, "DATABASE_URL"),
         ({"wechat_secret": ""}, "WECHAT_APPID"),
         ({"qwen_api_key": ""}, "QWEN_API_KEY"),
+        ({"app_log_dir": "logs"}, "APP_LOG_DIR"),
+        ({"app_log_dir": Path.cwd().anchor}, "APP_LOG_DIR"),
         ({"media_storage_backend": "local"}, "MEDIA_STORAGE_BACKEND"),
+        (
+            {
+                "media_storage_backend": "local_persistent",
+                "media_storage_dir": "relative/user-media",
+            },
+            "MEDIA_STORAGE_DIR",
+        ),
+        (
+            {
+                "media_storage_backend": "local_persistent",
+                "media_storage_dir": Path.cwd().anchor,
+            },
+            "根目录",
+        ),
         ({"media_cos_bucket": ""}, "MEDIA_COS_BUCKET"),
         (
             {

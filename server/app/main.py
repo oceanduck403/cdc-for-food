@@ -17,8 +17,9 @@ from app.services.media_service import ensure_media_directories
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    log_dir = Path(settings.app_log_dir).expanduser().resolve()
+    log_dir.mkdir(parents=True, exist_ok=True)
     setup_logging()
-    Path("logs").mkdir(exist_ok=True)
     Path("data").mkdir(exist_ok=True)
     ensure_media_directories()
     if settings.app_env != "production":

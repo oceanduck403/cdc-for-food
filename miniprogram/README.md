@@ -131,21 +131,21 @@ miniprogram/
 2. AppID 填写你的小程序 AppID（或使用测试号）
 3. 点击编译即可预览
 
-### 配置项（`utils/config.js`）
-```js
-{
-  cloud: {
-    envId: '真实 CloudBase 环境 ID',
-    service: '真实云托管服务名',
-    apiPrefix: '/api/v1'
-  },
-  apiTransport: 'cloud',        // 正式版使用 wx.cloud.callContainer
-  useMock: false,               // 正式版必须关闭 mock
-  dailyAnalysisLimit: 20        // 单日分析次数上限
-}
+### 正式 API 配置
+
+正式域名不直接写入源码。复制 `deploy/selfhost/miniprogram.example.json` 为被 Git 忽略的
+`deploy/selfhost/miniprogram.local.json`，填写公网 HTTPS API，再执行：
+
+```powershell
+node deploy/selfhost/build_miniprogram.js
+node deploy/selfhost/build_miniprogram.js --validate build/wechat-release
 ```
 
-微信 AppSecret、百炼 API Key、数据库连接串和管理员初始密码只配置在后端云托管环境变量中，不能写入小程序代码。
+微信开发者工具导入 `build/wechat-release/`。构建会强制检查 HTTPS、公网域名、443 端口和
+`/api/v1` 路径，并拒绝 IP、localhost、示例域名与占位符。开发版本机覆盖方式仍可使用，
+体验版和正式版不会读取本机存储中的覆盖值。完整说明见 `deploy/selfhost/README.md`。
+
+微信 AppSecret、百炼 API Key、数据库连接串和管理员初始密码只配置在后端环境变量中，不能写入小程序代码。
 
 ## 📋 已完成 / 待优化项
 

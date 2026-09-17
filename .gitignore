@@ -28,6 +28,7 @@ server/.env
 server/.env.*
 !.env.example
 deploy/cloudbase/environment.local.json
+deploy/selfhost/miniprogram.local.json
 
 # Node / npm (rarely used but safe)
 node_modules/

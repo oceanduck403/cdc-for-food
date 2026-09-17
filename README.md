@@ -67,8 +67,9 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 微信开发者工具导入步骤、模拟器/真机调试、常见问题排查见
 [`docs/miniprogram-devtools.md`](docs/miniprogram-devtools.md)。
 
-正式发布采用微信云托管 / CloudBase 承载 FastAPI 后端，操作与资源要求见
-[`docs/deploy-wechat-cloudrun.md`](docs/deploy-wechat-cloudrun.md)。Railway 仅保留为联调或备选方案。
+正式包可通过构建脚本接入自建 HTTPS 后端，生成和校验步骤见
+[`deploy/selfhost/README.md`](deploy/selfhost/README.md)。微信开发者工具应导入生成的
+`build/wechat-release/`，不要直接上传未注入生产地址的源码目录。
 
 ## 数据库
 

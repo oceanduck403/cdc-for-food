@@ -13,7 +13,7 @@ App({
   },
 
   onLaunch() {
-    // 正式环境统一从小程序私有链路访问 CloudBase 云托管。
+    // 仅云托管构建需要初始化；自建 HTTPS 构建会直接返回。
     try {
       transport.initCloud();
     } catch (error) {

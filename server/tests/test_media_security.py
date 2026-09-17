@@ -209,6 +209,36 @@ async def test_expired_media_signature_is_rejected(client):
     assert (await client.get(expired)).status_code == 403
 
 
+async def test_persistent_local_storage_stays_private_and_within_absolute_root(
+    client,
+    monkeypatch,
+    tmp_path,
+):
+    root = tmp_path / "persistent-user-media"
+    monkeypatch.setattr(settings, "media_storage_backend", "local_persistent")
+    monkeypatch.setattr(settings, "media_storage_dir", str(root))
+
+    ensure_media_directories()
+    content = jpeg_bytes()
+    stored = store_avatar(content)
+
+    assert stored.path and stored.path.parent == (root / "avatar").resolve()
+    assert stored.path.read_bytes() == content
+    assert media_service.media_path_for_request("avatar", "../outside.jpg") is None
+    assert media_service.media_path_for_request("avatar", "..\\outside.jpg") is None
+    with pytest.raises(ValueError, match="invalid media path"):
+        media_service._safe_child("avatar", "..", "..", "outside.jpg")
+
+    url = signed_media_url(stored.reference)
+    assert url and url.startswith("/api/v1/media/avatar/")
+    response = await client.get(url)
+    assert response.status_code == 200
+    assert response.content == content
+
+    delete_managed_media(stored.reference)
+    assert not stored.path.exists()
+
+
 async def test_cos_storage_is_private_persistent_and_proxied(
     client,
     monkeypatch,
