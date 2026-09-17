@@ -47,6 +47,34 @@ if ($nginx -notmatch 'location /cdc-food-api/' -or
     $failures.Add("Nginx 示例未正确映射 /cdc-food-api/ 到 127.0.0.1:18120")
 }
 
+$repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\.."))
+$repositoryEntryPoint = Join-Path $repositoryRoot "server\app\main.py"
+if (Test-Path -LiteralPath $repositoryEntryPoint -PathType Leaf) {
+    $selfHostRequirementsPath = Join-Path $repositoryRoot "server\requirements-selfhost.txt"
+    if (-not (Test-Path -LiteralPath $selfHostRequirementsPath -PathType Leaf)) {
+        $failures.Add("缺少 server/requirements-selfhost.txt")
+    } else {
+        $defaultRequirementsPath = Join-Path $repositoryRoot "server\requirements.txt"
+        $selfHostRequirements = [System.IO.File]::ReadAllText($selfHostRequirementsPath)
+        if ($selfHostRequirements -match '(?im)^cos-python-sdk-v5(?:[=<>!~].*)?$') {
+            $failures.Add("自建部署依赖不得包含 COS SDK")
+        }
+        $expectedSelfHost = @(
+            Get-Content -LiteralPath $defaultRequirementsPath |
+                Where-Object { $_ -notmatch '^cos-python-sdk-v5(?:[=<>!~].*)?$' }
+        )
+        $actualSelfHost = @(Get-Content -LiteralPath $selfHostRequirementsPath)
+        if (@(Compare-Object -ReferenceObject $expectedSelfHost -DifferenceObject $actualSelfHost).Count -gt 0) {
+            $failures.Add("自建部署依赖应与默认依赖保持一致，仅排除 COS SDK")
+        }
+    }
+}
+
+$deployReleaseText = [System.IO.File]::ReadAllText((Join-Path $PSScriptRoot "Deploy-Release.ps1"))
+if ($deployReleaseText -notmatch '\(Join-Path \$stagingServer "requirements-selfhost\.txt"\)') {
+    $failures.Add("Deploy-Release.ps1 未安装自建部署依赖清单")
+}
+
 $allText = ($scripts | Where-Object { $_.Name -ne "Test-Assets.ps1" } |
     ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw }) -join "`n"
 foreach ($forbidden in @('Stop-Process', 'taskkill', 'netsh advfirewall', 'Remove-Service')) {

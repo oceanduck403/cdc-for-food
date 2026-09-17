@@ -27,7 +27,20 @@ from urllib.parse import quote
 from fastapi import UploadFile
 import httpx
 from PIL import Image, ImageOps, UnidentifiedImageError
-from qcloud_cos import CosClientError, CosConfig, CosS3Client, CosServiceError
+
+try:
+    from qcloud_cos import CosClientError, CosConfig, CosS3Client, CosServiceError
+except ImportError:
+    # Self-hosted deployments use local_persistent storage and intentionally
+    # omit the Tencent COS SDK (and its native crcmod build dependency).
+    CosConfig = None
+    CosS3Client = None
+
+    class CosClientError(Exception):
+        pass
+
+    class CosServiceError(Exception):
+        pass
 
 from app.config import settings
 from app.core.errors import BusinessError
@@ -118,6 +131,8 @@ def _configured_cos_client(
     region: str,
     token: str,
 ) -> CosS3Client:
+    if CosConfig is None or CosS3Client is None:
+        raise MediaStorageError("COS 存储后端未安装腾讯云 SDK")
     config = CosConfig(
         Region=region,
         SecretId=secret_id,

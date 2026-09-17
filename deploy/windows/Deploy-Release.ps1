@@ -18,12 +18,12 @@ $root = Get-NormalizedPath -Path $AppRoot
 $releaseRoot = Join-Path $root "releases"
 $target = Assert-PathBelowRoot -Path (Join-Path $releaseRoot $ReleaseId) -Root $root -Label "发布目录"
 $sourceServer = Join-Path $source "server"
-$requirements = Join-Path $sourceServer "requirements.txt"
+$requirements = Join-Path $sourceServer "requirements-selfhost.txt"
 $entryPoint = Join-Path $sourceServer "app\main.py"
 
 if (-not (Test-Path -LiteralPath $requirements -PathType Leaf) -or
     -not (Test-Path -LiteralPath $entryPoint -PathType Leaf)) {
-    throw "SourceDirectory 必须是本项目仓库根目录，并包含 server\requirements.txt 与 server\app\main.py"
+    throw "SourceDirectory 必须是本项目仓库根目录，并包含 server\requirements-selfhost.txt 与 server\app\main.py"
 }
 if (Test-Path -LiteralPath $target) {
     throw "发布目录已存在，脚本不会覆盖：$target"
@@ -74,7 +74,7 @@ try {
     }
     $releasePython = Join-Path $stagingServer ".venv\Scripts\python.exe"
     Invoke-CheckedNative -Executable $releasePython `
-        -Arguments @("-m", "pip", "install", "--disable-pip-version-check", "--requirement", (Join-Path $stagingServer "requirements.txt")) `
+        -Arguments @("-m", "pip", "install", "--disable-pip-version-check", "--requirement", (Join-Path $stagingServer "requirements-selfhost.txt")) `
         -FailureMessage "安装 Python 依赖失败"
 
     $logsLink = Join-Path $stagingServer "logs"
@@ -115,4 +115,3 @@ catch {
 
 Write-Host "发布已准备完成：$target" -ForegroundColor Green
 Write-Host "脚本未启动 API；请先运行健康预检，再用 Start-App.ps1 显式启动该 ReleaseId。"
-

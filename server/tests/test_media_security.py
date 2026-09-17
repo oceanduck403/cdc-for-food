@@ -276,6 +276,16 @@ async def test_cos_storage_is_private_persistent_and_proxied(
     assert stored.object_key not in fake.objects
 
 
+async def test_cos_backend_fails_closed_when_sdk_is_not_installed(monkeypatch):
+    monkeypatch.setattr(settings, "media_storage_backend", "cos")
+    monkeypatch.setattr(media_service, "CosConfig", None)
+    monkeypatch.setattr(media_service, "CosS3Client", None)
+    media_service._configured_cos_client.cache_clear()
+
+    with pytest.raises(media_service.MediaStorageError, match="未安装腾讯云 SDK"):
+        media_service._cos_client()
+
+
 async def test_cos_chat_cleanup_is_limited_to_assignment_prefix(monkeypatch):
     fake = _FakeCosClient()
     monkeypatch.setattr(settings, "media_storage_backend", "cos")
