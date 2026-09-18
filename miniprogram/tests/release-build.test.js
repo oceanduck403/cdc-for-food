@@ -40,6 +40,14 @@ test('发布构建写入独立目录，体验版不读取开发者工具本机�
     assert.equal(checked.apiBase, 'https://1tovalue.cn/cdc-food-api/api/v1');
     assert.equal(fs.existsSync(path.join(outputDir, 'miniprogram', 'tests')), false);
 
+    const projectConfig = JSON.parse(fs.readFileSync(path.join(outputDir, 'project.config.json'), 'utf8'));
+    for (const legacyPage of ['pages/gis-map', 'pages/knowledge']) {
+      assert.ok(
+        projectConfig.packOptions.ignore.some(item => item.type === 'folder' && item.value === legacyPage),
+        `legacy page ${legacyPage} must be excluded from the uploaded package`,
+      );
+    }
+
     const configPath = path.join(outputDir, 'miniprogram', 'utils', 'config.js');
     const runtimePath = path.join(outputDir, 'miniprogram', 'utils', 'release-runtime.js');
     delete require.cache[require.resolve(configPath)];
