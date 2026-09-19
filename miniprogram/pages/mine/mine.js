@@ -28,7 +28,7 @@ function clearDeletedAccountData(userId) {
   const id = String(userId || '');
   const fixedKeys = new Set([
     'token', 'role', 'profile', 'userInfo', 'history', 'survey_history',
-    'start_free_appointment', 'userMarkers',
+    'userMarkers',
   ]);
   let keys = [];
   try {
@@ -135,7 +135,7 @@ Page({
     if (!this.data.isLogin) return;
     const first = await confirmModal({
       title: '注销账号',
-      content: '注销后，您的健康档案、评估、打卡、预约、咨询记录和互动数据将被永久删除，无法恢复。',
+      content: '注销后，您的健康档案、评估、打卡、科普互动和 AI 使用记录将被永久删除，无法恢复。',
       confirmText: '继续注销',
       confirmColor: '#C83E3E',
       cancelText: '暂不注销',

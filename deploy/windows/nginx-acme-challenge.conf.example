@@ -1,0 +1,13 @@
+# 将此 location 块人工合并到负责 1tovalue.cn 的 HTTP（80 端口）server{} 中。
+# 必须放在整站 HTTP->HTTPS 跳转之前；不要新增第二个冲突的 listen 80/server_name。
+# 此目录只存放短期 HTTP-01 challenge，不得放应用文件或密钥。
+
+location ^~ /.well-known/acme-challenge/ {
+    root E:/CDC-Food/acme/webroot;
+    default_type text/plain;
+    try_files $uri =404;
+    allow all;
+    access_log off;
+    log_not_found off;
+}
+

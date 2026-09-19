@@ -41,12 +41,46 @@ test('发布构建写入独立目录，体验版不读取开发者工具本机�
     assert.equal(fs.existsSync(path.join(outputDir, 'miniprogram', 'tests')), false);
 
     const projectConfig = JSON.parse(fs.readFileSync(path.join(outputDir, 'project.config.json'), 'utf8'));
-    for (const legacyPage of ['pages/gis-map', 'pages/knowledge']) {
+    for (const legacyPage of [
+      'pages/gis-map', 'pages/knowledge', 'pages/consult', 'pages/doctor',
+      'pages/doctor-chat', 'pages/doctor-profile', 'pages/dispatch',
+    ]) {
       assert.ok(
         projectConfig.packOptions.ignore.some(item => item.type === 'folder' && item.value === legacyPage),
         `legacy page ${legacyPage} must be excluded from the uploaded package`,
       );
     }
+
+    for (const privateFile of [
+      'utils/appointments.js', 'utils/chat.js', 'images/consult-online-doctor.jpg',
+      'images/consult.png', 'images/consult_active.png',
+    ]) {
+      assert.ok(
+        projectConfig.packOptions.ignore.some(item => item.type === 'file' && item.value === privateFile),
+        `clinical file ${privateFile} must be excluded from the uploaded package`,
+      );
+    }
+
+    const appConfig = JSON.parse(fs.readFileSync(path.join(outputDir, 'miniprogram', 'app.json'), 'utf8'));
+    for (const clinicalPage of [
+      'pages/consult/consult', 'pages/doctor/doctor', 'pages/doctor-chat/doctor-chat',
+      'pages/doctor-profile/doctor-profile', 'pages/dispatch/dispatch',
+    ]) assert.equal(appConfig.pages.includes(clinicalPage), false, clinicalPage);
+    assert.deepEqual(appConfig.tabBar.list[2], {
+      pagePath: 'pages/consult-ai/consult-ai',
+      text: 'AI科普',
+      iconPath: 'images/ui/chat-muted.png',
+      selectedIconPath: 'images/ui/chat-tab-selected.png',
+    });
+
+    const publicCopy = [
+      'pages/login/login.js', 'pages/login/login.wxml',
+      'pages/consult-ai/consult-ai.json', 'pages/consult-ai/consult-ai.wxml',
+      'pages/mine/mine.js', 'pages/survey/survey.wxml', 'utils/legal-content.js',
+    ].map(file => fs.readFileSync(path.join(outputDir, 'miniprogram', file), 'utf8')).join('\n');
+    assert.doesNotMatch(publicCopy, /医生在线指导|免费预约|提交预约|匹配医生|医患|医生登录|管理员入口/);
+    assert.match(publicCopy, /营养与食品安全科普/);
+    assert.match(publicCopy, /不作为诊疗依据/);
 
     const configPath = path.join(outputDir, 'miniprogram', 'utils', 'config.js');
     const runtimePath = path.join(outputDir, 'miniprogram', 'utils', 'release-runtime.js');

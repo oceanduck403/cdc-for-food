@@ -6,12 +6,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.api.v1.router import api_router
+from app.api.v1.router import create_api_router
 from app.config import settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import setup_logging
 from app.db.session import SessionLocal, init_db
-from app.db.survey_defaults import ensure_registration_template
+from app.db.survey_defaults import ensure_public_survey_templates
 from app.services.media_service import ensure_media_directories
 
 
@@ -25,11 +25,11 @@ async def lifespan(app: FastAPI):
     if settings.app_env != "production":
         await init_db()
     async with SessionLocal() as db:
-        await ensure_registration_template(db)
+        await ensure_public_survey_templates(db)
     yield
 
 
-def create_app() -> FastAPI:
+def create_app(enable_clinical_services: bool | None = None) -> FastAPI:
     app = FastAPI(
         title="营养健康 AI 小助手 API",
         version="0.1.0",
@@ -47,7 +47,10 @@ def create_app() -> FastAPI:
 
     register_exception_handlers(app)
 
-    app.include_router(api_router, prefix="/api/v1")
+    app.include_router(
+        create_api_router(enable_clinical_services),
+        prefix="/api/v1",
+    )
 
     static_dir = Path("app/static")
     static_dir.mkdir(parents=True, exist_ok=True)

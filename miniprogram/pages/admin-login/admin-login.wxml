@@ -9,22 +9,22 @@
     <text class="brand-subtitle">成都市疾病预防控制中心</text>
   </view>
 
-  <!-- 功能介绍（横排三列） -->
+  <!-- 功能介绍 -->
   <view class="feature-list">
     <view class="feature-item">
-      <ui-icon name="doctor" size="42" />
-      <text class="feature-name">医生账号</text>
-      <text class="feature-desc">增删改查</text>
+      <ui-icon name="survey" size="42" />
+      <text class="feature-name">评估管理</text>
+      <text class="feature-desc">模板与记录</text>
     </view>
     <view class="feature-item">
       <ui-icon name="chart" size="42" />
       <text class="feature-name">数据总览</text>
-      <text class="feature-desc">患者统计</text>
+      <text class="feature-desc">用户统计</text>
     </view>
     <view class="feature-item">
-      <ui-icon name="link" size="42" />
-      <text class="feature-name">医患分配</text>
-      <text class="feature-desc">手动调整</text>
+      <ui-icon name="key" size="42" />
+      <text class="feature-name">账号安全</text>
+      <text class="feature-desc">修改账号密码</text>
     </view>
   </view>
 

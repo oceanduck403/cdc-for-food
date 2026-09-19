@@ -1,6 +1,4 @@
 <view class="container">
-
-  <!-- 品牌区 -->
   <view class="brand-section">
     <view class="brand-logo">
       <ui-icon name="heart" size="60" />
@@ -9,110 +7,25 @@
     <text class="brand-subtitle">成都市疾病预防控制中心</text>
   </view>
 
-  <!-- 角色选择 -->
-  <view class="role-tabs">
-    <view class="role-tab {{currentRole === 'patient' ? 'active' : ''}}"
-          data-role="patient" bindtap="switchRole">
-      <ui-icon name="user" size="36" tone="{{currentRole === 'patient' ? 'white' : 'normal'}}" />
-      <text class="role-tab-label">患者端</text>
-    </view>
-    <view class="role-tab {{currentRole === 'doctor' ? 'active' : ''}}"
-          data-role="doctor" bindtap="switchRole">
-      <ui-icon name="doctor" size="36" tone="{{currentRole === 'doctor' ? 'white' : 'normal'}}" />
-      <text class="role-tab-label">医生端</text>
+  <view class="feature-list card">
+    <view class="feature-item" wx:for="{{features}}" wx:key="name">
+      <ui-icon name="{{item.icon}}" size="42" />
+      <view class="feature-text">
+        <text class="feature-name">{{item.name}}</text>
+        <text class="feature-desc">{{item.desc}}</text>
+      </view>
     </view>
   </view>
 
-  <!-- ============ 患者端 ============ -->
-  <block wx:if="{{currentRole === 'patient'}}">
-    <view class="feature-list card">
-      <view class="feature-item">
-        <ui-icon name="camera" size="42" />
-        <view class="feature-text">
-          <text class="feature-name">膳食拍照识别</text>
-          <text class="feature-desc">AI 智能识别膳食营养</text>
-        </view>
-      </view>
-      <view class="feature-item">
-        <ui-icon name="chat" size="42" />
-        <view class="feature-text">
-          <text class="feature-name">医生在线指导</text>
-          <text class="feature-desc">预约匹配医生沟通</text>
-        </view>
-      </view>
-      <view class="feature-item">
-        <ui-icon name="book" size="42" />
-        <view class="feature-text">
-          <text class="feature-name">健康科普</text>
-          <text class="feature-desc">权威营养知识</text>
-        </view>
-      </view>
-    </view>
-
-    <view class="login-form">
-      <button class="btn-primary login-btn"
-              bindtap="onWechatLogin"
-              disabled="{{!privacyAccepted}}">
-        <ui-icon name="heart" size="30" tone="white" />
-        微信一键登录
-      </button>
-
-    </view>
-  </block>
-
-  <!-- ============ 医生端 ============ -->
-  <block wx:elif="{{currentRole === 'doctor'}}">
-    <view class="doctor-features">
-      <view class="feature-item">
-        <ui-icon name="team" size="42" />
-        <view class="feature-text">
-          <text class="feature-name">管理患者</text>
-          <text class="feature-desc">查看分配的患者数据</text>
-        </view>
-      </view>
-      <view class="feature-item">
-        <ui-icon name="chat" size="42" />
-        <view class="feature-text">
-          <text class="feature-name">在线沟通</text>
-          <text class="feature-desc">回复患者咨询</text>
-        </view>
-      </view>
-      <view class="feature-item">
-        <ui-icon name="group" size="42" />
-        <view class="feature-text">
-          <text class="feature-name">专家会诊</text>
-          <text class="feature-desc">邀请同行共同会诊</text>
-        </view>
-      </view>
-    </view>
-
-    <view class="login-form">
-      <view class="form-row">
-        <input class="form-input" placeholder="请输入医生账号"
-               value="{{doctorUsername}}" bindinput="onDoctorUsernameInput" />
-      </view>
-      <view class="form-row">
-        <input class="form-input" password placeholder="请输入密码"
-               value="{{doctorPassword}}" bindinput="onDoctorPasswordInput" />
-      </view>
-      <button class="btn-primary login-btn"
-              bindtap="onDoctorLogin"
-              disabled="{{!privacyAccepted || !doctorUsername || !doctorPassword}}">
-        医生登录
-      </button>
-      <view class="hint">
-        <text>医生账号由管理员分配，如未开通请联系管理员</text>
-      </view>
-    </view>
-  </block>
-
-  <!-- 管理员入口（底部链接） -->
-  <view class="admin-entry" bindtap="goToAdminLogin">
-    <ui-icon name="setting" size="28" tone="muted" />
-    <text class="admin-entry-text">管理员入口</text>
+  <view class="login-form">
+    <button class="btn-primary login-btn"
+            bindtap="onWechatLogin"
+            disabled="{{!privacyAccepted}}">
+      <ui-icon name="heart" size="30" tone="white" />
+      微信一键登录
+    </button>
   </view>
 
-  <!-- 隐私协议 -->
   <view class="privacy-card card">
     <view class="privacy-row" bindtap="togglePrivacy">
       <view class="checkbox {{privacyAccepted ? 'checked' : ''}}">
@@ -127,9 +40,7 @@
     </view>
   </view>
 
-  <!-- 页脚 -->
   <view class="login-footer">
-    <text>登录仅用于建立账号；健康信息、照片和咨询内容仅在您主动使用相应功能时处理。</text>
+    <text>登录仅用于建立账号；健康信息、照片和 AI 科普问答内容仅在您主动使用相应功能时处理。</text>
   </view>
-
 </view>

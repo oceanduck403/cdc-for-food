@@ -9,6 +9,18 @@ const path = require('node:path');
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const DEFAULT_LOCAL_CONFIG = path.join(__dirname, 'miniprogram.local.json');
 const DEFAULT_OUTPUT = path.join(REPO_ROOT, 'build', 'wechat-release');
+const RELEASE_OMIT = Object.freeze([
+  'pages/consult',
+  'pages/doctor',
+  'pages/doctor-chat',
+  'pages/doctor-profile',
+  'pages/dispatch',
+  'utils/appointments.js',
+  'utils/chat.js',
+  'images/consult-online-doctor.jpg',
+  'images/consult.png',
+  'images/consult_active.png',
+]);
 
 function fail(message) {
   const error = new Error(message);
@@ -119,6 +131,11 @@ function validateRelease(outputDir) {
 
   const source = fs.readFileSync(configPath, 'utf8');
   if (!/const useMock = false;/.test(source)) fail('正式包必须关闭 mock 数据');
+  for (const relativePath of RELEASE_OMIT) {
+    if (fs.existsSync(path.join(outputDir, 'miniprogram', relativePath))) {
+      fail(`正式包仍包含未开放的临床功能：${relativePath}`);
+    }
+  }
   return { apiBase: normalized, appid: project.appid };
 }
 
@@ -137,6 +154,9 @@ function buildRelease(options = {}) {
     filter: source => !/(^|[\\/])(tests|node_modules|miniprogram_npm)([\\/]|$)/.test(source),
   });
   fs.copyFileSync(sourceProject, path.join(outputDir, 'project.config.json'));
+  for (const relativePath of RELEASE_OMIT) {
+    fs.rmSync(path.join(outputDir, 'miniprogram', relativePath), { recursive: true, force: true });
+  }
   fs.writeFileSync(
     path.join(outputDir, 'miniprogram', 'utils', 'release-runtime.js'),
     runtimeSource(apiBase),
@@ -179,4 +199,5 @@ module.exports = {
   runtimeSource,
   validateApiBase,
   validateRelease,
+  RELEASE_OMIT,
 };

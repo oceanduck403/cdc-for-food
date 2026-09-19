@@ -16,6 +16,7 @@ from app.models.user import User
 from app.services.media_service import signed_media_url
 
 router = APIRouter()
+clinical_router = APIRouter()
 
 
 def _validate_managed_password(password: str) -> None:
@@ -178,7 +179,7 @@ def _doctor_to_dict(d: User) -> dict:
     }
 
 
-@router.get("/doctors")
+@clinical_router.get("/doctors")
 async def list_doctors(
     sub: str = Depends(get_current_subject),
     db: AsyncSession = Depends(get_db),
@@ -203,7 +204,7 @@ async def list_doctors(
     return {"doctors": [_doctor_to_dict(d) for d in doctors]}
 
 
-@router.post("/doctors")
+@clinical_router.post("/doctors")
 async def create_doctor(
     body: CreateDoctorRequest,
     sub: str = Depends(get_current_subject),
@@ -240,7 +241,7 @@ async def create_doctor(
     return _doctor_to_dict(doctor)
 
 
-@router.put("/doctors/{doctor_id}")
+@clinical_router.put("/doctors/{doctor_id}")
 async def update_doctor(
     doctor_id: int,
     body: UpdateDoctorRequest,
@@ -268,7 +269,7 @@ async def update_doctor(
     return _doctor_to_dict(doctor)
 
 
-@router.delete("/doctors/{doctor_id}")
+@clinical_router.delete("/doctors/{doctor_id}")
 async def delete_doctor(
     doctor_id: int,
     sub: str = Depends(get_current_subject),
@@ -350,7 +351,7 @@ class AssignRequest(BaseModel):
     doctor_id: int
 
 
-@router.post("/assignments")
+@clinical_router.post("/assignments")
 async def create_assignment(
     body: AssignRequest,
     sub: str = Depends(get_current_subject),
@@ -378,7 +379,7 @@ async def create_assignment(
     return {"assignment_id": appointment.assignment_id}
 
 
-@router.get("/assignments")
+@clinical_router.get("/assignments")
 async def list_assignments(
     sub: str = Depends(get_current_subject),
     db: AsyncSession = Depends(get_db),
@@ -423,7 +424,7 @@ async def list_assignments(
 # 聊天记录查看
 # ────────────────────────────────────────────────────────────────────
 
-@router.get("/chats")
+@clinical_router.get("/chats")
 async def list_chats(
     sub: str = Depends(get_current_subject),
     db: AsyncSession = Depends(get_db),

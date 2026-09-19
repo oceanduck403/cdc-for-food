@@ -61,7 +61,7 @@ module.exports = {
   },
 
   // 隐私协议版本号（升级时强制重弹）
-  privacyVersion: 'v1.1-20260916',
+  privacyVersion: 'v1.2-20260918',
 
   // GIS 地图默认中心：成都市中心
   gisCenter: { latitude: 30.6586, longitude: 104.0648 }

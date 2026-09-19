@@ -130,6 +130,10 @@
   margin-bottom: 24rpx;
 }
 
+.single-stat-grid {
+  grid-template-columns: 1fr;
+}
+
 .stat-card {
   background: #FFFFFF;
   border-radius: 16rpx;
@@ -211,109 +215,6 @@
   font-size: 26rpx;
 }
 
-/* ── 医生管理 ─────────────────────── */
-.doctor-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
-}
-
-.doctor-card {
-  background: #FFFFFF;
-  border-radius: 16rpx;
-  padding: 24rpx;
-}
-
-.doctor-row {
-  display: flex;
-  align-items: center;
-  gap: 20rpx;
-  margin-bottom: 16rpx;
-}
-
-.doctor-avatar-mini {
-  width: 80rpx;
-  height: 80rpx;
-  background: linear-gradient(135deg, #1769B2, #2D83C9);
-  color: #FFFFFF;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32rpx;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.doctor-card-info {
-  flex: 1;
-}
-
-.doctor-card-name {
-  display: block;
-  font-size: 30rpx;
-  font-weight: 700;
-  margin-bottom: 4rpx;
-}
-
-.doctor-card-meta {
-  display: block;
-  font-size: 22rpx;
-  color: #6B7280;
-  margin-bottom: 4rpx;
-}
-
-.doctor-card-username {
-  display: block;
-  font-size: 22rpx;
-  color: #9CA3AF;
-}
-
-.doctor-tags {
-  display: flex;
-  gap: 12rpx;
-  margin-bottom: 16rpx;
-}
-
-.tag {
-  font-size: 22rpx;
-  padding: 4rpx 14rpx;
-  border-radius: 8rpx;
-}
-
-.tag-green { background: #DCEBFA; color: #1769A6; }
-.tag-gray  { background: #F3F4F6; color: #6B7280; }
-.tag-red   { background: #FEE2E2; color: #DC2626; }
-
-.doctor-actions {
-  display: flex;
-  gap: 12rpx;
-  border-top: 1rpx solid #F3F4F6;
-  padding-top: 16rpx;
-}
-
-.btn-mini {
-  flex: 1;
-  padding: 14rpx 0;
-  background: #F3F4F6;
-  color: #374151;
-  border-radius: 8rpx;
-  text-align: center;
-  font-size: 24rpx;
-}
-
-.btn-mini.btn-danger {
-  background: #FEE2E2;
-  color: #DC2626;
-}
-
-.empty {
-  text-align: center;
-  padding: 60rpx 0;
-  color: #9CA3AF;
-  font-size: 26rpx;
-}
-
 /* ── 患者管理 ─────────────────────── */
 .patient-list {
   display: flex;
@@ -364,151 +265,6 @@
   margin-top: 4rpx;
   font-size: 22rpx;
   color: #6B7280;
-}
-
-/* ── 分配管理 ─────────────────────── */
-.assign-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
-}
-
-.picker {
-  background: #F9FAFB;
-  padding: 24rpx;
-  border-radius: 12rpx;
-  font-size: 28rpx;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.picker-arrow {
-  color: #9CA3AF;
-  font-size: 24rpx;
-}
-
-.btn-assign {
-  background: #1769B2;
-  color: #FFFFFF;
-  text-align: center;
-  padding: 24rpx;
-  border-radius: 12rpx;
-  font-size: 28rpx;
-  font-weight: 600;
-}
-
-.list-title {
-  font-size: 26rpx;
-  font-weight: 700;
-  margin: 24rpx 0 16rpx;
-  color: #1A1A1A;
-}
-
-.assignment-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12rpx;
-}
-
-.assignment-card {
-  background: #FFFFFF;
-  border-radius: 12rpx;
-  padding: 24rpx;
-}
-
-.assignment-row {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-}
-
-.assignment-side {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.side-label {
-  font-size: 22rpx;
-  color: #9CA3AF;
-  margin-bottom: 4rpx;
-}
-
-.side-name {
-  font-size: 28rpx;
-  font-weight: 600;
-}
-
-.side-meta {
-  font-size: 22rpx;
-  color: #6B7280;
-}
-
-.assignment-arrow {
-  font-size: 36rpx;
-  color: #1769B2;
-}
-
-.assignment-preview {
-  font-size: 24rpx;
-  color: #6B7280;
-  margin-top: 12rpx;
-  padding-top: 12rpx;
-  border-top: 1rpx solid #F3F4F6;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* ── 聊天记录 ─────────────────────── */
-.chat-list-admin {
-  display: flex;
-  flex-direction: column;
-  gap: 12rpx;
-}
-
-.chat-row-admin {
-  background: #FFFFFF;
-  border-radius: 12rpx;
-  padding: 20rpx;
-}
-
-.chat-row-head {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-  margin-bottom: 8rpx;
-}
-
-.chat-role {
-  font-size: 22rpx;
-  padding: 4rpx 12rpx;
-  border-radius: 6rpx;
-  font-weight: 600;
-}
-
-.chat-role-patient { background: #DBEAFE; color: #1A6DD3; }
-.chat-role-doctor { background: #DCEBFA; color: #1769A6; }
-.chat-role-system { background: #F3F4F6; color: #6B7280; }
-
-.chat-time {
-  font-size: 22rpx;
-  color: #9CA3AF;
-}
-
-.chat-body {
-  font-size: 26rpx;
-  color: #1A1A1A;
-  line-height: 1.6;
-  margin-bottom: 8rpx;
-  word-break: break-all;
-}
-
-.chat-meta {
-  font-size: 20rpx;
-  color: #9CA3AF;
 }
 
 /* ── 弹窗 ───────────────────────── */
@@ -815,7 +571,8 @@
 .search-input-wrap, .btn-add { height: 92rpx; }
 .search-input { font-size: 30rpx; }
 .btn-add, .btn-mini, .btn-confirm, .btn-cancel { font-size: 30rpx; }
-.info-text text, .doctor-card-meta, .patient-row-meta, .chat-preview { font-size: 28rpx; }
+ .info-text text, .patient-row-meta { font-size: 28rpx; }
 .form-label, .form-input, .form-textarea { font-size: 30rpx; }
 .form-input { min-height: 88rpx; }
 .tab { min-height: 92rpx; box-sizing: border-box; }
+

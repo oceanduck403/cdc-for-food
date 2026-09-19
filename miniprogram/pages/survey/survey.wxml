@@ -66,7 +66,7 @@
   <!-- 底部说明 -->
   <view class="info-footer">
     <text>问卷结果仅供健康参考，不作为诊疗依据</text>
-    <text>请如实填写，方便医生了解您的健康情况</text>
+    <text>请如实填写，帮助您了解自身健康情况</text>
   </view>
 </view>
 <ai-float />

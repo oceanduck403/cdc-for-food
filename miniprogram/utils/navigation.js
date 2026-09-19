@@ -1,5 +1,5 @@
 // 页面导航统一处理 tabBar 和普通页面，并暴露失败原因。
-const tabPages = new Set(['/pages/survey/survey', '/pages/checkin/checkin', '/pages/consult/consult', '/pages/science/science', '/pages/mine/mine']);
+const tabPages = new Set(['/pages/survey/survey', '/pages/checkin/checkin', '/pages/consult-ai/consult-ai', '/pages/science/science', '/pages/mine/mine']);
 function report(err) {
   console.error('[navigation]', err);
   wx.showToast({ title: /not found|不存在/.test(err.errMsg || '') ? '页面未加载，请重新编译后重试' : '页面打开失败，请返回首页重试', icon: 'none' });

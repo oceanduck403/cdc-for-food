@@ -60,12 +60,11 @@ Component({
       if (Date.now() < (this._ignoreTapUntil || 0)) return;
       if (Date.now() - (this._lastOpen || 0) < 700) return;
       this._lastOpen = Date.now();
-      wx.navigateTo({
+      wx.switchTab({
         url: '/pages/consult-ai/consult-ai',
         fail: err => {
-          if (/limit|层级|page stack/i.test(err.errMsg || '') && wx.redirectTo) {
-            wx.redirectTo({ url: '/pages/consult-ai/consult-ai' });
-          } else wx.showToast({ title: 'AI 咨询暂时无法打开，请重新编译后再试', icon: 'none' });
+          if (wx.reLaunch) wx.reLaunch({ url: '/pages/consult-ai/consult-ai' });
+          else wx.showToast({ title: 'AI 科普暂时无法打开，请稍后重试', icon: 'none' });
         },
       });
     },

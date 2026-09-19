@@ -38,7 +38,7 @@ test('法律内容覆盖现有功能、敏感健康信息与注销，并删除�
   const all = `${source}\n${docs}`;
 
   for (const phrase of [
-    '健康评估', '健康打卡', '科普互动', '医生在线指导', 'AI 问答',
+    '健康评估', '健康打卡', '科普互动', 'AI 科普问答',
     '食物分析', '评论', '点赞', '收藏', '互动消息', '头像', '昵称', '注销账号',
     '成都市疾病预防控制中心提供', '不作为诊疗依据',
   ]) assert.match(all, new RegExp(phrase));
@@ -51,6 +51,7 @@ test('法律内容覆盖现有功能、敏感健康信息与注销，并删除�
   assert.match(source, /医疗健康敏感个人信息/);
   assert.match(source, /阿里云百炼通义千问/);
   assert.match(source, /用户不能自行上传或发布科普文章素材/);
+  assert.doesNotMatch(source, /医生在线指导|提交预约|匹配医生|医患|咨询图片|预约、咨询/);
 });
 
 test('法律页面按类型展示完整内容，并保留微信隐私保护指引入口', () => {
@@ -94,5 +95,5 @@ test('法律页面按类型展示完整内容，并保留微信隐私保护指�
 
 test('隐私政策版本升级会要求已登录前重新确认', () => {
   const config = read('utils/config.js');
-  assert.match(config, /privacyVersion:\s*'v1\.1-20260916'/);
+  assert.match(config, /privacyVersion:\s*'v1\.2-20260918'/);
 });

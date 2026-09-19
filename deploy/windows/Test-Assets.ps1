@@ -47,6 +47,65 @@ if ($nginx -notmatch 'location /cdc-food-api/' -or
     $failures.Add("Nginx 示例未正确映射 /cdc-food-api/ 到 127.0.0.1:18120")
 }
 
+$acmeNginx = [System.IO.File]::ReadAllText(
+    (Join-Path $PSScriptRoot "nginx-acme-challenge.conf.example"),
+    (New-Object System.Text.UTF8Encoding($false))
+)
+if ($acmeNginx -notmatch 'location \^~ /\.well-known/acme-challenge/' -or
+    $acmeNginx -notmatch 'root E:/CDC-Food/acme/webroot;') {
+    $failures.Add("Nginx ACME 示例未把 HTTP-01 路径映射到隔离 webroot")
+}
+
+$requiredAcmeAssets = @(
+    "Install-WinAcme.ps1",
+    "Test-AcmeWebRoot.ps1",
+    "Initialize-CertificateRenewal.ps1",
+    "Invoke-CertificateRenewal.ps1",
+    "Publish-NginxCertificate.ps1",
+    "Grant-CertificateRenewalPermissions.ps1",
+    "Register-CertificateRenewalTask.ps1",
+    "Unregister-CertificateRenewalTask.ps1",
+    "nginx-acme-challenge.conf.example"
+)
+foreach ($asset in $requiredAcmeAssets) {
+    if (-not (Test-Path -LiteralPath (Join-Path $PSScriptRoot $asset) -PathType Leaf)) {
+        $failures.Add("缺少证书续期资产：$asset")
+    }
+}
+
+$initializeCertificateText = [System.IO.File]::ReadAllText(
+    (Join-Path $PSScriptRoot "Initialize-CertificateRenewal.ps1")
+)
+foreach ($requiredArgument in @(
+    '"--validation", "filesystem"',
+    '"--webroot", $web',
+    '"--store", "pemfiles"',
+    '"--notaskscheduler"'
+)) {
+    if ($initializeCertificateText -notmatch [regex]::Escape($requiredArgument)) {
+        $failures.Add("初始签发脚本缺少安全参数：$requiredArgument")
+    }
+}
+
+$publishCertificateText = [System.IO.File]::ReadAllText(
+    (Join-Path $PSScriptRoot "Publish-NginxCertificate.ps1")
+)
+$checkIndex = $publishCertificateText.IndexOf('Invoke-NginxCheck -Executable')
+$reloadIndex = $publishCertificateText.IndexOf('Invoke-NginxReload -Executable')
+if ($checkIndex -lt 0 -or $reloadIndex -lt 0 -or $checkIndex -ge $reloadIndex) {
+    $failures.Add("证书发布脚本必须先执行 nginx -t，再执行平滑 reload")
+}
+
+$renewTaskText = [System.IO.File]::ReadAllText(
+    (Join-Path $PSScriptRoot "Register-CertificateRenewalTask.ps1")
+)
+if ($renewTaskText -notmatch '\[ValidateSet\("S-1-5-19"\)\]\[string\]\$RunAsUser = "S-1-5-19"') {
+    $failures.Add("证书续期任务必须默认使用 LocalService")
+}
+if ($renewTaskText -match '["'']-Force["'']') {
+    $failures.Add("证书续期计划任务不得使用 -Force")
+}
+
 $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\.."))
 $repositoryEntryPoint = Join-Path $repositoryRoot "server\app\main.py"
 if (Test-Path -LiteralPath $repositoryEntryPoint -PathType Leaf) {

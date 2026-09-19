@@ -1,8 +1,14 @@
 """共享 fixtures：内存 SQLite + httpx AsyncClient"""
 import asyncio
+import os
+
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+# Existing consultation integration tests opt in explicitly. Production and
+# every process that omits this variable remain fail-closed.
+os.environ["ENABLE_CLINICAL_SERVICES"] = "true"
 
 from app.api.deps import get_db
 from app.main import app

@@ -3,10 +3,10 @@ const { analyzeFoodFromImage } = require('../../utils/qwen.js');
 const { dayKey } = require('../../utils/checkin-state.js');
 
 const quickPrompts = [
-  { id: 'diet', label: '一日三餐', prompt: '我想吃得更均衡，一日三餐应该怎样搭配？', icon: 'leaf' },
-  { id: 'exercise', label: '适量运动', prompt: '我平时运动少，怎样安全地开始锻炼？', icon: 'activity' },
-  { id: 'weight', label: '体重管理', prompt: '我想管理体重，应该先从哪些生活习惯开始？', icon: 'chart' },
-  { id: 'safety', label: '食品安全', prompt: '如何在日常生活中注意食品安全？', icon: 'check' },
+  { id: 'diet', label: '均衡膳食', prompt: '我想吃得更均衡，一日三餐应该怎样搭配？', icon: 'leaf' },
+  { id: 'label', label: '看懂标签', prompt: '购买包装食品时，营养成分表和配料表应该怎么看？', icon: 'file' },
+  { id: 'storage', label: '食物储存', prompt: '常见食物应该怎样冷藏或冷冻，才能更安全？', icon: 'calendar' },
+  { id: 'safety', label: '食品安全', prompt: '日常选购和烹饪食物时，怎样降低食品安全风险？', icon: 'check' },
 ];
 
 Page({

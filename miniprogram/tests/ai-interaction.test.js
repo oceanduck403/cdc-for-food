@@ -9,7 +9,8 @@ function harness(file, ai, component = false) {
   const storage = { profile: { id: 7 }, token: 'session-7' };
   const navigation = [];
   const wx = { getStorageSync: k => storage[k], setStorageSync: (k,v) => storage[k]=v,
-    showToast() {}, navigateTo: options => navigation.push(options.url), redirectTo: options => navigation.push(options.url),
+    showToast() {}, navigateTo: options => navigation.push(options.url), switchTab: options => navigation.push(options.url),
+    reLaunch: options => navigation.push(options.url), redirectTo: options => navigation.push(options.url),
     getWindowInfo: () => ({ windowWidth: 375, windowHeight: 680 }) };
   const state = { storageKey: () => `checkin_records_${storage.profile.id}`, dayKey: () => '2026-09-14' };
   vm.runInNewContext(fs.readFileSync(path.join(root,file),'utf8'), {
@@ -48,12 +49,11 @@ test('悬浮球拖动吸边不误触，轻点进入 AI 二级页面且只导航�
   p._ignoreTapUntil=0; p.touchStart({touches:[{clientX:20,clientY:200}]}); p.touchEnd(); p.openAiPage();
   assert.deepEqual(navigation,['/pages/consult-ai/consult-ai']);
 });
-test('预约内容自然撑开页面，悬浮球尺寸与屏幕定位一致', () => {
-  const consult=fs.readFileSync(path.join(root,'pages/consult/consult.wxml'),'utf8');
-  const consultStyle=fs.readFileSync(path.join(root,'pages/consult/consult.wxss'),'utf8');
+test('AI 科普已成为底栏页面，悬浮球尺寸与屏幕定位一致', () => {
+  const app=JSON.parse(fs.readFileSync(path.join(root,'app.json'),'utf8'));
   const orbStyle=fs.readFileSync(path.join(root,'components/ai-float/ai-float.wxss'),'utf8');
-  assert.match(consult,/assignmentId \? 'chat-mode' : 'booking-mode'/);
-  assert.match(consultStyle,/\.container\.booking-mode\s*\{[^}]*display:\s*block;[^}]*height:\s*auto;/);
+  assert.equal(app.tabBar.list[2].pagePath,'pages/consult-ai/consult-ai');
+  assert.equal(app.tabBar.list[2].text,'AI科普');
   assert.match(orbStyle,/\.ai-orb\s*\{[^}]*box-sizing:\s*border-box;[^}]*width:\s*88px;/);
 });
 test('AI 二级页快捷问题正确携带文本与历史，成功保存回复并计次', async () => {
@@ -82,8 +82,8 @@ test('AI 问答失败可重试且不计次，账号切换隔离会话', async ()
   resolve({reply:'旧账号回复'}); await request;
   assert.equal(other.instance.data.messages.length,0); assert.equal(other.storage.floating_ai_8,undefined);
 });
-test('五个患者主页面均注册悬浮球，移除固定入口和两处表情图标', () => {
-  for (const name of ['survey','checkin','consult','science','mine']) {
+test('AI 科普页外的四个用户主页面均注册悬浮球，移除固定入口和两处表情图标', () => {
+  for (const name of ['survey','checkin','science','mine']) {
     const config=JSON.parse(fs.readFileSync(path.join(root,`pages/${name}/${name}.json`),'utf8'));
     assert.equal(config.usingComponents['ai-float'],'/components/ai-float/ai-float');
     const markup=fs.readFileSync(path.join(root,`pages/${name}/${name}.wxml`),'utf8');
@@ -91,4 +91,6 @@ test('五个患者主页面均注册悬浮球，移除固定入口和两处表�
     assert.doesNotMatch(markup,/ai-shortcut|ai-ask-banner/);
     if(name==='checkin') { assert.doesNotMatch(markup,/🤖|🔄/); assert.match(markup,/bindtap="refreshAISuggestions"/); }
   }
+  const aiConfig=JSON.parse(fs.readFileSync(path.join(root,'pages/consult-ai/consult-ai.json'),'utf8'));
+  assert.equal(aiConfig.usingComponents && aiConfig.usingComponents['ai-float'],undefined);
 });

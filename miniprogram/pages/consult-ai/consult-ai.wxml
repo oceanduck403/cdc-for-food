@@ -1,16 +1,16 @@
 <view class="container">
   <view class="page-header">
-    <view class="header-copy"><text class="page-kicker">智能健康陪伴</text><text class="page-title">AI 健康咨询</text><text class="page-subtitle">饮食、运动和健康习惯，随时问一问</text></view>
+    <view class="header-copy"><text class="page-kicker">营养与食品安全科普</text><text class="page-title">AI 科普问答</text><text class="page-subtitle">膳食搭配、食品标签和安全储存，随时问一问</text></view>
     <view class="header-mascot"><text>AI</text></view>
   </view>
 
-  <view class="usage-row"><text>今日还可咨询 <text class="usage-number">{{freeTimes - usedTimes}}</text> 次</text><button class="clear-btn" bindtap="clearMessages" wx:if="{{messages.length}}"><ui-icon name="delete" size="28"/><text>清空记录</text></button></view>
+  <view class="usage-row"><text>今日还可提问 <text class="usage-number">{{freeTimes - usedTimes}}</text> 次</text><button class="clear-btn" bindtap="clearMessages" wx:if="{{messages.length}}"><ui-icon name="delete" size="28"/><text>清空记录</text></button></view>
 
   <scroll-view class="chat-scroll" scroll-y="{{true}}" scroll-into-view="{{scrollIntoView}}" scroll-with-animation="{{true}}">
     <view class="chat-list">
       <view class="empty-card" wx:if="{{!messages.length}}">
         <text class="empty-title">您好，今天想了解什么？</text>
-        <text class="empty-text">可以点击常见问题，也可以在下方输入。AI 回答仅供健康科普参考。</text>
+        <text class="empty-text">可以点击常见问题，也可以在下方输入。AI 回答仅用于营养与食品安全科普。</text>
       </view>
       <view class="quick-title">常见问题</view>
       <view class="quick-actions">
@@ -31,10 +31,10 @@
   <text class="error" wx:if="{{error}}">{{error}}</text>
   <view class="input-bar">
     <button class="btn-image" bindtap="chooseImage" disabled="{{sending}}" aria-label="拍照识别食物"><ui-icon name="camera" size="40"/></button>
-    <input class="input-field" placeholder="请输入想咨询的问题" value="{{userInput}}" maxlength="500" bindinput="onInputChange" bindconfirm="sendMessage" confirm-type="send" disabled="{{sending}}"/>
+    <input class="input-field" placeholder="请输入营养或食品安全问题" value="{{userInput}}" maxlength="500" bindinput="onInputChange" bindconfirm="sendMessage" confirm-type="send" disabled="{{sending}}"/>
     <button class="btn-send" bindtap="sendMessage" disabled="{{sending || !userInput}}">发送</button>
   </view>
-  <text class="disclaimer">AI 内容仅供参考，不替代医生诊疗</text>
+  <text class="disclaimer">AI 内容仅用于营养与食品安全科普，不作为诊疗依据</text>
 
-  <view class="modal" wx:if="{{showNoTimesModal}}" catchtap="closeNoTimesModal"><view class="modal-content" catchtap="noop"><text class="modal-title">今日咨询次数已用完</text><text class="modal-desc">明天可以继续使用，也可以预约医生在线指导。</text><button class="modal-btn" bindtap="closeNoTimesModal">我知道了</button></view></view>
+  <view class="modal" wx:if="{{showNoTimesModal}}" catchtap="closeNoTimesModal"><view class="modal-content" catchtap="noop"><text class="modal-title">今日科普问答次数已用完</text><text class="modal-desc">明天可以继续使用，也可以先浏览科普文章。</text><button class="modal-btn" bindtap="closeNoTimesModal">我知道了</button></view></view>
 </view>

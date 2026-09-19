@@ -13,6 +13,7 @@ from app.services.media_service import (
 
 
 router = APIRouter()
+clinical_router = APIRouter()
 
 
 async def _serve(
@@ -59,7 +60,7 @@ async def avatar_image(
     return await _serve("avatar", filename, relative, expires, sig)
 
 
-@router.get("/chat/{assignment_id}/{filename}", include_in_schema=False)
+@clinical_router.get("/chat/{assignment_id}/{filename}", include_in_schema=False)
 async def chat_image(
     assignment_id: int,
     filename: str,

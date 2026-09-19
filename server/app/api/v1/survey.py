@@ -20,7 +20,7 @@ async def list_templates(
     """获取已启用的问卷模板列表（患者可见）"""
     result = await db.execute(
         select(SurveyTemplate)
-        .where(SurveyTemplate.is_active == True)
+        .where(SurveyTemplate.is_active.is_(True))
         .order_by(SurveyTemplate.sort_order, SurveyTemplate.id)
     )
     templates = result.scalars().all()
@@ -44,11 +44,14 @@ async def get_template(
 ):
     """获取单个问卷模板详情"""
     result = await db.execute(
-        select(SurveyTemplate).where(SurveyTemplate.id == template_id)
+        select(SurveyTemplate).where(
+            SurveyTemplate.id == template_id,
+            SurveyTemplate.is_active.is_(True),
+        )
     )
     t = result.scalar_one_or_none()
     if not t:
-        raise HTTPException(status_code=404, detail="问卷模板不存在")
+        raise HTTPException(status_code=404, detail="问卷模板不存在或已停用")
     return {
         "id": t.id,
         "type": t.type,
@@ -137,11 +140,14 @@ async def submit_response(
 
     # 验证模板存在
     result = await db.execute(
-        select(SurveyTemplate).where(SurveyTemplate.id == template_id)
+        select(SurveyTemplate).where(
+            SurveyTemplate.id == template_id,
+            SurveyTemplate.is_active.is_(True),
+        )
     )
     template = result.scalar_one_or_none()
     if not template:
-        raise HTTPException(status_code=404, detail="问卷模板不存在")
+        raise HTTPException(status_code=404, detail="问卷模板不存在或已停用")
 
     answers = payload.get("answers", {})
     total_score = payload.get("total_score", 0)

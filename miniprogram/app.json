@@ -3,7 +3,7 @@
     "pages/login/login",
     "pages/survey/survey",
     "pages/checkin/checkin",
-    "pages/consult/consult",
+    "pages/consult-ai/consult-ai",
     "pages/science/science",
     "pages/mine/mine",
     "pages/index/index",
@@ -12,13 +12,8 @@
     "pages/science-detail/science-detail",
     "pages/capture/capture",
     "pages/profile/profile",
-    "pages/consult-ai/consult-ai",
-    "pages/doctor/doctor",
-    "pages/doctor-chat/doctor-chat",
-    "pages/doctor-profile/doctor-profile",
     "pages/admin/admin",
     "pages/admin-login/admin-login",
-    "pages/dispatch/dispatch",
     "pages/knowledge-detail/knowledge-detail",
     "pages/report/report",
     "pages/messages/messages",
@@ -54,8 +49,8 @@
         "selectedIconPath": "images/ui/checkin-tab-selected.png"
       },
       {
-        "pagePath": "pages/consult/consult",
-        "text": "免费咨询",
+        "pagePath": "pages/consult-ai/consult-ai",
+        "text": "AI科普",
         "iconPath": "images/ui/chat-muted.png",
         "selectedIconPath": "images/ui/chat-tab-selected.png"
       },

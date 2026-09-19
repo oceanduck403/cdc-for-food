@@ -121,6 +121,9 @@ async def account_login(body: AccountLoginRequest, db: AsyncSession = Depends(ge
     - 医生：管理员分配账号后才能登录
     - 管理员：首次生产部署由安全环境变量引导创建
     """
+    if body.role == "doctor" and not settings.enable_clinical_services:
+        raise HTTPException(status_code=403, detail="医生在线服务暂未开放")
+
     stmt = select(User).where(User.username == body.username, User.role == body.role)
     res = await db.execute(stmt)
     user = res.scalar_one_or_none()

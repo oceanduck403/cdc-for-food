@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     admin_bootstrap_username: str = ""
     admin_bootstrap_password: str = ""
 
+    # 人工医生预约、分配与聊天属于临床服务，必须由部署方显式开启。
+    # 默认关闭可确保遗漏环境变量时不会意外挂载相关接口。
+    enable_clinical_services: bool = False
+
     daily_analysis_limit_per_user: int = 20
     image_max_bytes: int = 1024 * 1024
 

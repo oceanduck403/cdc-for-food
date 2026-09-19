@@ -317,8 +317,8 @@ async def seed() -> None:
         # 由开发者在本地 .env 显式设置一次性引导账号。
         if settings.admin_bootstrap_username and settings.admin_bootstrap_password:
             await ensure_production_admin(db)
-        from app.db.survey_defaults import ensure_registration_template
-        await ensure_registration_template(db)
+        from app.db.survey_defaults import ensure_public_survey_templates
+        await ensure_public_survey_templates(db)
 
 
 if __name__ == "__main__":

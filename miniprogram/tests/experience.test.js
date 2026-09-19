@@ -18,16 +18,18 @@ function page(name, api = {}, storage = {}) {
   return {p,calls,storage};
 }
 
-test('患者登录直接进入带底栏的主界面，医生保留工作台',()=>{
+test('用户登录直接进入带底栏的健康评估页',()=>{
   const {p,calls}=page('login');
-  p._navigateByRole('patient'); p._navigateByRole('doctor');
-  assert.deepEqual(calls,['/pages/survey/survey','/pages/doctor/doctor']);
+  p._enterUserHome();
+  assert.deepEqual(calls,['/pages/survey/survey']);
 });
-test('启动入口为登录页，已有会话恢复到对应身份主页',()=>{
+test('启动入口为登录页，仅恢复微信用户会话',()=>{
   const config=JSON.parse(fs.readFileSync(path.join(__dirname,'../app.json'),'utf8'));
   assert.equal(config.pages[0],'pages/login/login');
-  for(const [role,url] of [['patient','/pages/survey/survey'],['doctor','/pages/doctor/doctor'],['admin','/pages/admin/admin']]) {
-    const {p,calls}=page('login',{}, {role,token:'valid-token'});p.onLoad({});assert.deepEqual(calls,[url]);
+  const user=page('login',{}, {role:'patient',token:'valid-token'});user.p.onLoad({});
+  assert.deepEqual(user.calls,['/pages/survey/survey']);
+  for(const role of ['doctor','admin']) {
+    const other=page('login',{}, {role,token:'valid-token'});other.p.onLoad({});assert.deepEqual(other.calls,[]);
   }
 });
 test('未登录的我的页面不伪造登录状态',()=>{
@@ -35,9 +37,9 @@ test('未登录的我的页面不伪造登录状态',()=>{
   assert.equal(p.data.isLogin,false); assert.equal(storage.token,undefined);
 });
 
-test('身份切换只在初始登录流程提供，退出清除会话并重建登录页',()=>{
+test('公开登录页不提供身份切换，退出清除会话并重建登录页',()=>{
   const root=path.join(__dirname,'..');
-  for(const name of ['mine','doctor','admin']) {
+  for(const name of ['mine','admin']) {
     const markup=fs.readFileSync(path.join(root,`pages/${name}/${name}.wxml`),'utf8');
     assert.doesNotMatch(markup,/role-navigation|bindtap="goDoctor"|bindtap="goAdmin"|切换账号/);
   }
@@ -49,9 +51,11 @@ test('身份切换只在初始登录流程提供，退出清除会话并重建�
   for(const key of ['token','role','profile','userInfo']) assert.equal(storage[key],undefined);
   assert.equal(app.globalData.token,'');assert.equal(app.globalData.role,'');
   assert.deepEqual(routes,['/pages/login/login']);
-  const {p,calls}=page('login');p.onLoad({});assert.equal(p.data.currentRole,'patient');
-  p.switchRole({currentTarget:{dataset:{role:'doctor'}}});assert.equal(p.data.currentRole,'doctor');
-  p.switchRole({currentTarget:{dataset:{role:'admin'}}});assert.deepEqual(calls,['/pages/admin-login/admin-login']);
+  const {p,calls}=page('login');p.onLoad({});
+  assert.equal(p.switchRole,undefined);
+  assert.deepEqual(calls,[]);
+  const loginMarkup=fs.readFileSync(path.join(root,'pages/login/login.wxml'),'utf8');
+  assert.doesNotMatch(loginMarkup,/医生端|管理员入口|医生登录/);
 });
 
 test('所有已注册页面的静态跳转目标均在页面清单中',()=>{
@@ -128,38 +132,4 @@ test('每日打卡即时点亮进度，近七天按天计数且不会因重复�
   assert.equal(complete.doneCount,3);
   assert.equal(complete.percent,100);
   assert.match(complete.title,/3 件小事/);
-});
-test('预约防重复点击，等待状态可见，改派后清除旧聊天，支持取消排队',async()=>{
-  let resolveBook, booked=0, status={status:'waiting',assignment_id:null,doctor:null};
-  const {p}=page('consult',{
-    book:()=>{booked++;return new Promise(r=>resolveBook=r);},mine:async()=>status,
-    cancel:async()=>{status={status:'cancelled',assignment_id:null,doctor:null};},
-    fetchMessages:async()=>({messages:[]}),markRead:async()=>({}),
-  });
-  p._visible=true;p.setData({loggedIn:true});
-  const first=p.bookAppointment();await p.bookAppointment();assert.equal(booked,1);
-  resolveBook();await first;assert.equal(p.data.bookingStatus,'waiting');
-  status={status:'assigned',assignment_id:9,doctor:{name:'医生'}};await p._init();assert.equal(p.data.assignmentId,9);
-  p.data.messages=[{content:'旧会话'}];status={status:'waiting',assignment_id:null,doctor:null};await p._init();
-  assert.equal(p.data.messages.length,0);await p.cancelAppointment();assert.equal(p.data.bookingStatus,'cancelled');
-});
-test('预约错误保留重试入口，不显示虚假成功',async()=>{
-  const {p}=page('consult',{book:async()=>{throw Error('网络断开');}});
-  p.setData({loggedIn:true});await p.bookAppointment();
-  assert.equal(p.data.loadError,'网络断开');assert.equal(p.data.bookingBusy,false);assert.equal(p.data.bookingStatus,'none');
-});
-
-test('医生列表失败显示重试提示，恢复后生成可渲染的消息时间',async()=>{
-  let fail=true;
-  const {p}=page('doctor',{fetchDoctorPatients:async()=>{if(fail)throw Error('网络断开');return {patients:[{patient_id:1,last_message_at:'2026-09-12T10:00:00'}]}}},{token:'doctor-token',role:'doctor'});
-  await p.loadPatients();assert.equal(p.data.loadError,'网络断开');assert.equal(p.data.loading,false);
-  fail=false;await p.loadPatients();assert.equal(p.data.loadError,'');assert.equal(typeof p.data.patients[0].lastMessageTime,'string');
-});
-test('管理员聊天列表预处理时间，模板不调用页面方法',async()=>{
-  const {p}=page('admin',{listChats:async()=>({messages:[{id:1,created_at:'2026-09-12T10:00:00'}]})});
-  await p.loadChats();assert.ok(p.data.chats[0].displayTime);
-  for(const name of ['doctor','admin']) {
-    const markup=fs.readFileSync(path.join(__dirname,`../pages/${name}/${name}.wxml`),'utf8');
-    assert.doesNotMatch(markup,/formatTime\(/);
-  }
 });

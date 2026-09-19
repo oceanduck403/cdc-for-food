@@ -40,6 +40,7 @@ python main.py
 - 鉴权使用 JWT（`Authorization: Bearer <token>`）
 - AI 调用次数写入 PostgreSQL `ai_usage_events`，同一事务完成预占与失败回滚，当前不依赖 Redis
 - 食物图片由 `/api/v1/ai/food-analysis` 发往服务端 Qwen 网关；AI Key 不下发到小程序
+- 人工医生预约、分配、聊天及聊天图片默认关闭；只有显式设置 `ENABLE_CLINICAL_SERVICES=true` 才会挂载相关路由并允许医生账号登录。未取得相应资质时应保持 `false`。
 - 文章列表、详情、点赞、收藏、评论、举报和站内消息位于 `/api/v1/community`；个人操作需登录，举报处理仅管理员可用。`alembic/versions/0002_community.py` 包含互动数据表迁移。
 - 患者在 `/api/v1/users/me` 修改昵称；头像通过带登录令牌的 `POST /api/v1/users/me/avatar` 上传。服务端校验并重编码图片、调用微信内容安全检测，生产环境保存到私有 COS 或 PG 环境内置 CloudBase 云存储，并以短期签名的后端代理地址访问。此入口只用于个人头像，不用于科普素材。
 

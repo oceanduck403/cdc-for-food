@@ -3,34 +3,24 @@ const auth = require('../../utils/auth.js');
 const navigation = require('../../utils/navigation.js');
 
 const FEATURES = [
-  { icon: 'camera', name: '拍照识别食物', desc: 'AI 智能分析食物种类与营养成分' },
-  { icon: 'file', name: '健康评估与打卡', desc: '记录健康信息与日常习惯' },
-  { icon: 'book', name: '科普互动', desc: '阅读、评论、点赞和收藏健康知识' },
-  { icon: 'chat', name: '健康咨询', desc: '使用 AI 问答或预约医生在线指导' },
+  { icon: 'camera', name: '膳食拍照识别', desc: '了解食物与营养信息' },
+  { icon: 'survey', name: '健康评估', desc: '记录饮食与生活习惯' },
+  { icon: 'book', name: '科普互动', desc: '阅读营养与食品安全知识' },
+  { icon: 'robot', name: 'AI 科普问答', desc: '获取通俗易懂的科普参考' },
 ];
 
 Page({
   data: {
     privacyAccepted: false,
-    currentRole: 'patient', // patient / doctor
     features: FEATURES,
-    // 医生端
-    doctorUsername: '',
-    doctorPassword: '',
   },
 
-  onLoad(options = {}) {
-    this.setData({ privacyAccepted: auth.isPrivacyAccepted(), currentRole: options.role === 'doctor' ? 'doctor' : 'patient' });
+  onLoad() {
+    this.setData({ privacyAccepted: auth.isPrivacyAccepted() });
     const token = auth.getToken();
-    const role = auth.getRole();
-    if (token && !token.startsWith('demo-') && ['patient', 'doctor', 'admin'].includes(role)) this._navigateByRole(role);
-  },
-
-  // ─── 角色切换 ───────────────────────────────────
-  switchRole(e) {
-    const { role } = e.currentTarget.dataset;
-    if (role === 'admin') { navigation.login('admin'); return; }
-    this.setData({ currentRole: role });
+    if (token && !token.startsWith('demo-') && auth.getRole() === 'patient') {
+      this._enterUserHome();
+    }
   },
 
   togglePrivacy() {
@@ -39,7 +29,6 @@ Page({
     this.setData({ privacyAccepted: accepted });
   },
 
-  // ─── 患者端：微信登录 ──────────────────────────
   async onWechatLogin() {
     if (!this._checkPrivacy()) return;
     wx.showLoading({ title: '登录中...', mask: true });
@@ -47,55 +36,14 @@ Page({
       await auth.loginWithWechat();
       wx.hideLoading();
       wx.showToast({ title: '登录成功', icon: 'success' });
-      setTimeout(() => this._navigateByRole('patient'), 600);
+      setTimeout(() => this._enterUserHome(), 600);
     } catch (err) {
       wx.hideLoading();
       wx.showToast({ title: err.message || '登录失败', icon: 'none' });
     }
   },
 
-  // ─── 医生端登录 ──────────────────────────────────
-  onDoctorUsernameInput(e) {
-    this.setData({ doctorUsername: e.detail.value });
-  },
-
-  onDoctorPasswordInput(e) {
-    this.setData({ doctorPassword: e.detail.value });
-  },
-
-  async onDoctorLogin() {
-    if (!this._checkPrivacy()) return;
-    wx.showLoading({ title: '登录中...', mask: true });
-    try {
-      await auth.loginWithAccount({
-        username: this.data.doctorUsername,
-        password: this.data.doctorPassword,
-        role: 'doctor',
-      });
-      wx.hideLoading();
-      wx.showToast({ title: '登录成功', icon: 'success' });
-      setTimeout(() => this._navigateByRole('doctor'), 600);
-    } catch (err) {
-      wx.hideLoading();
-      wx.showToast({ title: err.message || '登录失败', icon: 'none' });
-    }
-  },
-
-  // ─── 管理员入口 ──────────────────────────────────
-  goToAdminLogin() {
-    navigation.login('admin');
-  },
-
-  // ─── 跳转 ────────────────────────────────────────
-  _navigateByRole(role) {
-    if (role === 'admin') {
-      wx.reLaunch({ url: '/pages/admin/admin', fail: navigation.report });
-      return;
-    }
-    if (role === 'doctor') {
-      wx.reLaunch({ url: '/pages/doctor/doctor', fail: navigation.report });
-      return;
-    }
+  _enterUserHome() {
     wx.switchTab({
       url: '/pages/survey/survey',
       fail: () => wx.reLaunch({ url: '/pages/survey/survey' }),
