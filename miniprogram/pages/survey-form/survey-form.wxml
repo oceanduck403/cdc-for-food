@@ -13,7 +13,7 @@
     <view class="result-card card">
       <view class="result-header">
         <ui-icon name="robot" size="42" />
-        <text class="result-title">AI 智能分析报告</text>
+        <text class="result-title">{{analysisResult.generatedByAi ? 'AI 科普分析参考' : '历史分析记录'}}</text>
       </view>
       <view class="result-body">
         <text class="result-content">{{analysisResult.reply}}</text>
@@ -31,19 +31,27 @@
       <text class="draft-hint" wx:if="{{draftSaved && mode === 'edit' && !submitted}}">草稿已保存在本机，可稍后继续填写</text>
       <text class="survey-title">{{surveyTitle}}</text>
       <view class="progress-bar">
-        <view class="progress-fill" style="width: {{(currentStep + 1) / totalSteps * 100}}%"></view>
+        <view class="progress-fill" style="width: {{visibleStepCount ? (visibleStepIndex + 1) / visibleStepCount * 100 : 0}}%"></view>
       </view>
-      <text class="progress-text">第 {{currentStep + 1}} / {{totalSteps}} 部分</text>
+      <text class="progress-text">第 {{visibleStepIndex + 1}} / {{visibleStepCount}} 部分</text>
+    </view>
+
+    <view class="analysis-error" wx:if="{{analysisError}}">
+      <text class="analysis-error-text">{{analysisError}}</text>
+      <button class="btn-secondary retry-analysis" bindtap="analyzeResults" loading="{{analyzing}}" disabled="{{analyzing}}">重新分析</button>
     </view>
 
     <!-- 题目容器 - 动态渲染当前步骤题目 -->
     <view class="questions-container">
       <block wx:for="{{currentQuestions}}" wx:for-item="question" wx:key="id">
+        <view class="question-section" wx:if="{{question.sectionHeading}}">{{question.sectionHeading}}</view>
         <view class="question-card">
           <view class="question-title">
             <text class="q-num">{{question.number}}.</text>
             <text>{{question.title}}</text>
+            <text class="question-unit" wx:if="{{question.unit}}">（{{question.unit}}）</text>
           </view>
+          <text class="question-hint" wx:if="{{question.hint}}">{{question.hint}}</text>
 
           <!-- 单选 -->
           <view class="options-list" wx:if="{{question.type === 'radio'}}">
@@ -79,12 +87,12 @@
           </view>
 
           <!-- 输入 -->
-          <view class="input-wrapper" wx:if="{{question.type === 'input'}}">
+          <view class="input-wrapper" wx:if="{{question.type === 'input' && question.format !== 'time'}}">
             <input
               class="text-input"
-              type="{{question.inputType === 'number' ? 'number' : 'text'}}"
+              type="{{question.inputType === 'digit' ? 'digit' : question.inputType === 'number' ? 'number' : 'text'}}"
               placeholder="{{question.placeholder || '请输入'}}"
-              value="{{answers[question.id] || ''}}"
+              value="{{question.answerValue}}"
               data-id="{{question.id}}"
               bindinput="onInputChange"
               disabled="{{mode === 'view' || submitted}}"
@@ -96,7 +104,7 @@
             <textarea
               class="text-area"
               placeholder="{{question.placeholder || '请输入'}}"
-              value="{{answers[question.id] || ''}}"
+              value="{{question.answerValue}}"
               data-id="{{question.id}}"
               bindinput="onInputChange"
               disabled="{{mode === 'view' || submitted}}"
@@ -110,16 +118,22 @@
             </picker>
             <button wx:if="{{answers[question.id] && mode !== 'view' && !submitted}}" class="clear-date" data-id="{{question.id}}" bindtap="clearDate">清除日期</button>
           </view>
+          <view class="input-wrapper" wx:if="{{question.type === 'time' || (question.type === 'input' && question.format === 'time')}}">
+            <picker mode="time" value="{{question.answerValue}}" data-id="{{question.id}}" bindchange="onInputChange" disabled="{{mode === 'view' || submitted}}">
+              <view class="text-input date-input">{{question.answerValue || question.placeholder || '请选择时间'}}<ui-icon name="right" size="26" tone="muted" /></view>
+            </picker>
+            <button wx:if="{{question.answerValue && mode !== 'view' && !submitted}}" class="clear-date" data-id="{{question.id}}" bindtap="clearDate">清除时间</button>
+          </view>
         </view>
       </block>
     </view>
 
     <!-- 底部按钮 -->
-    <view class="bottom-bar" wx:if="{{totalSteps > 0}}">
-      <button class="btn-prev" bindtap="prevStep" wx:if="{{currentStep > 0}}">上一步</button>
-      <button class="btn-next {{currentStep === 0 ? 'full' : ''}}" bindtap="nextStep" wx:if="{{currentStep < totalSteps - 1}}">下一步</button>
-      <button class="btn-submit {{currentStep === 0 ? 'full' : ''}}" bindtap="submitSurvey" loading="{{submitting}}" disabled="{{submitting}}" wx:if="{{currentStep === totalSteps - 1 && mode !== 'view' && !submitted}}">{{surveyType === 'weight_visit_registration' ? '提交登记' : '提交问卷'}}</button>
-      <button class="btn-next" bindtap="goBack" wx:if="{{currentStep === totalSteps - 1 && (mode === 'view' || submitted)}}">返回列表</button>
+    <view class="bottom-bar" wx:if="{{visibleStepCount > 0}}">
+      <button class="btn-prev" bindtap="prevStep" wx:if="{{hasPreviousStep}}">上一步</button>
+      <button class="btn-next {{!hasPreviousStep ? 'full' : ''}}" bindtap="nextStep" wx:if="{{hasNextStep}}">下一步</button>
+      <button class="btn-submit {{!hasPreviousStep ? 'full' : ''}}" bindtap="submitSurvey" loading="{{submitting}}" disabled="{{submitting}}" wx:if="{{!hasNextStep && mode !== 'view' && !submitted}}">{{surveyType === 'weight_visit_registration' ? '提交登记' : '提交问卷'}}</button>
+      <button class="btn-next" bindtap="goBack" wx:if="{{!hasNextStep && (mode === 'view' || submitted)}}">返回列表</button>
     </view>
   </block>
 </view>

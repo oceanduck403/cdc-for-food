@@ -2,7 +2,7 @@
 // 调查问卷表单页面 - 支持后端模板 + 提交到后端
 const surveyApi = require('../../utils/survey.js');
 const { analyzeSurvey } = require('../../utils/qwen_chat.js');
-const { normalizeQuestions, currentQuestions } = require('../../utils/survey-form.js');
+const { normalizeQuestions, currentQuestions, visibleQuestions, visibleAnswers } = require('../../utils/survey-form.js');
 
 // ── 本地问卷题库（备用）────────────────────────────────────────
 const LOCAL_QUESTIONS = {
@@ -57,6 +57,10 @@ Page({
     mode: 'edit',           // edit | view | analyze
     currentStep: 0,
     totalSteps: 0,
+    visibleStepCount: 0,
+    visibleStepIndex: 0,
+    hasPreviousStep: false,
+    hasNextStep: false,
     currentQuestions: [],
     loading: false,
     loadError: '',
@@ -66,6 +70,7 @@ Page({
     submitted: false,
     draftSaved: false,
     analyzing: false,
+    analysisError: '',
     analysisResult: null,
     isRemote: false,       // 是否后端模板
     responseId: null,       // 历史提交 ID
@@ -138,6 +143,7 @@ Page({
       const r = local ? {
         template_type: local.type, template_name: local.title,
         answers: local.answers, questions: local.questions || LOCAL_QUESTIONS[local.type],
+        analysis: local.analysis,
       } : await surveyApi.getMyResponseDetail(id);
       // 获取关联模板的题目
       let qs = [];
@@ -175,7 +181,11 @@ Page({
   },
 
   updateCurrentQuestions() {
-    this.setData({ currentQuestions: this.getCurrentQuestions() });
+    const steps = [...new Set(visibleQuestions(this.data.questions, this.data.answers).map(q => q.step))].sort((a, b) => a - b);
+    const currentStep = steps.includes(this.data.currentStep) ? this.data.currentStep : (steps[0] || 0);
+    const index = Math.max(0, steps.indexOf(currentStep));
+    this.setData({ currentStep, currentQuestions: currentQuestions(this.data.questions, currentStep, this.data.answers),
+      visibleStepCount: steps.length, visibleStepIndex: index, hasPreviousStep: index > 0, hasNextStep: index < steps.length - 1 });
   },
 
   retryLoad() {
@@ -231,6 +241,7 @@ Page({
     const { id } = e.currentTarget.dataset;
     this.setData({ [`answers.${id}`]: e.detail.value });
     this.saveDraft();
+    this.updateCurrentQuestions();
   },
 
   // ── 下一步 ──
@@ -240,9 +251,10 @@ Page({
 
   nextStep() {
     if (this.data.loading || this.data.loadError || this.data.submitting) return;
-    const { currentStep, totalSteps } = this.data;
-    if (currentStep < totalSteps - 1) {
-      this.setData({ currentStep: currentStep + 1 });
+    const steps = [...new Set(visibleQuestions(this.data.questions, this.data.answers).map(q => q.step))].sort((a, b) => a - b);
+    const next = steps.find(step => step > this.data.currentStep);
+    if (next !== undefined) {
+      this.setData({ currentStep: next });
       this.updateCurrentQuestions();
       wx.pageScrollTo({ scrollTop: 0, duration: 0 });
     }
@@ -250,9 +262,10 @@ Page({
 
   // ── 上一步 ──
   prevStep() {
-    const { currentStep } = this.data;
-    if (currentStep > 0) {
-      this.setData({ currentStep: currentStep - 1 });
+    const steps = [...new Set(visibleQuestions(this.data.questions, this.data.answers).map(q => q.step))].sort((a, b) => b - a);
+    const previous = steps.find(step => step < this.data.currentStep);
+    if (previous !== undefined) {
+      this.setData({ currentStep: previous });
       this.updateCurrentQuestions();
       wx.pageScrollTo({ scrollTop: 0, duration: 0 });
     }
@@ -262,7 +275,7 @@ Page({
   submitSurvey() {
     if (this.data.mode === 'view' || this.data.submitted || this.data.submitting || this.data.loading || this.data.loadError || !this.data.questions.length) return;
     const { answers, questions } = this.data;
-    const unanswered = questions.filter(q => {
+    const unanswered = visibleQuestions(questions, answers).filter(q => {
       const ans = answers[q.id];
       return ans === undefined || ans === null || (typeof ans === 'string' && !ans.trim()) || (Array.isArray(ans) && ans.length === 0);
     });
@@ -281,7 +294,8 @@ Page({
   async doSubmit() {
     if (this.data.submitting || this.data.submitted || this.data.mode === 'view' || this.data.loadError || !this.data.questions.length) return;
     this.setData({ submitting: true });
-    const { templateId, isRemote, answers, surveyType } = this.data;
+    const { templateId, isRemote, surveyType } = this.data;
+    const answers = visibleAnswers(this.data.questions, this.data.answers);
     wx.showLoading({ title: '提交中...', mask: true });
 
     try {
@@ -291,7 +305,6 @@ Page({
         const result = await surveyApi.submitResponse({
           template_id: templateId,
           answers,
-          total_score: 0,
           analysis: '',
           user_name: surveyType === 'weight_visit_registration' ? (answers.name || '') : (profile.real_name || profile.nickname || ''),
           user_phone: surveyType === 'weight_visit_registration' ? (answers.phone || '') : (profile.phone || ''),
@@ -312,7 +325,8 @@ Page({
         wx.setStorageSync('survey_history', history);
       }
 
-      this.setData({ submitted: true });
+      this.setData({ submitted: true, answers });
+      this.updateCurrentQuestions();
       const draftKey = this.draftKey();
       if (draftKey) wx.removeStorageSync(draftKey);
       wx.hideLoading();
@@ -347,55 +361,24 @@ Page({
 
   // ── AI 分析 ──
   async analyzeResults() {
-    const { surveyType, answers, surveyTitle } = this.data;
-    this.setData({ analyzing: true });
+    if (this.data.analyzing) return;
+    const { surveyType } = this.data;
+    const answers = visibleAnswers(this.data.questions, this.data.answers);
+    this.setData({ analyzing: true, analysisError: '' });
     wx.showLoading({ title: 'AI 分析中...' });
 
     try {
       const result = await analyzeSurvey(surveyType, answers);
+      if (!result || typeof result.reply !== 'string' || !result.reply.trim()) {
+        throw new Error('AI 暂未返回分析内容');
+      }
       this.setData({ analyzing: false, analysisResult: result, mode: 'analyze' });
     } catch (err) {
-      wx.hideLoading();
-      this.setData({ analyzing: false });
-      const offline = this._generateOfflineAnalysis(surveyType, answers);
-      this.setData({ analysisResult: { reply: offline }, mode: 'analyze' });
+      this.setData({ analysisError: 'AI 分析暂时不可用，填写内容已保留，请稍后重试。' });
     } finally {
+      this.setData({ analyzing: false });
       wx.hideLoading();
     }
-  },
-
-  _generateOfflineAnalysis(type, answers) {
-    const names = { diet: '膳食调查', lifestyle: '生活方式', health: '健康状况', food_safety: '食品安全' };
-    const TYPE_NAMES = { weight_clinic_first: '体重管理首诊', weight_clinic_follow: '体重管理复诊' };
-    const name = TYPE_NAMES[type] || names[type] || '问卷';
-    let score = 50, findings = [], suggestions = [];
-
-    if (type === 'diet') {
-      if (answers.q4 === '每天吃') { score += 20; findings.push('✓ 早餐习惯良好'); }
-      else if (answers.q4 === '偶尔吃') { score += 10; findings.push('△ 偶尔吃早餐，需改善'); }
-      if (answers.q5?.includes?.('蔬菜水果')) { score += 20; findings.push('✓ 摄入蔬菜水果'); }
-      if (answers.q5?.includes?.('油炸食品')) { score -= 10; findings.push('油炸食品摄入偏多'); }
-      suggestions = ['坚持每天吃早餐', '多吃蔬菜水果，每天至少500g', '控制油盐糖摄入'];
-    } else if (type === 'lifestyle') {
-      if (answers.l1 === '5次以上') { score += 25; findings.push('✓ 运动习惯良好'); }
-      if (answers.l4 === '7-8小时') { score += 25; findings.push('✓ 睡眠时长合适'); }
-      suggestions = ['每周至少运动3-5次', '保持7-8小时睡眠', '戒烟限酒'];
-    } else if (type === 'health') {
-      if (answers.h1 === '很好' || answers.h1 === '较好') { score += 30; findings.push('✓ 自我健康评价良好'); }
-      suggestions = ['定期体检，关注身体变化', '如有不适症状，及时就医'];
-    } else if (type === 'food_safety') {
-      if (answers.f1 === '很了解') { score += 25; findings.push('✓ 食品安全知识丰富'); }
-      if (answers.f6 !== '经常吃') { score += 15; findings.push('✓ 野生蘑菇食用谨慎'); }
-      suggestions = ['提高食品安全意识', '切勿随意采摘和食用野生蘑菇'];
-    } else {
-      // 体重管理类问卷
-      findings.push('根据您填写的健康信息');
-      suggestions = ['坚持健康饮食', '适度运动', '定期复查'];
-    }
-
-    score = Math.min(100, Math.max(0, score));
-    const level = score >= 80 ? '优秀' : score >= 60 ? '良好' : score >= 40 ? '一般' : '需改善';
-    return `${name}分析报告\n\n综合评分：${score}/100（${level}）\n\n【主要发现】\n${findings.map(f => `• ${f}`).join('\n') || '• 数据已记录'}\n\n【改进建议】\n${suggestions.map((s, i) => `${i + 1}. ${s}`).join('\n')}\n\n本分析仅供参考，如有健康问题请咨询专业医生。`;
   },
 
   goBack() {

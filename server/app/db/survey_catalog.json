@@ -1,0 +1,1764 @@
+[
+  {
+    "type": "weight_visit_registration",
+    "name": "体重管理门诊就诊信息登记表",
+    "description": "登记就诊日期、联系方式、就诊诉求及复诊安排，可分步填写。",
+    "category": "体重管理",
+    "questions": [
+      {
+        "id": "visit_date",
+        "step": 0,
+        "type": "date",
+        "title": "就诊日期",
+        "required": false,
+        "section": "就诊登记"
+      },
+      {
+        "id": "registration_no",
+        "step": 0,
+        "type": "input",
+        "title": "登记号",
+        "required": false,
+        "hint": "未分配登记号时可留空。"
+      },
+      {
+        "id": "name",
+        "step": 0,
+        "type": "input",
+        "title": "姓名",
+        "required": false
+      },
+      {
+        "id": "sex",
+        "step": 0,
+        "type": "radio",
+        "title": "性别",
+        "required": false,
+        "options": [
+          "男",
+          "女"
+        ]
+      },
+      {
+        "id": "age",
+        "step": 0,
+        "type": "input",
+        "title": "年龄",
+        "required": false,
+        "inputType": "number"
+      },
+      {
+        "id": "phone",
+        "step": 0,
+        "type": "input",
+        "title": "联系电话",
+        "required": false,
+        "hint": "支持手机号或固定电话。"
+      },
+      {
+        "id": "visit_request",
+        "step": 1,
+        "type": "textarea",
+        "title": "就诊诉求",
+        "required": false,
+        "section": "就诊与复诊安排"
+      },
+      {
+        "id": "follow_up_date",
+        "step": 1,
+        "type": "date",
+        "title": "复诊日期",
+        "required": false,
+        "hint": "尚未安排时可留空。"
+      },
+      {
+        "id": "doctor",
+        "step": 1,
+        "type": "input",
+        "title": "接诊医生",
+        "required": false,
+        "hint": "未确定接诊医生时可留空。"
+      },
+      {
+        "id": "notes",
+        "step": 1,
+        "type": "textarea",
+        "title": "备注",
+        "required": false
+      }
+    ],
+    "is_active": true,
+    "sort_order": 0,
+    "source": {
+      "document": "0-体重管理门诊就诊信息登记表5.9.docx",
+      "sha256": "77b7496fa53e6cab5bae01ac6d9ec9e918579ae550328d26a0c6d748fb79f461",
+      "ooxml_body_blocks": "B1-B2"
+    },
+    "scoring": null
+  },
+  {
+    "type": "weight_basic_info",
+    "name": "体重管理门诊病历首页",
+    "description": "记录基础资料、体重管理经历和体格检查结果，方便按日期回顾。",
+    "category": "体重管理",
+    "questions": [
+      {
+        "id": "bi1",
+        "step": 0,
+        "type": "input",
+        "title": "登记号",
+        "required": false,
+        "section": "基本信息"
+      },
+      {
+        "id": "bi2",
+        "step": 0,
+        "type": "input",
+        "title": "姓名",
+        "required": false
+      },
+      {
+        "id": "bi6",
+        "step": 0,
+        "type": "input",
+        "title": "电话",
+        "required": false
+      },
+      {
+        "id": "bi7",
+        "step": 0,
+        "type": "input",
+        "title": "职业",
+        "required": false
+      },
+      {
+        "id": "bi3",
+        "step": 0,
+        "type": "radio",
+        "title": "性别",
+        "required": false,
+        "options": [
+          "男",
+          "女"
+        ]
+      },
+      {
+        "id": "bi4",
+        "step": 0,
+        "type": "input",
+        "title": "年龄",
+        "required": false,
+        "inputType": "number"
+      },
+      {
+        "id": "bi5",
+        "step": 0,
+        "type": "input",
+        "title": "身高",
+        "required": false,
+        "inputType": "digit"
+      },
+      {
+        "id": "bi10",
+        "step": 1,
+        "type": "textarea",
+        "title": "体重管理主诉（就诊原因）",
+        "required": false,
+        "section": "主诉与既往情况"
+      },
+      {
+        "id": "bi11",
+        "step": 1,
+        "type": "textarea",
+        "title": "现病史和用药史",
+        "required": false
+      },
+      {
+        "id": "bi12",
+        "step": 1,
+        "type": "textarea",
+        "title": "食物特殊史(过敏、偏好等)",
+        "required": false
+      },
+      {
+        "id": "bi13",
+        "step": 1,
+        "type": "textarea",
+        "title": "过去体重管理史",
+        "required": false
+      },
+      {
+        "id": "bi_exam_date",
+        "step": 2,
+        "type": "date",
+        "title": "日期",
+        "required": false,
+        "section": "体格检查",
+        "hint": "原表按测量日期记录；每次测量可单独提交，在历史记录中回看。"
+      },
+      {
+        "id": "bi14",
+        "step": 2,
+        "type": "input",
+        "title": "体重(kg)",
+        "required": false,
+        "inputType": "digit"
+      },
+      {
+        "id": "bi15",
+        "step": 2,
+        "type": "input",
+        "title": "BMI(kg/m2)",
+        "required": false,
+        "inputType": "digit"
+      },
+      {
+        "id": "bi16",
+        "step": 2,
+        "type": "input",
+        "title": "体脂百分比",
+        "required": false,
+        "inputType": "digit"
+      },
+      {
+        "id": "bi17",
+        "step": 2,
+        "type": "input",
+        "title": "内脏脂肪面积",
+        "required": false,
+        "inputType": "digit"
+      },
+      {
+        "id": "bi18",
+        "step": 2,
+        "type": "input",
+        "title": "腰围",
+        "required": false,
+        "inputType": "digit"
+      },
+      {
+        "id": "bi19",
+        "step": 2,
+        "type": "input",
+        "title": "腰臀比",
+        "required": false,
+        "inputType": "digit"
+      },
+      {
+        "id": "bi20",
+        "step": 2,
+        "type": "input",
+        "title": "小腿围",
+        "required": false,
+        "inputType": "digit"
+      },
+      {
+        "id": "bi21",
+        "step": 2,
+        "type": "input",
+        "title": "握力",
+        "required": false,
+        "inputType": "digit"
+      },
+      {
+        "id": "bi_body_composition",
+        "step": 3,
+        "type": "textarea",
+        "title": "体成分检查（附打印结果）",
+        "required": false,
+        "section": "体成分检查",
+        "hint": "原表要求附打印结果；这里可记录已有检查结果或说明，未检查时可留空。"
+      }
+    ],
+    "is_active": true,
+    "sort_order": 1,
+    "source": {
+      "document": "3-体重管理门诊首诊+复诊全套表格.docx",
+      "sha256": "6ec7891d4e4e258729cbb8895f1026ab4811decfb4cbeea7657f5c2a07488dc9",
+      "ooxml_body_blocks": "B1-B16"
+    },
+    "scoring": null
+  },
+  {
+    "type": "weight_clinic_first",
+    "name": "体重管理门诊首诊评估表",
+    "description": "了解体重管理目标、健康情况及饮食、运动、睡眠习惯。",
+    "category": "体重管理",
+    "questions": [
+      {
+        "id": "fv1",
+        "step": 0,
+        "type": "radio",
+        "title": "你希望完成",
+        "required": false,
+        "options": [
+          "减重",
+          "增重",
+          "增肌",
+          "减脂"
+        ],
+        "section": "动机与目标设定"
+      },
+      {
+        "id": "fv2",
+        "step": 0,
+        "type": "radio",
+        "title": "最主要的动机是",
+        "required": false,
+        "options": [
+          "健康需求",
+          "提高自我形象需求",
+          "生育需求",
+          "医生建议",
+          "其他"
+        ]
+      },
+      {
+        "id": "fv3",
+        "step": 0,
+        "type": "input",
+        "title": "其他",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv2",
+          "equals": "其他"
+        },
+        "hint": "补充其他动机。"
+      },
+      {
+        "id": "fv4",
+        "step": 0,
+        "type": "textarea",
+        "title": "目标",
+        "required": false
+      },
+      {
+        "id": "fv5",
+        "step": 0,
+        "type": "radio",
+        "title": "希望完成的时间",
+        "required": false,
+        "options": [
+          "1个月",
+          "3个月",
+          "6个月",
+          "12个月",
+          "其他"
+        ]
+      },
+      {
+        "id": "fv6",
+        "step": 0,
+        "type": "input",
+        "title": "其他",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv5",
+          "equals": "其他"
+        },
+        "hint": "补充希望完成的时间。"
+      },
+      {
+        "id": "fv7",
+        "step": 1,
+        "type": "radio",
+        "title": "是否有过体重管理经历",
+        "required": false,
+        "options": [
+          "有",
+          "无"
+        ],
+        "section": "体重管理经历"
+      },
+      {
+        "id": "fv8",
+        "step": 1,
+        "type": "checkbox",
+        "title": "曾尝试的方法（可多选）",
+        "required": false,
+        "options": [
+          "饮食",
+          "运动",
+          "药物",
+          "其他"
+        ],
+        "showWhen": {
+          "questionId": "fv7",
+          "equals": "有"
+        }
+      },
+      {
+        "id": "fv9",
+        "step": 1,
+        "type": "input",
+        "title": "药物",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv8",
+          "includes": "药物"
+        },
+        "hint": "填写曾尝试的药物名称。"
+      },
+      {
+        "id": "fv10",
+        "step": 1,
+        "type": "input",
+        "title": "其他",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv8",
+          "includes": "其他"
+        },
+        "hint": "填写曾尝试的其他方法。"
+      },
+      {
+        "id": "fv11",
+        "step": 1,
+        "type": "radio",
+        "title": "效果是否达到预期？",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "showWhen": {
+          "questionId": "fv7",
+          "equals": "有"
+        }
+      },
+      {
+        "id": "fv12",
+        "step": 1,
+        "type": "checkbox",
+        "title": "未达到预期的主要原因（可多选）",
+        "required": false,
+        "options": [
+          "难以坚持",
+          "运动不足",
+          "代谢问题",
+          "其他"
+        ],
+        "showWhen": {
+          "questionId": "fv11",
+          "equals": "否"
+        }
+      },
+      {
+        "id": "fv13",
+        "step": 1,
+        "type": "input",
+        "title": "其他",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv12",
+          "includes": "其他"
+        },
+        "hint": "填写未达到预期的其他原因。"
+      },
+      {
+        "id": "fv14",
+        "step": 2,
+        "type": "checkbox",
+        "title": "是否有以下相关疾病及用药（可多选，在前面方框内打“√”）",
+        "required": false,
+        "options": [
+          "高血糖（糖尿病）",
+          "高血压",
+          "高血脂（脂肪肝）",
+          "高尿酸（痛风）",
+          "甲状腺疾病",
+          "多囊卵巢综合征",
+          "心理疾病",
+          "其他"
+        ],
+        "section": "健康与病史"
+      },
+      {
+        "id": "fv14_other",
+        "step": 2,
+        "type": "input",
+        "title": "其他",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv14",
+          "includes": "其他"
+        },
+        "hint": "填写原表中的其他疾病名称。"
+      },
+      {
+        "id": "fv15_hyperglycemia",
+        "step": 2,
+        "type": "textarea",
+        "title": "用药情况",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv14",
+          "includes": "高血糖（糖尿病）"
+        },
+        "hint": "对应原表“高血糖（糖尿病）”一行；未服药可填写“无”。"
+      },
+      {
+        "id": "fv15_hypertension",
+        "step": 2,
+        "type": "textarea",
+        "title": "用药情况",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv14",
+          "includes": "高血压"
+        },
+        "hint": "对应原表“高血压”一行；未服药可填写“无”。"
+      },
+      {
+        "id": "fv15_lipids",
+        "step": 2,
+        "type": "textarea",
+        "title": "用药情况",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv14",
+          "includes": "高血脂（脂肪肝）"
+        },
+        "hint": "对应原表“高血脂（脂肪肝）”一行；未服药可填写“无”。"
+      },
+      {
+        "id": "fv15_uric_acid",
+        "step": 2,
+        "type": "textarea",
+        "title": "用药情况",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv14",
+          "includes": "高尿酸（痛风）"
+        },
+        "hint": "对应原表“高尿酸（痛风）”一行；未服药可填写“无”。"
+      },
+      {
+        "id": "fv15_thyroid",
+        "step": 2,
+        "type": "textarea",
+        "title": "用药情况",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv14",
+          "includes": "甲状腺疾病"
+        },
+        "hint": "对应原表“甲状腺疾病”一行；未服药可填写“无”。"
+      },
+      {
+        "id": "fv15_pcos",
+        "step": 2,
+        "type": "textarea",
+        "title": "用药情况",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv14",
+          "includes": "多囊卵巢综合征"
+        },
+        "hint": "对应原表“多囊卵巢综合征”一行；未服药可填写“无”。"
+      },
+      {
+        "id": "fv15_psychological",
+        "step": 2,
+        "type": "textarea",
+        "title": "用药情况",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv14",
+          "includes": "心理疾病"
+        },
+        "hint": "对应原表“心理疾病”一行；未服药可填写“无”。"
+      },
+      {
+        "id": "fv15_other",
+        "step": 2,
+        "type": "textarea",
+        "title": "用药情况",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv14",
+          "includes": "其他"
+        },
+        "hint": "对应原表“其他”一行；未服药可填写“无”。"
+      },
+      {
+        "id": "fv16",
+        "step": 2,
+        "type": "checkbox",
+        "title": "直系亲属是否有以下症状或疾病（可多选）",
+        "required": false,
+        "options": [
+          "肥胖",
+          "消瘦",
+          "糖尿病",
+          "心血管疾病（高血压、高血脂、冠心病等）",
+          "痛风",
+          "甲状腺疾病",
+          "其他",
+          "无"
+        ]
+      },
+      {
+        "id": "fv17",
+        "step": 2,
+        "type": "input",
+        "title": "其他",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv16",
+          "includes": "其他"
+        },
+        "hint": "填写其他家族史。"
+      },
+      {
+        "id": "fv18",
+        "step": 3,
+        "type": "radio",
+        "title": "三餐是否规律",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "饮食习惯"
+      },
+      {
+        "id": "fv19",
+        "step": 3,
+        "type": "radio",
+        "title": "每餐平均就餐时长",
+        "required": false,
+        "options": [
+          "<15分钟",
+          "15~30分钟",
+          ">30分钟"
+        ]
+      },
+      {
+        "id": "fv20",
+        "step": 3,
+        "type": "radio",
+        "title": "饮食结构",
+        "required": false,
+        "options": [
+          "荤食为主",
+          "素食为主",
+          "荤素平衡"
+        ]
+      },
+      {
+        "id": "fv21",
+        "step": 3,
+        "type": "radio",
+        "title": "盐",
+        "required": false,
+        "options": [
+          "非常清淡",
+          "较清淡",
+          "一般",
+          "较重口味",
+          "非常重口味"
+        ],
+        "section": "口味偏好"
+      },
+      {
+        "id": "fv22",
+        "step": 3,
+        "type": "radio",
+        "title": "油",
+        "required": false,
+        "options": [
+          "非常清淡",
+          "较清淡",
+          "一般",
+          "较重口味",
+          "非常重口味"
+        ]
+      },
+      {
+        "id": "fv23",
+        "step": 3,
+        "type": "radio",
+        "title": "辣度",
+        "required": false,
+        "options": [
+          "非常清淡",
+          "较清淡",
+          "一般",
+          "较重口味",
+          "非常重口味"
+        ]
+      },
+      {
+        "id": "fv24",
+        "step": 3,
+        "type": "radio",
+        "title": "是否有吃零食（正餐之外的加餐）习惯？",
+        "required": false,
+        "options": [
+          "是",
+          "否（跳16题）"
+        ],
+        "hint": "原纸表跳题提示保留；选择“否”时电子表自动略过零食频率和种类。",
+        "section": "饮食习惯"
+      },
+      {
+        "id": "fv25",
+        "step": 3,
+        "type": "radio",
+        "title": "若是，吃零食的频率",
+        "required": false,
+        "options": [
+          "≥4次/周",
+          "2~3次/周",
+          "＜1次/周"
+        ],
+        "showWhen": {
+          "questionId": "fv24",
+          "equals": "是"
+        }
+      },
+      {
+        "id": "fv26",
+        "step": 3,
+        "type": "input",
+        "title": "最喜欢吃的零食(写三种)",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv24",
+          "equals": "是"
+        }
+      },
+      {
+        "id": "fv27",
+        "step": 3,
+        "type": "radio",
+        "title": "是否喝含糖饮料（可乐、果汁、奶茶等甜味饮品）？",
+        "required": false,
+        "options": [
+          "是",
+          "否（跳18题）"
+        ],
+        "hint": "原纸表跳题提示保留；选择“否”时电子表自动略过含糖饮料摄入频率。"
+      },
+      {
+        "id": "fv28",
+        "step": 3,
+        "type": "radio",
+        "title": "若是，含糖饮料摄入频率？",
+        "required": false,
+        "options": [
+          "≥4次/周",
+          "2~3次/周",
+          "＜1次/周"
+        ],
+        "showWhen": {
+          "questionId": "fv27",
+          "equals": "是"
+        }
+      },
+      {
+        "id": "fv29",
+        "step": 3,
+        "type": "radio",
+        "title": "最近一个月在外就餐（含外卖）的频率",
+        "required": false,
+        "options": [
+          ">10次/周",
+          "5~9次/周",
+          "1~4次/周",
+          "几乎不"
+        ]
+      },
+      {
+        "id": "fv30",
+        "step": 3,
+        "type": "radio",
+        "title": "暴食暴饮的频率",
+        "required": false,
+        "options": [
+          "经常",
+          "偶尔",
+          "几乎不"
+        ],
+        "hint": "暴饮暴食指在短时间内摄入远超正常进食量的食物，且难以控制。"
+      },
+      {
+        "id": "fv31",
+        "step": 3,
+        "type": "radio",
+        "title": "饮酒情况",
+        "required": false,
+        "options": [
+          "每天喝酒",
+          "经常喝酒",
+          "有时喝酒",
+          "极少喝酒",
+          "完全不喝酒"
+        ]
+      },
+      {
+        "id": "fv32",
+        "step": 3,
+        "type": "radio",
+        "title": "如果喝酒，你一般喝",
+        "required": false,
+        "options": [
+          "白酒",
+          "红酒",
+          "啤酒",
+          "其他"
+        ],
+        "showWhen": {
+          "questionId": "fv31",
+          "notEquals": "完全不喝酒"
+        }
+      },
+      {
+        "id": "fv32_other",
+        "step": 3,
+        "type": "input",
+        "title": "其他",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv32",
+          "equals": "其他"
+        },
+        "hint": "填写其他酒类。"
+      },
+      {
+        "id": "fv33",
+        "step": 3,
+        "type": "input",
+        "title": "平均每次大概喝酒",
+        "required": false,
+        "inputType": "digit",
+        "unit": "ml",
+        "showWhen": {
+          "questionId": "fv31",
+          "notEquals": "完全不喝酒"
+        }
+      },
+      {
+        "id": "fv34",
+        "step": 3,
+        "type": "radio",
+        "title": "您过去一周内平均每天喝了多少杯水（1杯=200ml）?",
+        "required": false,
+        "options": [
+          "≥7-8杯",
+          "5-6杯",
+          "3-4杯",
+          "1-2杯",
+          "不知道"
+        ]
+      },
+      {
+        "id": "fv35",
+        "step": 4,
+        "type": "radio",
+        "title": "过去一个月，您每周有几天累计户外运动时间超过30分钟（不包括上下班、买菜走路的运动时间）",
+        "required": false,
+        "options": [
+          "每天",
+          "5-7天",
+          "3-4天",
+          "1-2天",
+          "不运动"
+        ],
+        "section": "运动习惯"
+      },
+      {
+        "id": "fv36",
+        "step": 4,
+        "type": "checkbox",
+        "title": "主要户外运动（可多选）",
+        "required": false,
+        "options": [
+          "步行",
+          "慢跑",
+          "健身操",
+          "游泳",
+          "球类运动",
+          "运动操",
+          "其他"
+        ]
+      },
+      {
+        "id": "fv37",
+        "step": 4,
+        "type": "input",
+        "title": "其他",
+        "required": false,
+        "showWhen": {
+          "questionId": "fv36",
+          "includes": "其他"
+        },
+        "hint": "填写其他户外运动。"
+      },
+      {
+        "id": "fv38",
+        "step": 5,
+        "type": "radio",
+        "title": "您最近2周自我感觉睡眠情况如何",
+        "required": false,
+        "options": [
+          "好",
+          "一般",
+          "差（如失眠、早醒）"
+        ],
+        "section": "睡眠情况"
+      },
+      {
+        "id": "fv39",
+        "step": 5,
+        "type": "input",
+        "inputType": "text",
+        "format": "time",
+        "title": "您晚上通常几时几分睡觉（24小时制）",
+        "required": false
+      },
+      {
+        "id": "fv40",
+        "step": 5,
+        "type": "radio",
+        "title": "平均每日睡眠时长(不含午休）",
+        "required": false,
+        "options": [
+          "＜6小时",
+          "6-7小时",
+          "7-8小时",
+          "≥8小时"
+        ]
+      },
+      {
+        "id": "fv41",
+        "step": 5,
+        "type": "radio",
+        "title": "最近一个月您使用助眠药情况",
+        "required": false,
+        "options": [
+          "无",
+          "<1次/周",
+          "1-2次/周",
+          "≥3次/周"
+        ]
+      }
+    ],
+    "is_active": true,
+    "sort_order": 2,
+    "source": {
+      "document": "3-体重管理门诊首诊+复诊全套表格.docx",
+      "sha256": "6ec7891d4e4e258729cbb8895f1026ab4811decfb4cbeea7657f5c2a07488dc9",
+      "ooxml_body_blocks": "B18-B62"
+    },
+    "scoring": null
+  },
+  {
+    "type": "weight_anti_obesity",
+    "name": "体重管理门诊防肥分数自测表",
+    "description": "从饮食、活动、休息等11个方面回顾生活习惯，共36道是非题。",
+    "category": "体重管理",
+    "questions": [
+      {
+        "id": "ao1",
+        "step": 0,
+        "type": "radio",
+        "title": "不喝甜饮料和奶茶等甜味饮品，用白水、淡茶水、淡柠檬水等替代",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "一、有关饮品"
+      },
+      {
+        "id": "ao2",
+        "step": 0,
+        "type": "radio",
+        "title": "喝粥、汤、羹、豆浆、牛奶等，只喝原味，不加糖",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "一、有关饮品"
+      },
+      {
+        "id": "ao3",
+        "step": 0,
+        "type": "radio",
+        "title": "不喝有添加脂肪的汤羹和饮品，如喝汤要去油",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "一、有关饮品"
+      },
+      {
+        "id": "ao4",
+        "step": 1,
+        "type": "radio",
+        "title": "每天把至少一种全谷/杂豆食材纳入主食。如早上用牛奶燕麦粥替代白米粥",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "二、有关主食"
+      },
+      {
+        "id": "ao5",
+        "step": 1,
+        "type": "radio",
+        "title": "尽量不吃加了油/盐/糖的主食和小吃，如烧饼、油酥饼、油条、玉米烙、炒粉等",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "二、有关主食"
+      },
+      {
+        "id": "ao6",
+        "step": 1,
+        "type": "radio",
+        "title": "吃土豆、山药、蒸藕等含淀粉蔬菜时要替代一部分主食，而不是额外当菜吃",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "二、有关主食"
+      },
+      {
+        "id": "ao7",
+        "step": 1,
+        "type": "radio",
+        "title": "晚上一定要吃主食，避免夜间失眠。减重基本完成后，每日主食量（粮食干重）不低于 200 克",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "二、有关主食"
+      },
+      {
+        "id": "ao8",
+        "step": 2,
+        "type": "radio",
+        "title": "每餐都吃 1 碗的少油烹调蔬菜（烹熟后）",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "三、有关蔬菜"
+      },
+      {
+        "id": "ao9",
+        "step": 2,
+        "type": "radio",
+        "title": "每天都吃至少 1 碗的绿叶蔬菜（烹熟后）",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "三、有关蔬菜"
+      },
+      {
+        "id": "ao10",
+        "step": 2,
+        "type": "radio",
+        "title": "尽量在早餐也吃少油烹调的蔬菜，如胡萝卜、烫青菜等",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "三、有关蔬菜"
+      },
+      {
+        "id": "ao11",
+        "step": 3,
+        "type": "radio",
+        "title": "每天早餐吃鸡蛋，优先选用嫩煮蛋、蒸蛋羹等少油烹调方式",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "四、有关鱼肉蛋类"
+      },
+      {
+        "id": "ao12",
+        "step": 3,
+        "type": "radio",
+        "title": "尽量吃瘦肉，少吃肥牛、羊排、排骨等高脂肪部位，远离肥肉",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "四、有关鱼肉蛋类"
+      },
+      {
+        "id": "ao13",
+        "step": 3,
+        "type": "radio",
+        "title": "吃鸡、鸭的时候，尽量去皮吃",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "四、有关鱼肉蛋类"
+      },
+      {
+        "id": "ao14",
+        "step": 4,
+        "type": "radio",
+        "title": "多用清蒸、白灼、水油焖等少油烹调法，避免油炸、油煎和肉丸",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "五、有关烹调方式"
+      },
+      {
+        "id": "ao15",
+        "step": 4,
+        "type": "radio",
+        "title": "不喝有油的汤汁，少吃汤汁和米饭融合在一起的盖浇饭",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "五、有关烹调方式"
+      },
+      {
+        "id": "ao16",
+        "step": 4,
+        "type": "radio",
+        "title": "如果不得不吃油多的菜肴，用热水涮涮油",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "五、有关烹调方式"
+      },
+      {
+        "id": "ao17",
+        "step": 5,
+        "type": "radio",
+        "title": "用无糖或减糖酸奶替代甜食和冷饮",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "六、有关甜食和冷饮"
+      },
+      {
+        "id": "ao18",
+        "step": 5,
+        "type": "radio",
+        "title": "用水果替代零食，每天不超过 1 个苹果+ 1 个橙子的量",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "六、有关甜食和冷饮"
+      },
+      {
+        "id": "ao19",
+        "step": 6,
+        "type": "radio",
+        "title": "餐前喝 1-2 杯水",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "七、有关进食模式"
+      },
+      {
+        "id": "ao20",
+        "step": 6,
+        "type": "radio",
+        "title": "先吃半份蔬菜，再吃半份其他菜肴，最后吃主食",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "七、有关进食模式"
+      },
+      {
+        "id": "ao21",
+        "step": 6,
+        "type": "radio",
+        "title": "水果放在餐前吃，或至少用餐时吃，而不是吃完饭再吃",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "七、有关进食模式"
+      },
+      {
+        "id": "ao22",
+        "step": 7,
+        "type": "radio",
+        "title": "吃饭时专心体会食物带来的饱感，不看手机",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "八、有关进食行为"
+      },
+      {
+        "id": "ao23",
+        "step": 7,
+        "type": "radio",
+        "title": "晚餐尽量 6点前吃完，晚餐后尽量不吃任何食物,争取每日14小时不进食",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "八、有关进食行为"
+      },
+      {
+        "id": "ao24",
+        "step": 7,
+        "type": "radio",
+        "title": "能找到自己合适的食量。以第二餐前不会饿得难受、睡前不会明显饥饿为准",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "八、有关进食行为"
+      },
+      {
+        "id": "ao25",
+        "step": 7,
+        "type": "radio",
+        "title": "偶尔一次吃多了不会感觉沮丧，下一餐少吃点，或者增加运动即可",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "八、有关进食行为"
+      },
+      {
+        "id": "ao26",
+        "step": 8,
+        "type": "radio",
+        "title": "利用几分钟的时间走路、爬楼，如课间 10 分钟，开会前几分钟，取快递的几分钟等",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "九、有关日常活动和锻炼"
+      },
+      {
+        "id": "ao27",
+        "step": 8,
+        "type": "radio",
+        "title": "收拾家居、清洗打扫等各种家务",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "九、有关日常活动和锻炼"
+      },
+      {
+        "id": "ao28",
+        "step": 8,
+        "type": "radio",
+        "title": "在 3 公里以内的距离，把骑电动车改成骑自行车或走路",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "九、有关日常活动和锻炼"
+      },
+      {
+        "id": "ao29",
+        "step": 8,
+        "type": "radio",
+        "title": "每周至少 2 次增肌运动，3 次有氧运动。周末尽量做到有 1 小时户外运动",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "九、有关日常活动和锻炼"
+      },
+      {
+        "id": "ao30",
+        "step": 9,
+        "type": "radio",
+        "title": "晚 11 点之前睡觉",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "十、有关休息"
+      },
+      {
+        "id": "ao31",
+        "step": 9,
+        "type": "radio",
+        "title": "保持上床休息时间基本稳定，每天睡眠时间不低于 7 小时",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "十、有关休息"
+      },
+      {
+        "id": "ao32",
+        "step": 9,
+        "type": "radio",
+        "title": "学会放松心情，如果需要加班也按时睡下，同时上个闹钟，早上 6 点再起来工作效率更高",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "十、有关休息"
+      },
+      {
+        "id": "ao33",
+        "step": 9,
+        "type": "radio",
+        "title": "如果感觉特别累，这一天可以减少运动量，等精神好了再运动，不要把运动变成一种压力",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "十、有关休息"
+      },
+      {
+        "id": "ao34",
+        "step": 10,
+        "type": "radio",
+        "title": "定期称体重(建议早上排空后空腹称重)",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "十一、有关身体管理和自我感觉"
+      },
+      {
+        "id": "ao35",
+        "step": 10,
+        "type": "radio",
+        "title": "定期测量腰围（比称量体重更能反映体脂肪的变化）",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "十一、有关身体管理和自我感觉"
+      },
+      {
+        "id": "ao36",
+        "step": 10,
+        "type": "radio",
+        "title": "注意衣服松紧程度的变化、体力的上升和面容气色的变化",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "十一、有关身体管理和自我感觉"
+      }
+    ],
+    "is_active": true,
+    "sort_order": 3,
+    "source": {
+      "document": "3-体重管理门诊首诊+复诊全套表格.docx",
+      "sha256": "6ec7891d4e4e258729cbb8895f1026ab4811decfb4cbeea7657f5c2a07488dc9",
+      "ooxml_body_blocks": "B63-B64"
+    },
+    "scoring": null
+  },
+  {
+    "type": "weight_clinic_follow",
+    "name": "体重管理门诊复诊评估表",
+    "description": "回顾近期饮食、运动和睡眠习惯，记录复诊时的相关信息。",
+    "category": "体重管理",
+    "questions": [
+      {
+        "id": "fu5",
+        "step": 0,
+        "type": "radio",
+        "title": "三餐是否规律",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "section": "饮食习惯"
+      },
+      {
+        "id": "fu6",
+        "step": 0,
+        "type": "radio",
+        "title": "每餐平均就餐时长",
+        "required": false,
+        "options": [
+          "<15分钟",
+          "15~30分钟",
+          ">30分钟"
+        ]
+      },
+      {
+        "id": "fu7",
+        "step": 0,
+        "type": "radio",
+        "title": "饮食结构",
+        "required": false,
+        "options": [
+          "荤食为主",
+          "素食为主",
+          "荤素平衡"
+        ]
+      },
+      {
+        "id": "fu8",
+        "step": 0,
+        "type": "radio",
+        "title": "盐",
+        "required": false,
+        "options": [
+          "非常清淡",
+          "较清淡",
+          "一般",
+          "较重口味",
+          "非常重口味"
+        ],
+        "section": "口味偏好"
+      },
+      {
+        "id": "fu9",
+        "step": 0,
+        "type": "radio",
+        "title": "油",
+        "required": false,
+        "options": [
+          "非常清淡",
+          "较清淡",
+          "一般",
+          "较重口味",
+          "非常重口味"
+        ]
+      },
+      {
+        "id": "fu10",
+        "step": 0,
+        "type": "radio",
+        "title": "辣度",
+        "required": false,
+        "options": [
+          "非常清淡",
+          "较清淡",
+          "一般",
+          "较重口味",
+          "非常重口味"
+        ]
+      },
+      {
+        "id": "fu11",
+        "step": 0,
+        "type": "radio",
+        "title": "是否有吃零食（正餐之外的加餐）习惯？",
+        "required": false,
+        "options": [
+          "是",
+          "否（跳16题）"
+        ],
+        "hint": "原纸表跳题提示保留；选择“否”时电子表自动略过零食频率和种类。",
+        "section": "饮食习惯"
+      },
+      {
+        "id": "fu12",
+        "step": 0,
+        "type": "radio",
+        "title": "若是，吃零食的频率",
+        "required": false,
+        "options": [
+          "≥4次/周",
+          "2~3次/周",
+          "＜1次/周"
+        ],
+        "showWhen": {
+          "questionId": "fu11",
+          "equals": "是"
+        }
+      },
+      {
+        "id": "fu13",
+        "step": 0,
+        "type": "input",
+        "title": "最喜欢吃的零食(写三种)",
+        "required": false,
+        "showWhen": {
+          "questionId": "fu11",
+          "equals": "是"
+        }
+      },
+      {
+        "id": "fu14",
+        "step": 0,
+        "type": "radio",
+        "title": "是否喝含糖饮料（可乐、果汁、奶茶等甜味饮品）？",
+        "required": false,
+        "options": [
+          "是",
+          "否（跳18题）"
+        ],
+        "hint": "原纸表跳题提示保留；选择“否”时电子表自动略过含糖饮料摄入频率。"
+      },
+      {
+        "id": "fu15",
+        "step": 0,
+        "type": "radio",
+        "title": "若是，含糖饮料摄入频率？",
+        "required": false,
+        "options": [
+          "≥4次/周",
+          "2~3次/周",
+          "＜1次/周"
+        ],
+        "showWhen": {
+          "questionId": "fu14",
+          "equals": "是"
+        }
+      },
+      {
+        "id": "fu16",
+        "step": 0,
+        "type": "radio",
+        "title": "最近一个月在外就餐（含外卖）的频率",
+        "required": false,
+        "options": [
+          ">10次/周",
+          "5~9次/周",
+          "1~4次/周",
+          "几乎不"
+        ]
+      },
+      {
+        "id": "fu17",
+        "step": 0,
+        "type": "radio",
+        "title": "暴食暴饮的频率",
+        "required": false,
+        "options": [
+          "经常",
+          "偶尔",
+          "几乎不"
+        ],
+        "hint": "暴饮暴食指在短时间内摄入远超正常进食量的食物，且难以控制。"
+      },
+      {
+        "id": "fu18",
+        "step": 0,
+        "type": "radio",
+        "title": "饮酒情况",
+        "required": false,
+        "options": [
+          "每天喝酒",
+          "经常喝酒",
+          "有时喝酒",
+          "极少喝酒",
+          "完全不喝酒"
+        ]
+      },
+      {
+        "id": "fu19",
+        "step": 0,
+        "type": "radio",
+        "title": "如果喝酒，你一般喝",
+        "required": false,
+        "options": [
+          "白酒",
+          "红酒",
+          "啤酒",
+          "其他"
+        ],
+        "showWhen": {
+          "questionId": "fu18",
+          "notEquals": "完全不喝酒"
+        }
+      },
+      {
+        "id": "fu19_other",
+        "step": 0,
+        "type": "input",
+        "title": "其他",
+        "required": false,
+        "showWhen": {
+          "questionId": "fu19",
+          "equals": "其他"
+        },
+        "hint": "填写其他酒类。"
+      },
+      {
+        "id": "fu20",
+        "step": 0,
+        "type": "input",
+        "title": "平均每次大概喝酒",
+        "required": false,
+        "inputType": "digit",
+        "unit": "ml",
+        "showWhen": {
+          "questionId": "fu18",
+          "notEquals": "完全不喝酒"
+        }
+      },
+      {
+        "id": "fu21",
+        "step": 0,
+        "type": "radio",
+        "title": "您过去一周内平均每天喝了多少杯水（1杯=200ml）?",
+        "required": false,
+        "options": [
+          "≥7-8杯",
+          "5-6杯",
+          "3-4杯",
+          "1-2杯",
+          "不知道"
+        ]
+      },
+      {
+        "id": "fu22",
+        "step": 1,
+        "type": "radio",
+        "title": "过去一个月，您每周有几天累计户外运动时间超过30分钟（不包括上下班、买菜走路的运动时间）",
+        "required": false,
+        "options": [
+          "每天",
+          "5-7天",
+          "3-4天",
+          "1-2天",
+          "不运动"
+        ],
+        "section": "运动习惯"
+      },
+      {
+        "id": "fu23",
+        "step": 1,
+        "type": "checkbox",
+        "title": "主要户外运动（可多选）",
+        "required": false,
+        "options": [
+          "步行",
+          "慢跑",
+          "健身操",
+          "游泳",
+          "球类运动",
+          "运动操",
+          "其他"
+        ]
+      },
+      {
+        "id": "fu24",
+        "step": 1,
+        "type": "input",
+        "title": "其他",
+        "required": false,
+        "showWhen": {
+          "questionId": "fu23",
+          "includes": "其他"
+        },
+        "hint": "填写其他户外运动。"
+      },
+      {
+        "id": "fu25",
+        "step": 2,
+        "type": "radio",
+        "title": "您最近2周自我感觉睡眠情况如何",
+        "required": false,
+        "options": [
+          "好",
+          "一般",
+          "差（如失眠、早醒）"
+        ],
+        "section": "睡眠情况"
+      },
+      {
+        "id": "fu26",
+        "step": 2,
+        "type": "input",
+        "inputType": "text",
+        "format": "time",
+        "title": "您晚上通常几时几分睡觉（24小时制）",
+        "required": false
+      },
+      {
+        "id": "fu27",
+        "step": 2,
+        "type": "radio",
+        "title": "平均每日睡眠时长(不含午休）",
+        "required": false,
+        "options": [
+          "＜6小时",
+          "6-7小时",
+          "7-8小时",
+          "≥8小时"
+        ]
+      },
+      {
+        "id": "fu28",
+        "step": 2,
+        "type": "radio",
+        "title": "最近一个月您使用助眠药情况",
+        "required": false,
+        "options": [
+          "无",
+          "<1次/周",
+          "1-2次/周",
+          "≥3次/周"
+        ]
+      },
+      {
+        "id": "fu_body_composition",
+        "step": 3,
+        "type": "textarea",
+        "title": "体成分检查（附打印结果）",
+        "required": false,
+        "section": "体成分检查",
+        "hint": "原表要求附打印结果；这里可记录已有检查结果或说明，未检查时可留空。"
+      }
+    ],
+    "is_active": true,
+    "sort_order": 4,
+    "source": {
+      "document": "3-体重管理门诊首诊+复诊全套表格.docx",
+      "sha256": "6ec7891d4e4e258729cbb8895f1026ab4811decfb4cbeea7657f5c2a07488dc9",
+      "ooxml_body_blocks": "B68-B94"
+    },
+    "scoring": null
+  }
+]

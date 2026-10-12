@@ -153,6 +153,9 @@
   font-weight: 600;
   margin-right: 8rpx;
 }
+.question-section { margin: 30rpx 4rpx 20rpx; color: #145b94; font-size: 34rpx; line-height: 1.5; font-weight: 700; white-space: pre-wrap; }
+.question-hint { display: block; margin: -8rpx 0 24rpx; color: #526b78; font-size: 28rpx; line-height: 1.65; white-space: pre-wrap; }
+.question-unit { color: #526b78; font-weight: 400; }
 
 /* 选项列表 */
 .options-list {
@@ -317,3 +320,6 @@
 .clear-date::after { border: 0; }
 .retry-button { flex: none; width: 100%; margin-top: 24rpx; }
 .draft-hint { display: block; padding-bottom: 20rpx; color: #145b94; font-size: 28rpx; line-height: 1.5; }
+.analysis-error { padding: 28rpx; margin-bottom: 24rpx; border: 1rpx solid #efcfb6; border-radius: 20rpx; background: #fff7ed; }
+.analysis-error-text { display: block; color: #774a2c; font-size: 30rpx; line-height: 1.6; }
+.retry-analysis { width: 100%; margin-top: 20rpx; }

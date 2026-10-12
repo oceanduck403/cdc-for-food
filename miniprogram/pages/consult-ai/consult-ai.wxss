@@ -29,11 +29,12 @@ button::after { border: 0; }
 .msg-image { display: block; width: 330rpx; margin-bottom: 14rpx; border-radius: 10rpx; }
 .msg-time { margin: 7rpx 8rpx 0; color: #637984; font-size: 28rpx; }
 .error { display: block; flex-shrink: 0; padding: 12rpx 28rpx; color: #8a3f28; background: #fff2ea; font-size: 28rpx; line-height: 1.5; }
-.input-bar { display: flex; align-items: center; gap: 12rpx; flex-shrink: 0; padding: 16rpx 20rpx; border-top: 1rpx solid #dce6ed; background: #fff; }
-.btn-image { display: flex; align-items: center; justify-content: center; width: 96rpx; height: 96rpx; flex-shrink: 0; margin: 0; padding: 0; border: 1rpx solid #ccdce4; border-radius: 14rpx; background: #f5f9fa; }
-.input-field { box-sizing: border-box; flex: 1; min-width: 0; height: 96rpx; padding: 0 18rpx; border: 1rpx solid #aFCBD9; border-radius: 14rpx; background: #fff; color: #1d3e50; font-size: 30rpx; }
-.btn-send { flex-shrink: 0; min-width: 104rpx; height: 96rpx; line-height: 96rpx; margin: 0; padding: 0 14rpx; border-radius: 14rpx; background: #1769A6; color: #fff; font-size: 30rpx; font-weight: 700; }
-.btn-send[disabled] { background: #cbdce4; color: #5e7784; }
+.input-bar { box-sizing: border-box; display: flex; align-items: center; gap: 12rpx; flex-shrink: 0; width: 100%; padding: 16rpx 20rpx; border-top: 1rpx solid #dce6ed; background: #fff; }
+/* Constrain native button widths so they cannot squeeze the editable field. */
+.input-bar > .btn-image { box-sizing: border-box; display: flex; align-items: center; justify-content: center; flex: 0 0 48px; width: 48px; min-width: 48px; max-width: 48px; height: 96rpx; min-height: 48px; margin: 0; padding: 0; border: 1rpx solid #ccdce4; border-radius: 14rpx; background: #f5f9fa; }
+.input-field { box-sizing: border-box; flex: 1 1 0%; width: 0; min-width: 0; height: 96rpx; min-height: 48px; padding: 0 18rpx; border: 1rpx solid #aFCBD9; border-radius: 14rpx; background: #fff; color: #1d3e50; font-size: 30rpx; }
+.input-bar > .btn-send { box-sizing: border-box; display: flex; align-items: center; justify-content: center; flex: 0 0 112rpx; width: 112rpx; min-width: 56px; max-width: 112rpx; height: 96rpx; min-height: 48px; line-height: 1.4; margin: 0; padding: 0 8rpx; border-radius: 14rpx; background: #1769A6; color: #fff; font-size: 30rpx; font-weight: 700; }
+.input-bar > .btn-send[disabled] { background: #cbdce4; color: #5e7784; }
 .disclaimer { display: block; flex-shrink: 0; padding: 0 20rpx calc(12rpx + env(safe-area-inset-bottom)); background: #fff; color: #627987; text-align: center; font-size: 28rpx; line-height: 1.6; }
 .modal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; background: rgba(9,33,47,.45); }
 .modal-content { box-sizing: border-box; width: 610rpx; padding: 42rpx; border-radius: 24rpx; background: #fff; }

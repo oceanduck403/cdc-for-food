@@ -112,6 +112,83 @@ async def test_gateway_thinking_extension_preserves_other_model_protocols(
         assert payload["enable_thinking"] is expected
 
 
+@pytest.mark.parametrize("mode", ["health_consult", "diet_guide"])
+async def test_label_question_grounds_real_provider_with_verified_sources_and_corrects_history(
+    mode, install_qwen_transport,
+):
+    from app.services import qwen_service
+
+    provider_answer = "（AI生成）本次由模型结合您提供的标签回答。"
+    requests = install_qwen_transport(
+        lambda _request: httpx.Response(200, json={"choices": [{"message": {"content": provider_answer}}]})
+    )
+    history = [
+        {"role": "user", "content": "买食品怎么看营养成分表？"},
+        {"role": "assistant", "content": "钠低于400mg/100g就是低钠，营养成分排前三位说明含量高。"},
+    ]
+    question = "营养成分表每份钠120mg算低钠吗？碳水化合物是不是糖，排前三的都高吗？"
+    reply = await qwen_service.chat(question, mode, history)
+
+    # The gateway still calls the actual completion path and returns its answer;
+    # these references are provider context, not a canned replacement response.
+    assert len(requests) == 1
+    assert reply == provider_answer
+    payload = json.loads(requests[0].content)
+    system = payload["messages"][0]["content"]
+    assert "钠≤120 mg/100 g或100 mL" in system
+    assert "包含等于120" in system
+    assert "不能用每份钠≤120 mg直接判定符合" in system
+    assert "个人每日摄入上限" in system
+    assert "先统一计量基准" in system and "实际含量和NRV%" in system
+    assert "不是该营养素占食品重量的比例" in system
+    assert "行顺序按标准排列，不代表含量高低" in system
+    assert "配料排名不能直接给出脂肪、糖或钠的含量" in system
+    assert "碳水化合物包括糖、寡糖和多糖" in system
+    assert "不能把“碳水化合物”数值直接当成糖或添加糖的含量" in system
+    assert "缺少计量基准或具体数值" in system and "不能猜测" in system
+    assert "以这些资料为准并简短纠正此前错误" in system
+    assert "附上支持相关结论的官方来源链接" in system
+    assert "https://www.nhc.gov.cn/ewebeditor/uploadfile/2013/06/20130605104041625.pdf" in system
+    assert "https://www.nhc.gov.cn/zwgk/zcjd/201402/6f68ec6692594cf28d190cb47b770c11.shtml" in system
+    assert "400mg" not in system
+    assert payload["messages"][1:3] == history
+    assert payload["messages"][-1] == {"role": "user", "content": question}
+    assert payload["temperature"] == 0.2
+    assert payload["enable_thinking"] is False and payload["max_tokens"] == 1000
+    assert "server-only-test-key" not in reply
+
+
+@pytest.mark.parametrize("question", [
+    "营养标签怎么读？", "食品标签怎么看？", "营养成分表需要注意什么？",
+    "配料表和营养表一样吗？", "nrv%是什么意思？", "低钠的条件是什么？", "低盐食品怎么选？",
+])
+async def test_label_terms_select_verified_context(question, install_qwen_transport):
+    from app.services import qwen_service
+
+    requests = install_qwen_transport(
+        lambda _request: httpx.Response(200, json={"choices": [{"message": {"content": "模型答复"}}]})
+    )
+    await qwen_service.chat(question, "health_consult", [])
+    payload = json.loads(requests[0].content)
+    assert "GB 28050-2011" in payload["messages"][0]["content"]
+    assert payload["temperature"] == 0.2
+
+
+async def test_unrelated_chat_does_not_inherit_label_context_from_old_history(install_qwen_transport):
+    from app.services import qwen_service
+
+    requests = install_qwen_transport(
+        lambda _request: httpx.Response(200, json={"choices": [{"message": {"content": "新的模型答复"}}]})
+    )
+    history = [{"role": "user", "content": "配料表怎么看？"}]
+    assert await qwen_service.chat("每天散步怎么安排？", "health_consult", history) == "新的模型答复"
+    payload = json.loads(requests[0].content)
+    assert payload["messages"][0]["content"] == qwen_service.SYSTEM_PROMPTS["health_consult"]
+    assert "nhc.gov.cn" not in payload["messages"][0]["content"]
+    assert payload["temperature"] == 0.6
+    assert payload["messages"][1] == history[0]
+
+
 @pytest.mark.parametrize("failure", ["unauthorized", "timeout"])
 async def test_upstream_failures_do_not_expose_credentials_to_client(
     failure, client, db, monkeypatch, install_qwen_transport,
@@ -145,6 +222,84 @@ async def test_upstream_failures_do_not_expose_credentials_to_client(
     }
     assert "server-only-test-key" not in response.text
     assert "provider.example" not in response.text
+
+
+async def test_original_survey_analysis_sends_source_questions_and_answers(install_qwen_transport):
+    from app.services import qwen_service
+
+    requests = install_qwen_transport(
+        lambda _request: httpx.Response(200, json={"choices": [{"message": {"content": "（AI生成）建议逐步改善习惯。"}}]})
+    )
+    # Deliberately reverse input order and include an unrecognised legacy field.
+    reply = await qwen_service.analyze_survey("weight_anti_obesity", {
+        "ao36": "是", "unknown_legacy_id": "must-not-be-interpreted", "ao1": "否", "ao2": "",
+    })
+    assert reply == "（AI生成）建议逐步改善习惯。"
+    payload = json.loads(requests[0].content)
+    system, user = payload["messages"]
+    assert "未提供评分规则" in system["content"]
+    assert "不得编造分数、权重、阈值" in system["content"]
+    context = json.loads(user["content"].split("\n", 1)[0].split("：", 1)[1])
+    assert context["surveyName"] == "体重管理门诊防肥分数自测表"
+    assert context["scoringRules"] is None
+    assert context["answeredQuestions"] == [
+        {"questionId": "ao1", "questionNumber": 1, "section": "一、有关饮品",
+         "originalQuestion": "不喝甜饮料和奶茶等甜味饮品，用白水、淡茶水、淡柠檬水等替代", "answer": "否"},
+        {"questionId": "ao36", "questionNumber": 36, "section": "十一、有关身体管理和自我感觉",
+         "originalQuestion": "注意衣服松紧程度的变化、体力的上升和面容气色的变化", "answer": "是"},
+    ]
+    assert 2 in context["unansweredQuestionNumbers"]
+    assert context["unknownQuestionIds"] == ["unknown_legacy_id"]
+    assert "must-not-be-interpreted" not in user["content"]
+    assert payload["temperature"] == 0.4 and payload["max_tokens"] == 1400
+    assert payload["enable_thinking"] is False
+
+
+async def test_original_survey_analysis_preserves_matrix_context_and_units(install_qwen_transport):
+    from app.services import qwen_service
+
+    requests = install_qwen_transport(
+        lambda _request: httpx.Response(200, json={"choices": [{"message": {"content": "（AI生成）按所填信息记录。"}}]})
+    )
+    await qwen_service.analyze_survey("weight_clinic_first", {
+        "fv15_hypertension": "已有药物记录", "fv33": "50",
+    })
+    payload = json.loads(requests[0].content)
+    context = json.loads(payload["messages"][1]["content"].split("\n", 1)[0].split("：", 1)[1])
+    medications, alcohol = context["answeredQuestions"]
+    assert medications["originalQuestion"] == "用药情况"
+    assert "高血压" in medications["hint"]
+    assert medications["section"] == "健康与病史"
+    assert alcohol["originalQuestion"] == "平均每次大概喝酒"
+    assert alcohol["unit"] == "ml" and alcohol["answer"] == "50"
+
+
+async def test_unknown_survey_does_not_guess_question_ids(install_qwen_transport):
+    from app.services import qwen_service
+
+    requests = install_qwen_transport(
+        lambda _request: httpx.Response(200, json={"choices": [{"message": {"content": "尚无可对应原题的信息。"}}]})
+    )
+    assert await qwen_service.analyze_survey("unknown_survey", {"q1": "private-unlabelled-value"}) == "尚无可对应原题的信息。"
+    payload = json.loads(requests[0].content)
+    message = payload["messages"][1]["content"]
+    context = json.loads(message.split("\n", 1)[0].split("：", 1)[1])
+    assert context["answeredQuestions"] == []
+    assert context["unknownQuestionIds"] == ["q1"]
+    assert "private-unlabelled-value" not in message
+    assert "信息不足，不生成个人评估" in message
+
+
+async def test_oversized_survey_is_rejected_without_partial_provider_analysis(monkeypatch):
+    from app.services import qwen_service
+
+    async def must_not_call(*_args, **_kwargs):
+        pytest.fail("Oversized answers must not be silently truncated and sent upstream")
+
+    monkeypatch.setattr(qwen_service, "_completion", must_not_call)
+    with pytest.raises(BusinessError) as raised:
+        await qwen_service.analyze_survey("weight_anti_obesity", {"ao1": "较长的说明" * 3000})
+    assert raised.value.code == "AI_SURVEY_TOO_LARGE"
 
 
 async def test_ai_chat_requires_login(client):

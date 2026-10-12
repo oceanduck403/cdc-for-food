@@ -25,6 +25,8 @@ class SurveyTemplate(Base, TimestampMixin):
     is_active: Mapped[bool] = mapped_column(default=True)
     # 排序权重
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    # Apply each source-catalog correction once; preserve later administrator edits.
+    catalog_revision: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
     # 关联提交记录
     responses: Mapped[list["SurveyResponse"]] = relationship(back_populates="template")
@@ -46,12 +48,14 @@ class SurveyResponse(Base, TimestampMixin):
     # 提交时间
     submitted_at: Mapped[str] = mapped_column(String(64), default="")
     # 问卷总分
-    total_score: Mapped[float] = mapped_column(default=0)
+    total_score: Mapped[float | None] = mapped_column(nullable=True)
     # AI 分析结果（JSON 格式）
     analysis: Mapped[str] = mapped_column(Text, default="")
     # 问卷答案（JSON 格式）
     # 结构: {"q1": "answer1", "q2": ["option1", "option2"], ...}
     answers: Mapped[str] = mapped_column(Text, default="{}")
+    # Freeze the question wording so editing/restoring a template cannot rewrite history.
+    questions_snapshot: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # 关联
     template: Mapped["SurveyTemplate"] = relationship(back_populates="responses")

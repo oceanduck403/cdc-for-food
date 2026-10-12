@@ -1,14 +1,24 @@
 """问卷管理 API"""
 import json
+import math
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import current_admin, current_user_id, get_db
+from app.db.survey_catalog import ORIGINAL_SURVEY_TYPES
 from app.models.survey import SurveyTemplate, SurveyResponse
 
 router = APIRouter(tags=["问卷管理"])
+
+
+def _response_questions(response: SurveyResponse, template: SurveyTemplate | None) -> list:
+    """A submitted answer must keep the questions that were actually answered."""
+    stored = response.questions_snapshot
+    if stored is None:
+        stored = template.questions if template else "[]"
+    return json.loads(stored) if stored else []
 
 
 # ── 患者端 API（公开，不需要登录）─────────────────────────────
@@ -123,7 +133,7 @@ async def get_my_response_detail(
         "total_score": r.total_score,
         "analysis": r.analysis,
         "answers": json.loads(r.answers) if r.answers else {},
-        "questions": json.loads(template.questions) if template and template.questions else [],
+        "questions": _response_questions(r, template),
     }
 
 
@@ -150,7 +160,12 @@ async def submit_response(
         raise HTTPException(status_code=404, detail="问卷模板不存在或已停用")
 
     answers = payload.get("answers", {})
-    total_score = payload.get("total_score", 0)
+    # The supplied Word forms contain no published scoring algorithm. An old
+    # client may still send 0 or an arbitrary score; neither is a valid result.
+    total_score = None if template.type in ORIGINAL_SURVEY_TYPES else payload.get("total_score")
+    if total_score is not None:
+        if isinstance(total_score, bool) or not isinstance(total_score, (int, float)) or not math.isfinite(total_score):
+            raise HTTPException(status_code=400, detail="问卷分数格式不正确")
     analysis = payload.get("analysis", "")
     user_name = payload.get("user_name", "")
     user_phone = payload.get("user_phone", "")
@@ -166,6 +181,7 @@ async def submit_response(
         total_score=total_score,
         analysis=analysis,
         answers=json.dumps(answers, ensure_ascii=False),
+        questions_snapshot=template.questions,
     )
     db.add(resp)
     await db.commit()
@@ -352,6 +368,6 @@ async def admin_get_response_detail(
         "total_score": r.total_score,
         "analysis": r.analysis,
         "answers": json.loads(r.answers) if r.answers else {},
-        "questions": json.loads(template.questions) if template and template.questions else [],
+        "questions": _response_questions(r, template),
         "created_at": str(r.created_at),
     }
