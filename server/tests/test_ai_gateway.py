@@ -2,7 +2,9 @@
 import base64
 from datetime import date, datetime, timedelta, timezone
 from io import BytesIO
+import json
 
+import httpx
 import pytest
 from PIL import Image
 
@@ -18,6 +20,131 @@ def food_image_base64() -> str:
     buffer = BytesIO()
     Image.new("RGB", (64, 48), "#e4f0da").save(buffer, format="PNG")
     return base64.b64encode(buffer.getvalue()).decode("ascii")
+
+
+@pytest.fixture
+def install_qwen_transport(monkeypatch):
+    """Exercise the real gateway payload without contacting a paid provider."""
+    from app.services import qwen_service
+
+    real_client = httpx.AsyncClient
+    monkeypatch.setattr(qwen_service.settings, "qwen_api_key", "server-only-test-key")
+    monkeypatch.setattr(qwen_service.settings, "qwen_base_url", "https://provider.example/compatible-mode/v1/")
+    monkeypatch.setattr(qwen_service.settings, "qwen_model", "qwen3.8-27b")
+
+    def install(handler):
+        requests = []
+
+        def capture(request):
+            requests.append(request)
+            return handler(request)
+
+        def mock_client(*args, **kwargs):
+            return real_client(*args, transport=httpx.MockTransport(capture), **kwargs)
+
+        monkeypatch.setattr(qwen_service.httpx, "AsyncClient", mock_client)
+        return requests
+
+    return install
+
+
+@pytest.mark.parametrize("operation", ["chat", "food", "survey", "daily"])
+async def test_qwen38_operations_use_shared_non_thinking_gateway(operation, install_qwen_transport):
+    from app.services import qwen_service
+
+    content = '{"foods":[]}' if operation == "food" else "（AI生成）均衡搭配日常饮食。"
+    requests = install_qwen_transport(
+        lambda _request: httpx.Response(200, json={
+            "choices": [{"message": {"content": content, "reasoning_content": "private reasoning"}}],
+        })
+    )
+    if operation == "chat":
+        result = await qwen_service.chat("怎么搭配早餐？", "health_consult", [])
+    elif operation == "food":
+        result = await qwen_service.analyze_food(food_image_base64())
+    elif operation == "survey":
+        result = await qwen_service.analyze_survey("healthy_lifestyle_self_check", {"breakfast": "每天"})
+    else:
+        result = await qwen_service.daily_suggestion({"water": 1200}, {})
+
+    assert result == ([] if operation == "food" else content)
+    assert len(requests) == 1
+    request = requests[0]
+    assert str(request.url) == "https://provider.example/compatible-mode/v1/chat/completions"
+    assert request.headers["Authorization"] == "Bearer server-only-test-key"
+    payload = json.loads(request.content)
+    assert payload["model"] == "qwen3.8-27b"
+    assert payload["enable_thinking"] is False
+    assert not payload.get("stream", False)
+    assert "server-only-test-key" not in request.content.decode()
+    assert "private reasoning" not in str(result)
+    if operation == "food":
+        assert payload["messages"][0]["content"][1]["image_url"]["url"].startswith("data:image/jpeg;base64,")
+        assert payload["max_tokens"] == 900
+    elif operation == "chat":
+        assert payload["messages"][-1] == {"role": "user", "content": "怎么搭配早餐？"}
+        assert payload["max_tokens"] == 1000
+
+
+@pytest.mark.parametrize("model, expected", [
+    ("qwen3.8-max", False),
+    ("qwen3.8-max-0902", False),
+    ("qwen3.8-flash", False),
+    ("qwen-vl-plus", None),
+    ("qwen-vl-max", None),
+    ("qwen3.8-2.4t-a95b", None),
+    ("qwen3.8-omni-flash", None),
+])
+async def test_gateway_thinking_extension_preserves_other_model_protocols(
+    model, expected, monkeypatch, install_qwen_transport,
+):
+    from app.services import qwen_service
+
+    requests = install_qwen_transport(
+        lambda _request: httpx.Response(200, json={"choices": [{"message": {"content": "答复"}}]})
+    )
+    monkeypatch.setattr(qwen_service.settings, "qwen_model", model)
+    assert await qwen_service.chat("你好", "health_consult", []) == "答复"
+    payload = json.loads(requests[0].content)
+    if expected is None:
+        assert "enable_thinking" not in payload
+    else:
+        assert payload["enable_thinking"] is expected
+
+
+@pytest.mark.parametrize("failure", ["unauthorized", "timeout"])
+async def test_upstream_failures_do_not_expose_credentials_to_client(
+    failure, client, db, monkeypatch, install_qwen_transport,
+):
+    from app.api.v1 import ai
+
+    user = User(openid=f"ai-secret-{failure}", role="patient", is_active=True)
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    token = create_access_token(str(user.id), {"role": "patient"})
+
+    async def no_limit(_db, _user_id):
+        return None
+
+    def provider(request):
+        if failure == "timeout":
+            raise httpx.ReadTimeout("provider echoed server-only-test-key", request=request)
+        return httpx.Response(401, json={"error": {"message": "invalid key server-only-test-key"}})
+
+    monkeypatch.setattr(ai.ai_quota, "reserve", no_limit)
+    install_qwen_transport(provider)
+    response = await client.post(
+        "/api/v1/ai/chat",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"message": "怎么搭配早餐？"},
+    )
+    assert response.status_code == 502
+    assert response.json() == {
+        "code": "AI_UPSTREAM_ERROR", "message": "AI 服务暂时不可用，请稍后重试", "data": None,
+    }
+    assert "server-only-test-key" not in response.text
+    assert "provider.example" not in response.text
 
 
 async def test_ai_chat_requires_login(client):

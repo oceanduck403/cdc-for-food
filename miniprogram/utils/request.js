@@ -125,7 +125,7 @@ function findMock(url, method) {
   return null;
 }
 
-function request({ url, method = 'GET', data = {}, header = {}, showLoading = true, silent = false }) {
+function request({ url, method = 'GET', data = {}, header = {}, showLoading = true, silent = false, timeout = 10000 }) {
   const app = getApp();
   const token = wx.getStorageSync('token') || '';
 
@@ -144,7 +144,7 @@ function request({ url, method = 'GET', data = {}, header = {}, showLoading = tr
     transport.send({
       url,
       method,
-      timeout: 10000,
+      timeout,
       data,
       header: Object.assign(
         { 'content-type': 'application/json' },

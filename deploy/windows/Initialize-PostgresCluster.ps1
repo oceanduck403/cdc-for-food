@@ -4,7 +4,7 @@ param(
     [string]$AppRoot = "E:\CDC-Food",
     [string]$DataDirectory = "E:\CDC-Food\postgres\data",
     [string]$LogDirectory = "E:\CDC-Food\shared\logs\postgres",
-    [ValidateRange(1, 65535)][int]$Port = 55432,
+    [ValidateRange(1, 65535)][int]$Port = 55433,
     [ValidatePattern('^[a-z][a-z0-9_]{2,62}$')][string]$DatabaseName = "cdc_food",
     [System.Management.Automation.PSCredential]$ClusterCredential,
     [System.Management.Automation.PSCredential]$ApplicationCredential,
@@ -16,8 +16,8 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "Common.ps1")
 
-if ($Port -ne 55432) {
-    throw "本项目隔离集群固定使用 55432；脚本拒绝其他端口，尤其不会触碰现有 5432"
+if ($Port -ne 55433) {
+    throw "本项目隔离集群固定使用 55433；脚本拒绝其他端口，尤其不会触碰现有 5432"
 }
 $root = Get-NormalizedPath -Path $AppRoot
 $data = Assert-PathBelowRoot -Path $DataDirectory -Root $root -Label "PostgreSQL 数据目录"

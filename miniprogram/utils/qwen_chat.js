@@ -5,6 +5,7 @@ function chat(userMessage, mode = 'health_consult') {
   return request({
     url: '/ai/chat',
     method: 'POST',
+    timeout: 45000,
     data: { message: String(userMessage || '').trim(), mode, history: [] },
     showLoading: false,
     silent: true
@@ -20,6 +21,7 @@ function chatWithHistory(userMessage, history = [], mode = 'health_consult') {
   return request({
     url: '/ai/chat',
     method: 'POST',
+    timeout: 45000,
     data: { message, mode, history: safeHistory },
     showLoading: false,
     silent: true
@@ -33,6 +35,7 @@ function analyzeSurvey(surveyType, answers) {
   return request({
     url: '/ai/survey-analysis',
     method: 'POST',
+    timeout: 45000,
     data: { surveyType, answers: answers || {} },
     showLoading: false,
     silent: true
@@ -48,6 +51,7 @@ function generateDailySuggestions(todayData, userProfile) {
   return request({
     url: '/ai/daily-suggestion',
     method: 'POST',
+    timeout: 45000,
     data: { todayData: todayData || {}, userProfile: userProfile || {} },
     showLoading: false,
     silent: true

@@ -66,7 +66,7 @@ $settings = New-ScheduledTaskSettingsSet `
 $postgresAction = New-ScheduledTaskAction -Execute $powerShell -Argument $postgresArguments -WorkingDirectory $root
 $apiAction = New-ScheduledTaskAction -Execute $powerShell -Argument $apiArguments -WorkingDirectory $root
 $postgresTask = New-ScheduledTask -Action $postgresAction -Trigger $trigger -Principal $principal -Settings $settings `
-    -Description "CDC-Food isolated PostgreSQL 127.0.0.1:55432"
+    -Description "CDC-Food isolated PostgreSQL 127.0.0.1:55433"
 $apiTask = New-ScheduledTask -Action $apiAction -Trigger $trigger -Principal $principal -Settings $settings `
     -Description "CDC-Food API 127.0.0.1:18120 release $ReleaseId"
 

@@ -198,6 +198,7 @@ function callQwenVL(imageBase64) {
   return request({
     url: '/ai/food-analysis',
     method: 'POST',
+    timeout: 45000,
     data: { imageBase64 },
     showLoading: false,
     silent: true

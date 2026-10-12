@@ -1,13 +1,24 @@
 // utils/api.js
 // 后端 API 集中管理
 // ─────────────────────────────────────────────────
-//  正式版由 transport.js 统一走 CloudBase 私有链路；开发版可临时直连。
+//  请求由 transport.js 按发布配置统一发送。
 // ─────────────────────────────────────────────────
 const { networkError } = require('./network-error.js');
 const transport = require('./transport.js');
 
 function getBaseUrl() {
   return transport.getDirectBaseUrl();
+}
+
+function responseError(res, fallback) {
+  const payload = res.data || {};
+  const message = typeof payload.message === 'string' && payload.message
+    ? payload.message
+    : typeof payload.detail === 'string' && payload.detail ? payload.detail : fallback;
+  const error = new Error(message);
+  error.code = typeof payload.code === 'string' ? payload.code : 'HTTP_ERROR';
+  error.statusCode = res.statusCode;
+  return error;
 }
 
 // 通用请求封装
@@ -30,7 +41,7 @@ function request(urlOrOptions, maybeMethod, maybeData, maybeHeader, maybeAuth) {
     options = urlOrOptions || {};
   }
 
-  const { url = '', method = 'GET', data, header = {}, auth = true } = options;
+  const { url = '', method = 'GET', data, header = {}, auth = true, timeout = 10000 } = options;
   const token = wx.getStorageSync('token');
   const finalHeader = { 'Content-Type': 'application/json', ...header };
   if (auth && token) {
@@ -40,7 +51,7 @@ function request(urlOrOptions, maybeMethod, maybeData, maybeHeader, maybeAuth) {
     transport.send({
       url,
       method,
-      timeout: 10000,
+      timeout,
       data,
       header: finalHeader,
       success: res => {
@@ -55,9 +66,9 @@ function request(urlOrOptions, maybeMethod, maybeData, maybeHeader, maybeAuth) {
             wx.removeStorageSync('role');
             wx.removeStorageSync('profile');
           }
-          reject(new Error(res.data?.detail || '请先登录'));
+          reject(responseError(res, '请先登录'));
         } else {
-          reject(new Error(res.data?.detail || `请求失败 ${res.statusCode}`));
+          reject(responseError(res, `请求失败 ${res.statusCode}`));
         }
       },
       fail: err => reject(networkError(err)),

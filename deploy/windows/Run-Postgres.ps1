@@ -3,7 +3,7 @@ param(
     [string]$PostgresBin = "E:\postgres\bin",
     [string]$AppRoot = "E:\CDC-Food",
     [string]$DataDirectory = "E:\CDC-Food\postgres\data",
-    [ValidateRange(1, 65535)][int]$Port = 55432,
+    [ValidateRange(1, 65535)][int]$Port = 55433,
     [switch]$Apply
 )
 
@@ -11,8 +11,8 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "Common.ps1")
 
-if ($Port -ne 55432) {
-    throw "本项目隔离集群固定使用 55432；脚本拒绝其他端口"
+if ($Port -ne 55433) {
+    throw "本项目隔离集群固定使用 55433；脚本拒绝其他端口"
 }
 $root = Get-NormalizedPath -Path $AppRoot
 $data = Assert-PathBelowRoot -Path $DataDirectory -Root $root -Label "PostgreSQL 数据目录"

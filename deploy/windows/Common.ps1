@@ -103,7 +103,7 @@ function Assert-ProductionEnvironment {
     param(
         [Parameter(Mandatory = $true)][hashtable]$Values,
         [ValidateRange(1, 65535)][int]$ExpectedAppPort = 18120,
-        [ValidateRange(1, 65535)][int]$ExpectedDatabasePort = 55432,
+        [ValidateRange(1, 65535)][int]$ExpectedDatabasePort = 55433,
         [string]$ExpectedMediaRoot = "E:\CDC-Food\shared\uploads",
         [string]$ExpectedLogRoot = "E:\CDC-Food\shared\logs"
     )

@@ -45,17 +45,23 @@ def _provider_config() -> tuple[str, str, str]:
 
 async def _completion(messages: list[dict[str, Any]], *, temperature: float = 0.6, max_tokens: int = 1000) -> str:
     api_key, base_url, model = _provider_config()
+    payload: dict[str, Any] = {
+        "model": model,
+        "messages": messages,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+    }
+    # These hybrid models think by default. The gateway expects a synchronous
+    # answer within 30 seconds, so request their supported non-thinking mode.
+    # Do not send this extension to older VL or reasoning-only models.
+    if re.fullmatch(r"qwen3\.8-(?:27b|max|flash)(?:-\d{4}(?:-\d{2}-\d{2})?)?", model):
+        payload["enable_thinking"] = False
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
                 f"{base_url}/chat/completions",
                 headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                json={
-                    "model": model,
-                    "messages": messages,
-                    "temperature": temperature,
-                    "max_tokens": max_tokens,
-                },
+                json=payload,
             )
         if response.status_code < 200 or response.status_code >= 300:
             logger.error("Qwen request failed with status {}", response.status_code)

@@ -7,6 +7,13 @@ $ErrorActionPreference = "Stop"
 $failures = New-Object System.Collections.Generic.List[string]
 $scripts = @(Get-ChildItem -LiteralPath $PSScriptRoot -File -Filter "*.ps1")
 foreach ($script in $scripts) {
+    $scriptBytes = [System.IO.File]::ReadAllBytes($script.FullName)
+    $scriptText = [System.Text.Encoding]::UTF8.GetString($scriptBytes)
+    $hasUtf8Bom = $scriptBytes.Length -ge 3 -and
+        $scriptBytes[0] -eq 0xEF -and $scriptBytes[1] -eq 0xBB -and $scriptBytes[2] -eq 0xBF
+    if ($scriptText -match '[^\x00-\x7F]' -and -not $hasUtf8Bom) {
+        $failures.Add("$($script.Name) 含非 ASCII 字符，必须保留 UTF-8 BOM 以兼容 Windows PowerShell 5.1")
+    }
     $tokens = $null
     $errors = $null
     [void][System.Management.Automation.Language.Parser]::ParseFile(
@@ -36,6 +43,72 @@ if ($envExample -notmatch '(?m)^APP_LOG_DIR=E:/CDC-Food/shared/logs\r?$') {
 }
 if ($envExample -notmatch '(?m)^MEDIA_STORAGE_BACKEND=local_persistent\r?$') {
     $failures.Add("environment.example.env 未使用 local_persistent")
+}
+
+# The shared host has unrelated PostgreSQL clusters. Every deployment entry
+# point must agree on CDC-Food's port, including environment validation and backups.
+$databasePort = 55433
+$retiredDatabasePort = $databasePort - 1
+$portScripts = @{
+    "Initialize-PostgresCluster.ps1" = "Port"
+    "Run-Postgres.ps1" = "Port"
+    "Start-Postgres.ps1" = "Port"
+    "Backup-Postgres.ps1" = "DatabasePort"
+}
+foreach ($fileName in $portScripts.Keys) {
+    $scriptText = [System.IO.File]::ReadAllText((Join-Path $PSScriptRoot $fileName))
+    $parameter = [regex]::Escape('$' + $portScripts[$fileName])
+    if ($scriptText -notmatch ("\[int\]" + $parameter + "\s*=\s*" + $databasePort + "\b") -or
+        $scriptText -notmatch ("if\s*\(" + $parameter + "\s+-ne\s+" + $databasePort + "\)")) {
+        $failures.Add("$fileName 的默认端口和拒绝其他端口的检查必须一致为 $databasePort")
+    }
+}
+if ($envExample -notmatch ("(?m)^DATABASE_URL=postgresql\+asyncpg://[^\r\n]+@127\.0\.0\.1:" + $databasePort + "/cdc_food\r?$")) {
+    $failures.Add("environment.example.env 必须连接 CDC-Food 专属端口 $databasePort")
+}
+$portAssets = @(Get-ChildItem -LiteralPath $PSScriptRoot -File | Where-Object {
+    $_.Extension -in @(".ps1", ".env", ".md") -and $_.Name -ne "Test-Assets.ps1"
+})
+foreach ($asset in $portAssets) {
+    if ([System.IO.File]::ReadAllText($asset.FullName) -match ("\b" + $retiredDatabasePort + "\b")) {
+        $failures.Add("$($asset.Name) 仍包含已退役的数据库端口 $retiredDatabasePort")
+    }
+}
+
+# Exercise the default validator rather than merely checking its source text.
+. (Join-Path $PSScriptRoot "Common.ps1")
+$testEnvironment = @{
+    APP_ENV = "production"
+    APP_HOST = "127.0.0.1"
+    APP_PORT = "18120"
+    APP_LOG_DIR = "E:/CDC-Food/shared/logs"
+    JWT_SECRET = "asset-test-only-not-a-real-secret-000000"
+    DATABASE_URL = "postgresql+asyncpg://asset_test:unused@127.0.0.1:$databasePort/cdc_food"
+    QWEN_API_KEY = "asset-test-only"
+    WECHAT_APPID = "asset-test-only"
+    WECHAT_SECRET = "asset-test-only"
+    MEDIA_STORAGE_BACKEND = "local_persistent"
+    MEDIA_STORAGE_DIR = "E:/CDC-Food/shared/uploads"
+}
+try {
+    Assert-ProductionEnvironment -Values $testEnvironment
+} catch {
+    $failures.Add("生产环境默认校验器未接受专属端口 ${databasePort}：$($_.Exception.Message)")
+}
+foreach ($invalidDatabaseUri in @(
+    "postgresql+asyncpg://asset_test:unused@127.0.0.1:$retiredDatabasePort/cdc_food",
+    "postgresql+asyncpg://asset_test:unused@remote.invalid:$databasePort/cdc_food"
+)) {
+    $testEnvironment.DATABASE_URL = $invalidDatabaseUri
+    $rejected = $false
+    try {
+        Assert-ProductionEnvironment -Values $testEnvironment
+    } catch {
+        $rejected = $true
+    }
+    if (-not $rejected) {
+        $failures.Add("生产环境默认校验器必须拒绝旧端口和非本机数据库")
+    }
 }
 
 $nginx = [System.IO.File]::ReadAllText(
@@ -142,6 +215,9 @@ if ($deployReleaseText -notmatch '\$targetCreated' -or
 }
 
 $registerTasksText = [System.IO.File]::ReadAllText((Join-Path $PSScriptRoot "Register-Tasks.ps1"))
+if ($registerTasksText -notmatch ("CDC-Food isolated PostgreSQL 127\.0\.0\.1:" + $databasePort)) {
+    $failures.Add("PostgreSQL 计划任务说明未使用专属端口 $databasePort")
+}
 if ($registerTasksText -notmatch '\[ValidateSet\("S-1-5-19"\)\]\[string\]\$RunAsUser = "S-1-5-19"') {
     $failures.Add("计划任务必须默认使用低权限 LocalService 账号")
 }
@@ -161,4 +237,4 @@ if ($failures.Count -gt 0) {
     $failures | ForEach-Object { Write-Error $_ }
     exit 1
 }
-Write-Host "通过：$($scripts.Count) 个 PowerShell 脚本可解析，环境模板无密钥，端口与 Nginx 映射符合约束。" -ForegroundColor Green
+Write-Host "通过：$($scripts.Count) 个 PowerShell 脚本可解析且编码兼容 Windows PowerShell 5.1，环境模板无密钥，端口与 Nginx 映射符合约束。" -ForegroundColor Green

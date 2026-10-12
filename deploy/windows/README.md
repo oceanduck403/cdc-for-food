@@ -8,7 +8,7 @@
 | --- | --- |
 | 应用根目录 | `E:\CDC-Food` |
 | API 监听 | `127.0.0.1:18120` |
-| PostgreSQL 监听 | `127.0.0.1:55432` |
+| PostgreSQL 监听 | `127.0.0.1:55433` |
 | PostgreSQL 二进制 | `E:\postgres\bin`（只调用，不修改） |
 | 外部路径 | `https://1tovalue.cn/cdc-food-api/` |
 | 用户媒体 | `E:\CDC-Food\shared\uploads` |
@@ -16,6 +16,10 @@
 | 数据库备份 | `E:\CDC-Food\backups\postgres` |
 
 所有会产生变更的脚本默认只打印计划；必须显式加 `-Apply` 才会执行。脚本遇错立即停止，不查杀进程，不抢占端口，不覆盖已有发布或非空数据库目录。
+
+共享服务器上的 `55433` 专用于 CDC-Food 自有集群。首次启动前核对端口空闲和数据目录归属；端口被占用时应停止部署并排查，禁止停止、迁移或改写其他项目的数据库集群。
+
+已有 CDC-Food 集群改端口时，先确认 `E:\CDC-Food\postgres\data` 的归属，备份该目录内的 `postgresql.conf` 和项目 `server.env`，并保留受控数据库备份。只修改本集群配置的 `port = 55433` 与 `DATABASE_URL` 中的端口，同步本目录整套运维脚本，再重启 CDC-Food 自己的任务并验证。不要重新运行初始化脚本、复制其他项目数据库，或修改其他集群的配置与进程。
 
 ## 目录布局
 
@@ -36,6 +40,8 @@ E:\CDC-Food
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\deploy\windows\Test-Assets.ps1
 ```
+
+服务器使用 Windows PowerShell 5.1；所有包含中文等非 ASCII 字符的 `.ps1` 必须保存为 **UTF-8 BOM**（文件开头为 `EF BB BF`）。发布时优先按原始字节复制脚本，禁止按 UTF-8 无 BOM 重新写入，否则 5.1 可能按 ANSI 解码并产生语法错误。必须用 `powershell.exe`（5.1）运行上述检查，不能仅以 `pwsh`（7）校验代替。
 
 复制 `environment.example.env` 到 `E:\CDC-Food\shared\config\server.env`，只在服务器上填写。数据库密码必须先做 URL 编码后放入 `DATABASE_URL`。实际环境文件应限制为部署账号和运行账号可读，不能上传 Git、聊天或工单。
 

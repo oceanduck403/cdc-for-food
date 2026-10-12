@@ -4,7 +4,7 @@ param(
     [string]$AppRoot = "E:\CDC-Food",
     [string]$BackupDirectory = "E:\CDC-Food\backups\postgres",
     [string]$DatabaseHost = "127.0.0.1",
-    [ValidateRange(1, 65535)][int]$DatabasePort = 55432,
+    [ValidateRange(1, 65535)][int]$DatabasePort = 55433,
     [ValidatePattern('^[a-z][a-z0-9_]{2,62}$')][string]$DatabaseName = "cdc_food",
     [System.Management.Automation.PSCredential]$DatabaseCredential,
     [string]$CredentialFile = "",
@@ -19,8 +19,8 @@ $ErrorActionPreference = "Stop"
 if ($DatabaseHost -notin @("127.0.0.1", "localhost")) {
     throw "备份脚本只允许连接本机隔离数据库"
 }
-if ($DatabasePort -ne 55432) {
-    throw "备份脚本只允许连接隔离端口 55432"
+if ($DatabasePort -ne 55433) {
+    throw "备份脚本只允许连接隔离端口 55433"
 }
 $root = Get-NormalizedPath -Path $AppRoot
 $backupRoot = Assert-PathBelowRoot -Path $BackupDirectory -Root $root -Label "备份目录"
