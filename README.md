@@ -1,146 +1,67 @@
-# 营养与食品安全 AI 小助手 · 委托服务项目仓库
+# 膳知有伴 · 营养与食品安全科普小程序
 
-成都市疾病预防控制中心「营养与食品安全 AI 小助手」微信小程序及配套后端的代码与文档根目录。
+原生微信小程序与 Python FastAPI 后端，提供健康评估、健康打卡、AI 科普、科普互动及个人资料管理，另有独立管理员入口。
 
-## 目录结构
+## 当前交接版本
 
-```
-疾控/
-├── README.md                本文件
-├── .gitignore               Git 忽略配置
-├── docs/                    项目文档（架构、API、部署、合规、路线图）
-├── miniprogram/             微信小程序前端（原生）
-└── server/                  后端服务（Python FastAPI）
-```
+最新交接代码位于 **`fix/survey-registration-loading`**，不能假定默认分支 `main` 已包含最新修复。2026-10-12 已完成电脑本地试运行；本次不上传、提审或部署。
 
-## 模块一览
+**接手团队先阅读 [项目技术简介与交接说明](docs/technical-handoff.md)**，其中包含实际架构、技术栈、运行步骤、配置、安全交接材料和未开放功能。
 
-| 模块 | 路径 | 说明 |
-| --- | --- | --- |
-| 小程序前端 | `miniprogram/` | 原生微信小程序，分**三端**：患者端 / 医生端 / 管理员端 |
-| 后端服务 | `server/` | FastAPI 应用，提供鉴权、用户档案、聊天、医患分配、管理后台等 API |
-| 项目文档 | `docs/` | 架构图、接口规范、部署指南、合规要点、阶段路线图、招标文件要点 |
-
-## 三端架构
-
-```
-┌──────────────────────────────────────────────────┐
-│  登录页  pages/login/login                         │
-│  ┌──────────┬──────────┬──────────┐               │
-│  │ 患者端    │ 医生端    │ 管理员端   │               │
-│  └─────┬────┴─────┬────┴─────┬────┘               │
-└────────┼──────────┼──────────┼──────────────────────┘
-         │          │          │
-    ┌────▼───┐ ┌────▼───┐ ┌────▼────┐
-    │ 患者端  │ │ 医生端  │ │ 管理员端 │
-    │ 患者    │ │ 账号    │ │ 管理账号 │
-    │ 微信登录│ │ 密码登录│ │ 强密码登录│
-    └────┬───┘ └────┬───┘ └────┬────┘
-         │          │          │
-         ▼          ▼          ▼
-    ┌──────────────────────────────────┐
-    │     后端 API（FastAPI）           │
-    │  /auth/*    三端登录             │
-    │  /chat/*    聊天、会诊、自动分配 │
-    │  /admin/*   医生/患者/分配/聊天管理│
-    │  /survey/*  问卷管理（模板CRUD + 提交）│
-    └──────────────────────────────────┘
+```powershell
+git clone --branch fix/survey-registration-loading git@github.com:oceanduck403/cdc-for-food.git
+cd cdc-for-food
 ```
 
-## 快速开始
+## 目录与架构
 
-### 后端（FastAPI）
-
-```bash
-cd server
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-copy .env.example .env       # 根据实际情况修改
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```text
+miniprogram/       原生微信小程序：JavaScript / WXML / WXSS
+server/            FastAPI / SQLAlchemy 异步 ORM / Alembic
+deploy/selfhost/   独立本地演示启动器、小程序正式包构建
+deploy/windows/    Windows 自建服务器部署与运维脚本
+docs/              技术、运行、原始表单及历史方案文档
+sync/              未接入当前主链路的历史 RSS 工具
 ```
 
-接口文档：<http://localhost:8000/docs>
+小程序通过 HTTP JSON API 访问模块化单体后端。SQLite 用于开发，生产配置要求 PostgreSQL。通义千问由服务端网关调用，密钥不进入小程序。媒体可使用本地持久磁盘或私有云存储；项目不依赖 Railway。
 
-### 小程序
+## 原始五套表单
 
-微信开发者工具导入步骤、模拟器/真机调试、常见问题排查见
-[`docs/miniprogram-devtools.md`](docs/miniprogram-devtools.md)。
-
-正式包可通过构建脚本接入自建 HTTPS 后端，生成和校验步骤见
-[`deploy/selfhost/README.md`](deploy/selfhost/README.md)。微信开发者工具应导入生成的
-`build/wechat-release/`，不要直接上传未注入生产地址的源码目录。
-
-## 数据库
-
-本地开发使用 **SQLite**，生产环境可切换 PostgreSQL（修改 `server/.env` 中的 `DATABASE_URL` 即可）。
-
-```bash
-# 初始化数据库（创建表 + 灌入演示数据）
-cd server
-python -m app.db.init_db
-```
-
-> 首次启动会自动创建 `data/app.db`（SQLite 文件数据库，无需额外安装）。
-
-## 问卷管理系统
-
-### 架构
-
-```
-管理员端 ──CRUD──▶ survey_templates（问卷模板表）
-患者端   ──填写──▶ survey_responses（提交记录表）
-```
-
-### 管理员操作（问卷管理 Tab）
-
-| 操作 | 说明 |
+| 表单 | 字段/题数 |
 | --- | --- |
-| 新增模板 | 创建问卷模板，设置名称、类型标识、描述、分类 |
-| 查看题目 | 点击「查看题目」弹窗显示所有题目详情 |
-| 启用/停用 | 控制模板是否对患者可见 |
-| 编辑模板 | 修改模板基本信息 |
-| 查看提交记录 | 查看所有患者的问卷填写记录 |
-| 查看详情 | 查看某次提交的答案和 AI 分析结果 |
+| 体重管理门诊就诊信息登记表 | 10 |
+| 体重管理门诊病历首页 | 21 |
+| 体重管理门诊首诊评估表 | 50 |
+| 体重管理门诊防肥分数自测表 | 36，11 个分组 |
+| 体重管理门诊复诊评估表 | 26 |
 
-### 默认问卷模板
+题干、选项与条件依据原始 Word 恢复。原稿未提供计分公式，因此不编造总分或风险等级；提交保存题目快照，避免模板变更影响历史记录。详见 [原始表单说明](docs/survey-registration.md)。
 
-| 类型标识 | 名称 | 用途 |
-| --- | --- | --- |
-| `weight_basic_info` | 体重管理门诊·基本信息表 | 病历首页：人口学信息、主诉、用药史、体格检查（22题，3步） |
-| `weight_clinic_first` | 体重管理门诊·首诊评估表 | 首次就诊评估：动机目标、减重经历、病史、饮食/运动/睡眠（41题，6步） |
-| `weight_anti_obesity` | 体重管理·防肥自测表 | 36 题是/否评估日常防肥行为习惯（11步） |
-| `weight_clinic_follow` | 体重管理门诊·复诊评估表 | 复诊跟踪：体重变化、饮食/运动/睡眠、体成分（32题，5步） |
+## 电脑本地试运行
 
-### 患者端操作
+Windows、Python 3.12，在仓库根目录执行：
 
-- 进入「调查评估」页面，自动从后端加载已启用的问卷模板
-- 点击开始填写，题目动态渲染（支持单选/多选/输入）
-- 提交后数据写入 `survey_responses` 表
-- 支持查看历史填写记录
+```powershell
+py -3.12 -m venv server/.venv
+server/.venv/Scripts/python.exe -m pip install -r server/requirements.txt
+if (-not (Test-Path -LiteralPath 'server/.env')) {
+    Copy-Item server/.env.example server/.env
+}
+```
 
-## 关键约束（来自比选文件）
+仅首次复制 `.env`，不要覆盖已有配置。在本机 `.env` 填写微信和千问配置后：
 
-- 预算 4.7 万元（包干价）
-- 服务期：合同签订日起至 2027-07-31
-- 履约地点：成都市武侯区龙祥路 4 号
-- 验收：账号可登录、模块稳定、数据准确
-- 售后：验收合格后 1 年免费咨询
+```powershell
+server/.venv/Scripts/python.exe deploy/selfhost/run_local_demo.py
+```
 
-## 阶段路线图速览
+后端使用独立运行目录，API 为 `http://127.0.0.1:18121/api/v1`。微信开发者工具导入仓库根目录，并按 [本地预览手册](docs/miniprogram-devtools.md) 配置开发版接口地址。
 
-- **P0** 立项与需求固化
-- **P1** 总体设计与原型
-- **P2** MVP（基础框架 + AI 识图 + 个性化建议 + 知识库 V1）
-- **P3** 业务闭环（医患互动、知识库 V2、GIS 动态图层）
-- **P4** 试点运行与正式验收
-- **P5** 1 年免费咨询与持续运营
+## 验证与功能边界
 
-完整计划参见 [`docs/roadmap.md`](docs/roadmap.md)。
+业务基线本轮验证：前端 68 项、后端 124 项通过；五表及真实千问文字问答通过本机联调。
 
-## 联系方式
+当前打卡与 AI 对话历史保存在本机，尚未跨设备同步。医生服务默认关闭；当前用户版没有医生和 GIS 地图入口。会员支付、微信运动、素材 CMS、完整可视化题目编辑器及知识库 RAG 尚未完成。详见 [交接说明](docs/technical-handoff.md#9-未开放与后续优先事项)。
 
-- 项目经办：何大学（成都市疾控中心营养与食品安全科）
-- 联系电话：87033314
-
-> 本仓库由承包团队依据比选文件建立，配置与代码需经甲方书面确认后投入使用。
+Git 不包含真实密钥、数据库、用户媒体、原始 Word 或本机构建结果，需另行安全交接。完整文档见 [文档索引](docs/README.md)，协作约定见 [CONTRIBUTING.md](CONTRIBUTING.md)。

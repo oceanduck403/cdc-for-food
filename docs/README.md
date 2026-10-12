@@ -1,12 +1,15 @@
 # 项目文档索引
 
+当前交接入口为 [项目技术简介与交接说明](technical-handoff.md)（2026-10-12，分支 `fix/survey-registration-loading`）。旧云托管及通用部署文档包含历史方案，不能视为最新代码已经上线。
+
 | 文档 | 路径 | 说明 |
 | --- | --- | --- |
+| 技术交接简介 | [technical-handoff.md](./technical-handoff.md) | 当前架构、技术栈、功能边界、本地运行及交接材料 |
 | 总体架构 | [architecture.md](./architecture.md) | 系统架构、数据流、关键决策 |
 | API 规范 | [api.md](./api.md) | REST 接口约定、错误码、示例 |
 | 问卷与就诊登记 | [survey-registration.md](./survey-registration.md) | Word 字段、加载修复、登记保存与验证 |
-| 微信云托管上线手册 | [deploy-wechat-cloudrun.md](./deploy-wechat-cloudrun.md) | 正式环境首选；CloudBase、PostgreSQL 与小程序接入 |
-| 通用部署指南 | [deployment.md](./deployment.md) | 本地、Docker 与其他托管方式 |
+| 历史微信云托管方案 | [deploy-wechat-cloudrun.md](./deploy-wechat-cloudrun.md) | CloudBase 历史方案，需按当前代码重新配置验证 |
+| 通用部署指南 | [deployment.md](./deployment.md) | 历史方案参考；当前运行入口以技术交接文档为准 |
 | 合规与隐私 | [compliance.md](./compliance.md) | 隐私协议、数据合规、健康免责声明 |
 | 阶段路线图 | [roadmap.md](./roadmap.md) | P0-P5 长期计划 |
 | 招标文件要点 | [procurement-brief.md](./procurement-brief.md) | 比选文件摘要 |
